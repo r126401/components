@@ -69,7 +69,7 @@ void ds18x20_test(void *pvParameter)
                      * sdkconfig for ESP8266, which is enabled by default for this
                      * example. see sdkconfig.defaults.esp8266
                      */
-                    printf("  Sensor %08x%08x reports %f deg C (%f deg F)\n", addr0, addr1, temp_c, temp_f);
+                    printf("  Sensor %08ld%08ld reports %f deg C (%f deg F)\n", addr0, addr1, temp_c, temp_f);
                 }
                 printf("\n");
 
@@ -131,7 +131,7 @@ esp_err_t lectura_temperatura_ds18x20(float *temp_c) {
               * sdkconfig for ESP8266, which is enabled by default for this
               * example. see sdkconfig.defaults.esp8266
               */
-             printf("  Sensor %08x%08x reports %f deg C (%f deg F)\n", addr0, addr1, *temp_c, temp_f);
+             printf("  Sensor %08ld%08ld reports %f deg C (%f deg F)\n", addr0, addr1, *temp_c, temp_f);
 
         }
     }

@@ -209,7 +209,7 @@ esp_err_t ordenarListaProgramas(TIME_PROGRAM *listaProgramas, int nElementos, st
     //printf("ordenarListaProgramas-->Despues de ordenar...\n");
     
     for(i=0;i<nElementos;i++) {
-        ESP_LOGI(TAG, ""TRAZAR"ordenarListaProgramas-->%d/%02d/%02d %d %02d %02d:%02d:%02d %d time_t = %ld", INFOTRAZA,
+        ESP_LOGI(TAG, ""TRAZAR"ordenarListaProgramas-->%d/%02d/%02d %d %02d %02d:%02d:%02d %d time_t = %lld", INFOTRAZA,
                 listaProgramas[i].programacion.tm_year + 1900,
                 listaProgramas[i].programacion.tm_mon +1,
                 listaProgramas[i].programacion.tm_mday,
@@ -600,10 +600,10 @@ esp_err_t buscar_programa(TIME_PROGRAM *programas, int elementos, int *programa_
 		if((hora_actual >= programas[i].programa) &&
 				(programas[i].estadoPrograma == ACTIVO) && (programas[i].activo == ACTIVO)){
 
-			ESP_LOGI(TAG, ""TRAZAR"ENCONTRADO SCHEDULE ID %d: %ld", INFOTRAZA, i, programas[i].programa);
+			ESP_LOGI(TAG, ""TRAZAR"ENCONTRADO SCHEDULE ID %d: %lld", INFOTRAZA, i, programas[i].programa);
 
 			if (i >= 0) {
-				ESP_LOGW(TAG, ""TRAZAR"Puntero asignado al indice %d. Hora actual: %ld >=  %ld", INFOTRAZA, i, hora.time, programas[i].programa);
+				ESP_LOGW(TAG, ""TRAZAR"Puntero asignado al indice %d. Hora actual: %lld >=  %lld", INFOTRAZA, i, hora.time, programas[i].programa);
 				*programa_actual = i;
 				*t_tiempo_siguiente = programas[i+1].programa;
 

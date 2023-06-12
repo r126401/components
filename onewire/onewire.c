@@ -50,12 +50,13 @@ static inline bool _onewire_wait_for_bus(gpio_num_t pin, int max_wait)
     {
         if (gpio_get_level(pin))
             break;
-        ets_delay_us(5);
+
+        esp_rom_delay_us(5);
     }
     state = gpio_get_level(pin);
     // Wait an extra 1us to make sure the devices have an adequate recovery
     // time before we drive things low again.
-    ets_delay_us(1);
+    esp_rom_delay_us(1);
     return state;
 }
 
@@ -81,11 +82,11 @@ bool onewire_reset(gpio_num_t pin)
         return false;
 
     gpio_set_level(pin, 0);
-    ets_delay_us(480);
+    esp_rom_delay_us(480);
 
     PORT_ENTER_CRITICAL;
     gpio_set_level(pin, 1); // allow it to float
-    ets_delay_us(70);
+    esp_rom_delay_us(70);
     bool r = !gpio_get_level(pin);
     PORT_EXIT_CRITICAL;
 
@@ -104,17 +105,17 @@ static bool _onewire_write_bit(gpio_num_t pin, bool v)
     if (v)
     {
         gpio_set_level(pin, 0);  // drive output low
-        ets_delay_us(10);
+        esp_rom_delay_us(10);
         gpio_set_level(pin, 1);  // allow output high
-        ets_delay_us(55);
+        esp_rom_delay_us(55);
     }
     else
     {
         gpio_set_level(pin, 0);  // drive output low
-        ets_delay_us(65);
+        esp_rom_delay_us(65);
         gpio_set_level(pin, 1); // allow output high
     }
-    ets_delay_us(1);
+    esp_rom_delay_us(1);
     PORT_EXIT_CRITICAL;
 
     return true;
@@ -127,11 +128,11 @@ static int _onewire_read_bit(gpio_num_t pin)
 
     PORT_ENTER_CRITICAL;
     gpio_set_level(pin, 0);
-    ets_delay_us(2);
+    esp_rom_delay_us(2);
     gpio_set_level(pin, 1);  // let pin float, pull up will raise
-    ets_delay_us(11);
+    esp_rom_delay_us(11);
     int r = gpio_get_level(pin);  // Must sample within 15us of start
-    ets_delay_us(48);
+    esp_rom_delay_us(48);
     PORT_EXIT_CRITICAL;
 
     return r;

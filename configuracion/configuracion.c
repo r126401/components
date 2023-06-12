@@ -70,7 +70,7 @@ esp_err_t configuracion_a_json(DATOS_APLICACION *datosApp, cJSON *conf) {
 	cJSON_AddStringToObject(conf, MQTT_PUBLISH, datosApp->datosGenerales->parametrosMqtt.publish);
 	cJSON_AddNumberToObject(conf, MQTT_QOS , datosApp->datosGenerales->parametrosMqtt.qos);
 	cJSON_AddNumberToObject(conf, PROGRAM_STATE, datosApp->datosGenerales->estadoProgramacion);
-	cJSON_AddStringToObject(conf, OTA_SW_VERSION, datosApp->datosGenerales->ota.swVersion->version);
+	cJSON_AddStringToObject(conf, OTA_SW_VERSION, datosApp->datosGenerales->ota.swVersion);
 	cJSON_AddBoolToObject(conf, MQTT_TLS, datosApp->datosGenerales->parametrosMqtt.tls);
 	//cJSON_AddStringToObject(conf, MQTT_CERT_TLS, datosApp->datosGenerales->parametrosMqtt.cert);
     appuser_configuracion_a_json(datosApp, conf);
@@ -221,7 +221,7 @@ esp_err_t inicializacion(DATOS_APLICACION *datosApp, bool forzado) {
     datosApp->datosGenerales->ota.swVersion = esp_ota_get_app_description();
     //free(aplicacion);
     ESP_LOGE(TAG, ""TRAZAR" VERSION DE LA APLICACION (1)", INFOTRAZA);
-    ESP_LOGE(TAG, ""TRAZAR" VERSION DE LA APLICACION %s", INFOTRAZA, datosApp->datosGenerales->ota.swVersion->version);
+    ESP_LOGE(TAG, ""TRAZAR" VERSION DE LA APLICACION %s", INFOTRAZA, datosApp->datosGenerales->ota.swVersion);
 
 	inicializacion_registros_alarmas(datosApp);
 	datosApp->datosGenerales->estadoApp = NORMAL_ARRANCANDO;
@@ -392,10 +392,10 @@ esp_err_t cargar_programas_interruptor(TIME_PROGRAM *programa_actual, cJSON *nod
 	item = cJSON_GetObjectItem(nodo, DURATION_PROGRAM);
 	if (item != NULL) {
 		programa_actual->duracion = item->valueint;
-		ESP_LOGI(TAG, ""TRAZAR"DURACION = %d", INFOTRAZA, programa_actual->duracion);
+		ESP_LOGI(TAG, ""TRAZAR"DURACION = %ld", INFOTRAZA, programa_actual->duracion);
 	} else {
 		programa_actual->duracion = 0;
-		ESP_LOGI(TAG, ""TRAZAR"NO SE GUARDA DURACION: %d", INFOTRAZA, programa_actual->duracion);
+		ESP_LOGI(TAG, ""TRAZAR"NO SE GUARDA DURACION: %ld", INFOTRAZA, programa_actual->duracion);
 	}
 
 

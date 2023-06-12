@@ -99,7 +99,7 @@ typedef struct OTADATA {
     char url[150];
     int puerto;
     char file[50];
-    const esp_app_desc_t* swVersion;
+    const char* swVersion;
     char newVersion[32];
 
 

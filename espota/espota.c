@@ -103,6 +103,8 @@ esp_err_t _http_event_handler(esp_http_client_event_t *evt)
     case HTTP_EVENT_DISCONNECTED:
         ESP_LOGI(TAG, "HTTP_EVENT_DISCONNECTED");
         break;
+    case HTTP_EVENT_REDIRECT:
+    	break;
     }
     return ESP_OK;
 }
@@ -115,7 +117,7 @@ void otaesp_task(void *pvParameter)
 	char url[120];
 	const esp_app_desc_t *aplicacion;
 	cJSON *upgrade;
-	aplicacion = esp_ota_get_app_description();
+	aplicacion = esp_app_get_description();
 	ESP_LOGW(TAG, ""TRAZAR"Comienzo upgrade firmware", INFOTRAZA);
     ip = name_to_ip(datosApp->datosGenerales->ota.server);
     if (ip == NULL) {
@@ -169,7 +171,7 @@ void otaesp_task(void *pvParameter)
         esp_restart();
     } else {
         ESP_LOGE(TAG, "Firmware upgrade failed, error: %d", ret);
-        ESP_LOGE(TAG, ""TRAZAR" memoria error %d", INFOTRAZA,esp_get_free_heap_size ());
+        ESP_LOGE(TAG, ""TRAZAR" memoria error %ld", INFOTRAZA,esp_get_free_heap_size ());
         upgrade = cJSON_CreateObject();
     	cJSON_AddNumberToObject(upgrade, FIN_UPGRADE, 0);
 		guardar_configuracion(datosApp, FIN_UPGRADE, cJSON_Print(upgrade));

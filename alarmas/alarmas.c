@@ -49,7 +49,7 @@ esp_err_t inicializacion_registros_alarmas(DATOS_APLICACION *datosApp) {
 		datosApp->alarmas[i].estado_alarma = ALARMA_OFF;
 		actualizar_hora(&clock);
 		datosApp->alarmas[i].fecha_alarma = clock.time;
-		ESP_LOGI(TAG, ""TRAZAR" INICIALIZADAS ALARMAS, TIPO_ALARMA: %d, ESTADO: %d, FECHA: %ld", INFOTRAZA,
+		ESP_LOGI(TAG, ""TRAZAR" INICIALIZADAS ALARMAS, TIPO_ALARMA: %d, ESTADO: %d, FECHA: %llu", INFOTRAZA,
 				datosApp->alarmas[i].tipo_alarma,
 				datosApp->alarmas[i].estado_alarma,
 				datosApp->alarmas[i].fecha_alarma);

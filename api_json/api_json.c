@@ -17,7 +17,6 @@
 #include "esp_wifi.h"
 #include "programmer.h"
 #include "conexiones_mqtt.h"
-//#include "ota.h"
 #include "esp_system.h"
 #include "interfaz_usuario.h"
 #include "alarmas.h"
@@ -77,12 +76,12 @@ cJSON*  analizar_comando(DATOS_APLICACION *datosApp, char* info) {
         }
 
     }
-    ESP_LOGW(TAG, ""TRAZAR"Memoria libre(3) Se ha creado el objeto peticion: %d\n", INFOTRAZA, esp_get_free_heap_size());
+    ESP_LOGW(TAG, ""TRAZAR"Memoria libre(3) Se ha creado el objeto peticion: %ld\n", INFOTRAZA, esp_get_free_heap_size());
     respuesta = cabeceraRespuestaComando(datosApp, peticion);
-    ESP_LOGW(TAG, ""TRAZAR"Memoria libre(4) Se ha creado la respuesta: %d\n", INFOTRAZA, esp_get_free_heap_size());
+    ESP_LOGW(TAG, ""TRAZAR"Memoria libre(4) Se ha creado la respuesta: %ld\n", INFOTRAZA, esp_get_free_heap_size());
     if (com >= 50) {
         appUser_analizarComandoAplicacion(peticion, idComando->valueint, datosApp, respuesta);
-        ESP_LOGW(TAG, ""TRAZAR"Memoria libre(5). Se aumentan los campos de la cabecera: %d\n", INFOTRAZA, esp_get_free_heap_size());
+        ESP_LOGW(TAG, ""TRAZAR"Memoria libre(5). Se aumentan los campos de la cabecera: %ld\n", INFOTRAZA, esp_get_free_heap_size());
         printf("analizarComando-->comando de aplicacion ejecutado!!\n");
     } else {
 
@@ -142,7 +141,7 @@ cJSON*  analizar_comando(DATOS_APLICACION *datosApp, char* info) {
 
 
     cJSON_Delete(peticion);
-    ESP_LOGW(TAG, ""TRAZAR"Memoria libre(6) Se libera el json de la peticion: %d\n", INFOTRAZA, esp_get_free_heap_size());
+    ESP_LOGW(TAG, ""TRAZAR"Memoria libre(6) Se libera el json de la peticion: %ld\n", INFOTRAZA, esp_get_free_heap_size());
 	return respuesta;
 }
 
@@ -155,7 +154,7 @@ cJSON*  analizar_comando(DATOS_APLICACION *datosApp, char* info) {
 	 char *respuesta = NULL;
 	 COLA_MQTT cola;
 
-	 ESP_LOGE(TAG, ""TRAZAR"Memoria libre(1): %d\n", INFOTRAZA, esp_get_free_heap_size());
+	 ESP_LOGE(TAG, ""TRAZAR"Memoria libre(1): %ld\n", INFOTRAZA, esp_get_free_heap_size());
 
 	 if(datosApp->handle_mqtt->data_len == 0) {
 		 ESP_LOGW(TAG, ""TRAZAR"MENSAJE VACIO", INFOTRAZA);
@@ -187,7 +186,7 @@ cJSON*  analizar_comando(DATOS_APLICACION *datosApp, char* info) {
      free(respuesta);
 	 free(peticion);
 	 cJSON_Delete(root);
-	 ESP_LOGE(TAG, ""TRAZAR"Memoria despues: %d\n", INFOTRAZA, esp_get_free_heap_size());
+	 ESP_LOGE(TAG, ""TRAZAR"Memoria despues: %ld\n", INFOTRAZA, esp_get_free_heap_size());
  }
 
 
@@ -233,7 +232,7 @@ cJSON*  analizar_comando(DATOS_APLICACION *datosApp, char* info) {
      respuesta = cJSON_CreateObject();
      cJSON_AddStringToObject(respuesta, ID_DEVICE, get_my_id());
      cJSON_AddNumberToObject(respuesta, DEVICE, datosApp->datosGenerales->tipoDispositivo);
-     cJSON_AddStringToObject(respuesta, OTA_SW_VERSION, datosApp->datosGenerales->ota.swVersion->version);
+     cJSON_AddStringToObject(respuesta, OTA_SW_VERSION, datosApp->datosGenerales->ota.swVersion);
      cJSON_AddStringToObject(respuesta, DATE, fecha);
      return respuesta;
 
@@ -305,7 +304,7 @@ cJSON*  analizar_comando(DATOS_APLICACION *datosApp, char* info) {
      campo = cJSON_GetObjectItem(nodo, nombre_campo);
      if((campo != NULL) && (campo->type == cJSON_Number)) {
         *dato = (uint32_t) campo->valueint;
-        ESP_LOGI(TAG, ""TRAZAR"extraer_dato_int--> campo %s = %d\n", INFOTRAZA, nombre_campo, *dato);
+        ESP_LOGI(TAG, ""TRAZAR"extraer_dato_int--> campo %s = %ld\n", INFOTRAZA, nombre_campo, *dato);
         return ESP_OK;
      } else {
          ESP_LOGW(TAG, ""TRAZAR"extraer_dato_int-->campo %s no aparece\n", INFOTRAZA, nombre_campo);

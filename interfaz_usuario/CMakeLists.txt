@@ -5,5 +5,4 @@ comunes
 conexiones
 nvslib
 configuracion
-ota
 programador)
