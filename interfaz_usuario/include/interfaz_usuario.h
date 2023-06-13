@@ -170,6 +170,7 @@ esp_err_t appuser_visualizar_dato_programa(TIME_PROGRAM *programa_actual, cJSON 
 esp_err_t appuser_modificarConfApp(cJSON *root, DATOS_APLICACION *datosApp, cJSON *respuesta);
 esp_err_t app_user_mensaje_recibido_especifico(DATOS_APLICACION *datosApp);
 esp_err_t appuser_notify_app_status(DATOS_APLICACION *datosApp, enum ESTADO_APP estado);
+void appuser_actualizar_gestion_programas(DATOS_APLICACION *datosApp);
 //int appUser_ejecutarAccionProgramaDefecto(DATOS_APLICACION *datosApp);
 void appUser_notificarWifiConectando();
 void appUser_notificarWifiConectado();

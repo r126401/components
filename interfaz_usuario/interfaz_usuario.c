@@ -134,8 +134,8 @@ esp_err_t appuser_acciones_ota(DATOS_APLICACION *datosApp) {
 	//datosApp->datosGenerales->ota.puerto = 80;
 	ESP_LOGI(TAG, ""TRAZAR"PUERTO: %d", INFOTRAZA, datosApp->datosGenerales->ota.puerto);
 	//ESP_LOGI(TAG, ""TRAZAR"PUERTO OTRA VEZ: %d", datosApp->datosGenerales->ota.puerto);
-	ESP_LOGI(TAG, ""TRAZAR"servidor ota: %s\n, puerto: %d\n, url: %s, version %d", INFOTRAZA,
-			datosApp->datosGenerales->ota.server, datosApp->datosGenerales->ota.puerto, datosApp->datosGenerales->ota.url, datosApp->datosGenerales->ota.swVersion);
+	ESP_LOGI(TAG, ""TRAZAR"servidor ota: %s\n, puerto: %d\n, url: %s, version %s", INFOTRAZA,
+			datosApp->datosGenerales->ota.server, datosApp->datosGenerales->ota.puerto, datosApp->datosGenerales->ota.url, datosApp->datosGenerales->ota.swVersion->version);
 
 
 	return ESP_OK;
@@ -323,10 +323,10 @@ esp_err_t appuser_cargar_programa_especifico(DATOS_APLICACION *datosApp, TIME_PR
 	item = cJSON_GetObjectItem(nodo, DURATION_PROGRAM);
 	if (item != NULL) {
 		programa_actual->duracion = item->valueint;
-		ESP_LOGI(TAG, ""TRAZAR"DURACION = %d", INFOTRAZA, programa_actual->duracion);
+		ESP_LOGI(TAG, ""TRAZAR"DURACION = %ld", INFOTRAZA, programa_actual->duracion);
 	} else {
 		programa_actual->duracion = 0;
-		ESP_LOGI(TAG, ""TRAZAR"NO SE GUARDA DURACION: %d", INFOTRAZA, programa_actual->duracion);
+		ESP_LOGI(TAG, ""TRAZAR"NO SE GUARDA DURACION: %ld", INFOTRAZA, programa_actual->duracion);
 	}
 
 
@@ -440,6 +440,11 @@ void nemonicos_alarmas(DATOS_APLICACION *datosApp, int i) {
 
 esp_err_t appuser_notify_app_status(DATOS_APLICACION *datosApp, enum ESTADO_APP estado) {
 
+	return ESP_OK;
 }
 
+
+void appuser_actualizar_gestion_programas(DATOS_APLICACION *datosApp) {
+
+}
 

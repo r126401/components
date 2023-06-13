@@ -70,7 +70,7 @@ esp_err_t configuracion_a_json(DATOS_APLICACION *datosApp, cJSON *conf) {
 	cJSON_AddStringToObject(conf, MQTT_PUBLISH, datosApp->datosGenerales->parametrosMqtt.publish);
 	cJSON_AddNumberToObject(conf, MQTT_QOS , datosApp->datosGenerales->parametrosMqtt.qos);
 	cJSON_AddNumberToObject(conf, PROGRAM_STATE, datosApp->datosGenerales->estadoProgramacion);
-	cJSON_AddStringToObject(conf, OTA_SW_VERSION, datosApp->datosGenerales->ota.swVersion);
+	cJSON_AddStringToObject(conf, OTA_SW_VERSION, datosApp->datosGenerales->ota.swVersion->version);
 	cJSON_AddBoolToObject(conf, MQTT_TLS, datosApp->datosGenerales->parametrosMqtt.tls);
 	//cJSON_AddStringToObject(conf, MQTT_CERT_TLS, datosApp->datosGenerales->parametrosMqtt.cert);
     appuser_configuracion_a_json(datosApp, conf);
@@ -218,10 +218,10 @@ esp_err_t inicializacion(DATOS_APLICACION *datosApp, bool forzado) {
 
 	esp_err_t error;
 	char datos[CONFIG_TAMANO_BUFFER_LECTURA];
-    datosApp->datosGenerales->ota.swVersion = esp_ota_get_app_description();
+    datosApp->datosGenerales->ota.swVersion = esp_app_get_description();
     //free(aplicacion);
     ESP_LOGE(TAG, ""TRAZAR" VERSION DE LA APLICACION (1)", INFOTRAZA);
-    ESP_LOGE(TAG, ""TRAZAR" VERSION DE LA APLICACION %s", INFOTRAZA, datosApp->datosGenerales->ota.swVersion);
+    ESP_LOGE(TAG, ""TRAZAR" VERSION DE LA APLICACION %s", INFOTRAZA, datosApp->datosGenerales->ota.swVersion->version);
 
 	inicializacion_registros_alarmas(datosApp);
 	datosApp->datosGenerales->estadoApp = NORMAL_ARRANCANDO;

@@ -66,6 +66,15 @@ config TAMANO_BUFFER_LECTURA
 	default 1024
 	help
 		Es el tamano de buffer para leer datos en nvs y enviarlos por mqtt
+		
+config TIPO_DISPOSITIVO
+	int "Tipo de dispositivo"
+	default 0
+	help
+		indica el tipo de dispositivo
+
+
+
 
 
 endmenu

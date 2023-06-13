@@ -232,7 +232,7 @@ cJSON*  analizar_comando(DATOS_APLICACION *datosApp, char* info) {
      respuesta = cJSON_CreateObject();
      cJSON_AddStringToObject(respuesta, ID_DEVICE, get_my_id());
      cJSON_AddNumberToObject(respuesta, DEVICE, datosApp->datosGenerales->tipoDispositivo);
-     cJSON_AddStringToObject(respuesta, OTA_SW_VERSION, datosApp->datosGenerales->ota.swVersion);
+     cJSON_AddStringToObject(respuesta, OTA_SW_VERSION, datosApp->datosGenerales->ota.swVersion->version);
      cJSON_AddStringToObject(respuesta, DATE, fecha);
      return respuesta;
 

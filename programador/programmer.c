@@ -14,10 +14,11 @@
 #include "esp_err.h"
 #include "errores_proyecto.h"
 #include "interfaz_usuario.h"
+#include "esp_timer.h"
 
 //static ETSTimer timerDuracion;
 static const char *TAG = "PROGRAMADOR";
-static ETSTimer temporizador_duracion;
+static esp_timer_handle_t temporizador_duracion;
 
 #define TEMPORIZADOR_MAXIMO_EN_SEGUNDOS 428
 //#define TEMPORIZADOR_MAXIMO_EN_SEGUNDOS 30
@@ -25,7 +26,7 @@ static ETSTimer temporizador_duracion;
 
 
 //#define uint8_t uint8_t_t
-static ETSTimer temporizador;
+static esp_timer_handle_t temporizador;
 
 
 struct TIME_PROGRAM*  insertarElemento(struct TIME_PROGRAM *listProgram, uint8_t *elements) {
@@ -615,14 +616,14 @@ esp_err_t buscar_programa(TIME_PROGRAM *programas, int elementos, int *programa_
 				tm_dia_siguiente.tm_min = 0;
 				tm_dia_siguiente.tm_sec = 0;
 				*t_tiempo_siguiente = mktime(&tm_dia_siguiente);
-				ESP_LOGW(TAG, ""TRAZAR" EL PROXIMO INTERVALO ES %ld y se corresponde con la media noche", INFOTRAZA, *t_tiempo_siguiente);
+				ESP_LOGW(TAG, ""TRAZAR" EL PROXIMO INTERVALO ES %lld y se corresponde con la media noche", INFOTRAZA, *t_tiempo_siguiente);
 				*programa_actual = i;
 
 
 			}
 
 
-			ESP_LOGW(TAG, ""TRAZAR"PROGRAMA ACTUAL: %d --- %ld. SIGUIENTE: %ld",
+			ESP_LOGW(TAG, ""TRAZAR"PROGRAMA ACTUAL: %d --- %lld. SIGUIENTE: %lld",
 					INFOTRAZA, *programa_actual,
 					programas[*programa_actual].programa,
 					*t_tiempo_siguiente);
@@ -679,7 +680,12 @@ esp_err_t calcular_programa_activo(DATOS_APLICACION *datosApp, time_t *t_siguien
  *
  * @param datosApp
  */
-void gestion_programas(DATOS_APLICACION *datosApp) {
+void gestion_programas(void* arg) {
+
+
+	DATOS_APLICACION *datosApp;
+
+	datosApp = (DATOS_APLICACION*) arg;
 
 	struct tm hora;
 	actualizar_hora(&datosApp->datosGenerales->clock);
@@ -773,7 +779,7 @@ void gestion_programas(DATOS_APLICACION *datosApp) {
 esp_err_t actualizar_programa_real(DATOS_APLICACION *datosApp) {
 
 
-	ESP_LOGI(TAG, ""TRAZAR"ENTRAMOS EN ACTUALIZAR PROGRAMA REAL, handle:%d", INFOTRAZA, datosApp->handle);
+	ESP_LOGI(TAG, ""TRAZAR"ENTRAMOS EN ACTUALIZAR PROGRAMA REAL, handle:%ld", INFOTRAZA, datosApp->handle);
 
 
 	if (datosApp->datosGenerales->nProgramaCandidato >= 0) {
@@ -815,19 +821,44 @@ esp_err_t logica_temporizacion(DATOS_APLICACION *datosApp) {
 	duracion = programa_actual.duracion;
 	hora = datosApp->datosGenerales->clock.time;
 	tiempo_restante = (programa_actual.programa + duracion) - hora;
+
+    const esp_timer_create_args_t first_shot_timer_args = {
+            .callback = &temporizacion_intermedia,
+            /* name is optional, but may help identify the timer when debugging */
+            .name = "start schedule",
+			.arg = (void*) datosApp
+    };
+
+    const esp_timer_create_args_t second_shot_timer_args = {
+            .callback = &appuser_ejecucion_accion_temporizada,
+            /* name is optional, but may help identify the timer when debugging */
+            .name = "end schedule",
+			.arg = (void*) datosApp
+    };
+
+
+
 	if (duracion > 0) {
 
 
 
 		if (tiempo_restante > TEMPORIZADOR_MAXIMO_EN_SEGUNDOS ) {
 			ESP_LOGW(TAG, ""TRAZAR"ACTIVADO TEMPORIZADOR DE TEMPORIZACION INTERMEDIA.  QUEDAN %d repeticiones", INFOTRAZA, tiempo_restante/TEMPORIZADOR_MAXIMO_EN_SEGUNDOS);
+		    ESP_ERROR_CHECK(esp_timer_create(&first_shot_timer_args, &temporizador_duracion));
+		    ESP_ERROR_CHECK(esp_timer_start_once(temporizador_duracion, (TEMPORIZADOR_MAXIMO_EN_SEGUNDOS * 1000)));
+			/*
 			ets_timer_disarm(&temporizador_duracion);
 			ets_timer_setfn(&temporizador_duracion, (ETSTimerFunc*) temporizacion_intermedia, datosApp);
 			ets_timer_arm(&temporizador_duracion, (TEMPORIZADOR_MAXIMO_EN_SEGUNDOS * 1000), false);
+			*/
 		} else {
-			ets_timer_disarm(&temporizador_duracion);
+			//ets_timer_disarm(&temporizador_duracion);
+		    ESP_ERROR_CHECK(esp_timer_create(&second_shot_timer_args, &temporizador_duracion));
+		    ESP_ERROR_CHECK(esp_timer_start_once(temporizador_duracion, (tiempo_restante * 1000)));
+		    /*
 						ets_timer_setfn(&temporizador_duracion, (ETSTimerFunc*) appuser_ejecucion_accion_temporizada, datosApp);
 						ets_timer_arm(&temporizador_duracion, (tiempo_restante * 1000), false);
+						*/
 						ESP_LOGI(TAG, ""TRAZAR"ACTIVADO TEMPORIZADOR DE %d SEGUNDOS", INFOTRAZA, tiempo_restante);
 		}
 
@@ -868,18 +899,29 @@ esp_err_t activacion_programa(DATOS_APLICACION *datosApp) {
  */
 esp_err_t iniciar_gestion_programacion(DATOS_APLICACION *datosApp) {
 
+    const esp_timer_create_args_t schedules_shot_timer_args = {
+            .callback = &gestion_programas,
+            /* name is optional, but may help identify the timer when debugging */
+            .name = "end schedule",
+			.arg = (void*) datosApp
+    };
+
+
 
 	gestion_programas(datosApp);
-    ets_timer_disarm(&temporizador);
-    ets_timer_setfn(&temporizador, (ETSTimerFunc*) gestion_programas, datosApp);
-    ets_timer_arm(&temporizador, 1000, true);
+    //ets_timer_disarm(&temporizador);
+    ESP_ERROR_CHECK(esp_timer_create(&schedules_shot_timer_args, &gestion_programas));
+    ESP_ERROR_CHECK(esp_timer_start_periodic(temporizador, 1000));
+    //ets_timer_setfn(&temporizador, (ETSTimerFunc*) gestion_programas, datosApp);
+    //ets_timer_arm(&temporizador, 1000, true);
 
 	return ESP_OK;
 }
 
 esp_err_t parar_gestion_programacion(DATOS_APLICACION *datosApp) {
 
-	ets_timer_disarm(&temporizador);
+	ESP_ERROR_CHECK(esp_timer_stop(temporizador));
+	ESP_ERROR_CHECK(esp_timer_delete(temporizador));
 	return ESP_OK;
 }
 
