@@ -204,9 +204,14 @@ esp_err_t appuser_broker_desconectado() {
 
 
 
-void appuser_ejecucion_accion_temporizada(void *datosApp) {
+void appuser_ejecucion_accion_temporizada(void *arg) {
 
     cJSON * respuesta = NULL;
+
+	DATOS_APLICACION *datosApp;
+
+	datosApp = (DATOS_APLICACION*) arg;
+
     ESP_LOGI(TAG, ""TRAZAR"FIN DE LA TEMPORIZACION. SE APAGA EL RELE", INFOTRAZA);
     operacion_rele(datosApp, TEMPORIZADA, OFF);
     respuesta = appuser_generar_informe_espontaneo(datosApp, RELE_TEMPORIZADO, NULL);

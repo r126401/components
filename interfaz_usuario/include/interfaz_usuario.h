@@ -142,7 +142,7 @@ esp_err_t appuser_arranque_aplicacion(DATOS_APLICACION *datosApp);
  * @post
  * @param datosApp
  */
-void appuser_ejecucion_accion_temporizada(void *datosApp);
+void appuser_ejecucion_accion_temporizada(void *arg);
 /**
  * @fn esp_err_t appuser_acciones_ota(DATOS_APLICACION*)
  * @brief Esta funcion es invocada para que el usuario pueda definir las acciones especificas en el dispositivo según el

@@ -139,6 +139,13 @@ void otaesp_task(void *pvParameter)
 
     };
 
+    esp_https_ota_config_t ota_config = {
+        .http_config = &config,
+    };
+
+
+
+
     if (datosApp->datosGenerales->parametrosMqtt.tls == true) {
 
     	//Eliminamos la tarea mqtt para poder lanzar la peticion https sobre el servidor ftp
@@ -155,7 +162,7 @@ void otaesp_task(void *pvParameter)
 
     }
     config.skip_cert_common_name_check = true;
-    esp_err_t ret = esp_https_ota(&config);
+    esp_err_t ret = esp_https_ota(&ota_config);
 
     if (datosApp->datosGenerales->parametrosMqtt.tls == true) {
     	crear_tarea_mqtt(datosApp);

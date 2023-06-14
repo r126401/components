@@ -253,14 +253,14 @@ bool buscarprogramaActivo(uint8_t nProgramacion, uint8_t *nProgramaCandidato, NT
 void chequear_ejecucion_programa(NTP_CLOCK *clock, TIME_PROGRAM *programs);
 
 esp_err_t buscar_programa(TIME_PROGRAM *programas, int elementos, int *programa_actual, time_t *t_tiempo_siguiente);
-void gestion_programas(void *datosApp);
+void gestion_programas(void *arg);
 esp_err_t calcular_programa_activo(DATOS_APLICACION *datosApp, time_t *t_siguiente_intervalo);
 esp_err_t actualizar_programa_real(DATOS_APLICACION *datosApp);
 esp_err_t activacion_programa(DATOS_APLICACION *datosApp);
 esp_err_t iniciar_gestion_programacion(DATOS_APLICACION *datosApp);
 //int ajustarProgramacion(TIME_PROGRAM *programacion, uint8_t *nProgramacion, NTP_CLOCK *clock);
 esp_err_t parar_gestion_programacion(DATOS_APLICACION *datosApp);
-void temporizacion_intermedia(DATOS_APLICACION *datosApp);
+void temporizacion_intermedia(void *arg);
 esp_err_t logica_temporizacion(DATOS_APLICACION *datosApp);
 #endif /* PROGRAMMER_H */
 

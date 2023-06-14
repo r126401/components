@@ -680,7 +680,7 @@ esp_err_t calcular_programa_activo(DATOS_APLICACION *datosApp, time_t *t_siguien
  *
  * @param datosApp
  */
-void gestion_programas(void* arg) {
+void gestion_programas(void *arg) {
 
 
 	DATOS_APLICACION *datosApp;
@@ -698,8 +698,6 @@ void gestion_programas(void* arg) {
 	case NORMAL_ARRANCANDO:
 		calcular_programa_activo(datosApp, &t_siguiente_intervalo);
 		datosApp->datosGenerales->estadoApp = ESPERA_FIN_ARRANQUE;
-
-
 		break;
 
 	case NORMAL_AUTO:
@@ -798,7 +796,12 @@ esp_err_t actualizar_programa_real(DATOS_APLICACION *datosApp) {
 	return ESP_OK;
 }
 
-void temporizacion_intermedia(DATOS_APLICACION *datosApp) {
+void temporizacion_intermedia(void *arg) {
+
+	DATOS_APLICACION *datosApp;
+
+	datosApp = (DATOS_APLICACION*) arg;
+
 
 	ESP_LOGW(TAG, ""TRAZAR"EJECUTANDO TEMPORIZADOR DE TEMPORIZACION INTERMEDIA", INFOTRAZA);
 	logica_temporizacion(datosApp);
@@ -903,14 +906,14 @@ esp_err_t iniciar_gestion_programacion(DATOS_APLICACION *datosApp) {
             .callback = &gestion_programas,
             /* name is optional, but may help identify the timer when debugging */
             .name = "end schedule",
-			.arg = (void*) datosApp
+			.arg = datosApp
     };
 
 
 
 	gestion_programas(datosApp);
     //ets_timer_disarm(&temporizador);
-    ESP_ERROR_CHECK(esp_timer_create(&schedules_shot_timer_args, &gestion_programas));
+    ESP_ERROR_CHECK(esp_timer_create(&schedules_shot_timer_args, &temporizador));
     ESP_ERROR_CHECK(esp_timer_start_periodic(temporizador, 1000));
     //ets_timer_setfn(&temporizador, (ETSTimerFunc*) gestion_programas, datosApp);
     //ets_timer_arm(&temporizador, 1000, true);
@@ -924,6 +927,7 @@ esp_err_t parar_gestion_programacion(DATOS_APLICACION *datosApp) {
 	ESP_ERROR_CHECK(esp_timer_delete(temporizador));
 	return ESP_OK;
 }
+
 
 
 
