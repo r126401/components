@@ -30,7 +30,7 @@ extern DATOS_APLICACION datosApp;
 
 xQueueHandle cola_mqtt = NULL;
 esp_mqtt_client_handle_t client;
-TaskHandle_t handle;
+extern TaskHandle_t handle;
 
 
 
@@ -40,6 +40,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
     ESP_LOGD(TAG, "Event dispatched from event loop base=%s, event_id=%ld", base, event_id);
     esp_mqtt_event_handle_t event = event_data;
     esp_mqtt_client_handle_t client = event->client;
+    datosApp.handle_mqtt = event;
     int msg_id = 0;
     switch ((esp_mqtt_event_id_t)event_id) {
     case MQTT_EVENT_CONNECTED:
@@ -191,6 +192,7 @@ void mqtt_task(void *arg) {
 	for(;;) {
 		 ESP_LOGI(TAG, ""TRAZAR"ESPERANDO MENSAJE...Memoria libre: %ld\n", INFOTRAZA, esp_get_free_heap_size());
 		if (xQueueReceive(cola_mqtt, &cola, portMAX_DELAY) == pdTRUE) {
+			ESP_LOGE(TAG, ""TRAZAR"se va a procesar la peticion", INFOTRAZA);
 			publicar_mensaje(&datosApp, &cola);
 
 		} else {
@@ -230,6 +232,7 @@ esp_err_t establecer_conexion_mqtt(DATOS_APLICACION *datosApp) {
 		//.cert_pem = (const char *) mqtt_jajica_pem_start,
     };
 */
+    ESP_LOGE(TAG, ""TRAZAR"crear (4)", INFOTRAZA);
     esp_mqtt_client_register_event(client, ESP_EVENT_ANY_ID, mqtt_event_handler, NULL);
     esp_mqtt_client_start(client);
     if (datosApp->datosGenerales->parametrosMqtt.tls == true) {
@@ -264,13 +267,13 @@ esp_err_t establecer_conexion_mqtt(DATOS_APLICACION *datosApp) {
 
     ESP_LOGI(TAG, ""TRAZAR"Nos conectamos al broker %s", INFOTRAZA, mqtt_cfg.broker.address.uri);
     appuser_broker_conectando(datosApp);
-    client = esp_mqtt_client_init(&mqtt_cfg);
+    //client = esp_mqtt_client_init(&mqtt_cfg);
     //esp_mqtt_client_handle_t client = esp_mqtt_client_init(&mqtt_cfg);
     //esp_mqtt_client_register_event(client, ESP_EVENT_ANY_ID, mqtt_event_handler, client);
-    error = esp_mqtt_client_start(client);
+    //error = esp_mqtt_client_start(client);
 
 
-    return error;
+    return ESP_OK;
 }
 esp_err_t publicar_mensaje(DATOS_APLICACION *datosApp, COLA_MQTT *cola) {
 
@@ -327,8 +330,11 @@ void crear_tarea_mqtt(DATOS_APLICACION *datosApp) {
 
 
 
+	ESP_LOGE(TAG, ""TRAZAR"crear (1)", INFOTRAZA);
     xTaskCreate(mqtt_task, "mqtt_task", 8192, (void*) datosApp, 10, &handle);
+    ESP_LOGE(TAG, ""TRAZAR"crear (2)", INFOTRAZA);
     configASSERT(handle);
+    ESP_LOGE(TAG, ""TRAZAR"crear (3)", INFOTRAZA);
 
     if (handle == NULL) {
     	ESP_LOGE(TAG, ""TRAZAR"handle es nulo", INFOTRAZA);

@@ -206,30 +206,12 @@ esp_err_t appuser_broker_desconectado() {
 
 void appuser_ejecucion_accion_temporizada(void *arg) {
 
-    cJSON * respuesta = NULL;
 
-	DATOS_APLICACION *datosApp;
-
-	datosApp = (DATOS_APLICACION*) arg;
-
-    ESP_LOGI(TAG, ""TRAZAR"FIN DE LA TEMPORIZACION. SE APAGA EL RELE", INFOTRAZA);
-    operacion_rele(datosApp, TEMPORIZADA, OFF);
-    respuesta = appuser_generar_informe_espontaneo(datosApp, RELE_TEMPORIZADO, NULL);
-    if (respuesta != NULL) {
-    	publicar_mensaje_json(datosApp, respuesta, NULL);
-    }
-    ESP_LOGI(TAG, ""TRAZAR"FIN DE LA TEMPORIZACION. RELE APAGADO", INFOTRAZA);
 }
 
 esp_err_t appuser_temporizador_cumplido(DATOS_APLICACION *datosApp) {
 
-	cJSON *respuesta;
-	ESP_LOGI(TAG, ""TRAZAR"ejecutamos la accion del programa de aplicacion", INFOTRAZA);
-	operacion_rele(datosApp, TEMPORIZADA, datosApp->datosGenerales->programacion[datosApp->datosGenerales->nProgramaCandidato].accion);
-	respuesta = appuser_generar_informe_espontaneo(datosApp, CAMBIO_DE_PROGRAMA, NULL);
-	if (respuesta != NULL) {
-		publicar_mensaje_json(datosApp, respuesta, NULL);
-	}
+
 
 	return ESP_OK;
 }
@@ -452,4 +434,19 @@ esp_err_t appuser_notify_app_status(DATOS_APLICACION *datosApp, enum ESTADO_APP 
 void appuser_actualizar_gestion_programas(DATOS_APLICACION *datosApp) {
 
 }
+
+
+esp_err_t appUser_analizarComandoAplicacion(cJSON *peticion, int nComando, DATOS_APLICACION *datosApp, cJSON *respuesta) {
+
+	return ESP_OK;
+}
+
+esp_err_t appuser_inicializar_aplicacion(DATOS_APLICACION *datosApp) {
+
+
+	return ESP_OK;
+}
+
+
+
 

@@ -77,7 +77,7 @@
 
 
 
-enum ESTADO_RELOJ {
+typedef enum ESTADO_RELOJ {
 	SIN_HORA, // El reloj no esta sincronizado y no esta operativo.
 	SINCRONIZANDO, // El reloj esta en fase de sincronizacion
 	SINCRONIZADO, // El reloj esta sincronizado pero hay operaciones a nivel de aplicacion pendientes. Es un estado transitorio.

@@ -15,6 +15,8 @@
 
 
 
+
+
 #ifndef COMPONENTS_API_JSON_INCLUDE_API_JSON_H_
 #define COMPONENTS_API_JSON_INCLUDE_API_JSON_H_
 
@@ -24,7 +26,7 @@
  * Con la migracion a idf han quedado obsoletos algunos comandos corresondientes a funciones
  * especificar que habia que implementar.
  */
-enum COMANDOS { NO_JSON = -4,
+typedef enum COMANDOS { NO_JSON = -4,
                 NO_IMPLEMENTADO = -3,
                 COMANDO_DESCONOCIDO = -2,
                 ESPONTANEO = -1,
@@ -56,12 +58,12 @@ enum COMANDOS { NO_JSON = -4,
                 BAJAR_UMBRAL,
                 UPGRADE_FIRMWARE_OTA,// 26
                 ALARMAS_ACTIVAS
-};
+}COMANDOS;
 
 /**
  * @brief Implementacion de los codigos de respuesta que e enviaran al usuario de la aplicacion.
  */
-enum CODIGO_RESPUESTA {
+typedef enum CODIGO_RESPUESTA {
     RESP_OK = 200,
     RESP_NOK = 400,
 	RESP_RESTART = 100
