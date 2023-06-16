@@ -73,6 +73,12 @@ config TIPO_DISPOSITIVO
 	help
 		indica el tipo de dispositivo
 
+config NUMERO_ALARMAS_PROVISIONADAS
+	int "Numero de alarmas provisionadas"
+	default 4
+	help
+		Indica el numero de alarmas que el dispositivo va a manejar
+		
 
 
 

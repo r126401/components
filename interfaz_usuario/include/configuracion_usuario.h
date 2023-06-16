@@ -76,7 +76,7 @@ typedef struct DATOS_APLICACION {
 	DATOS_GENERALES *datosGenerales;
     nvs_handle handle;
     esp_mqtt_event_handle_t handle_mqtt;
-    ALARMA alarmas[NUM_TIPOS_ALARMAS];
+    ALARMA alarmas[CONFIG_NUMERO_ALARMAS_PROVISIONADAS];
     DATOS_TERMOSTATO termostato;
 
 
