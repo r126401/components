@@ -45,7 +45,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
     switch ((esp_mqtt_event_id_t)event_id) {
     case MQTT_EVENT_CONNECTED:
         ESP_LOGI(TAG, ""TRAZAR"MQTT_EVENT_CONNECTED: CONECTADO AL BROKER", INFOTRAZA);
-        appuser_broker_conectado(&datosApp);
+        appuser_notify_broker_connected_ok(&datosApp);
         msg_id = esp_mqtt_client_subscribe(client, datosApp.datosGenerales->parametrosMqtt.subscribe,datosApp.datosGenerales->parametrosMqtt.qos);
         ESP_LOGI(TAG, ""TRAZAR"ACCION PARA SUBSCRIBIR AL TOPIC :%s msg_id=%d", INFOTRAZA, datosApp.datosGenerales->parametrosMqtt.subscribe, msg_id);
         if (datosApp.alarmas[ALARMA_MQTT].estado_alarma == ALARMA_ON) {
@@ -56,13 +56,13 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
     case MQTT_EVENT_DISCONNECTED:
         ESP_LOGW(TAG, ""TRAZAR"MQTT_EVENT_DISCONNECTED: Desconectado del broker :%s msg_id=%d", INFOTRAZA, datosApp.datosGenerales->parametrosMqtt.broker, msg_id);
         registrar_alarma(&datosApp, NOTIFICACION_ALARMA_MQTT, ALARMA_MQTT, ALARMA_ON, false);
-        appuser_broker_desconectado(&datosApp);
+        appuser_notify_broker_disconnected(&datosApp);
         break;
 
     case MQTT_EVENT_SUBSCRIBED:
         ESP_LOGI(TAG, ""TRAZAR"MQTT_EVENT_SUBSCRIBED: SUBSCRITOS CON EXITO AL TOPIC :%s msg_id=%d", INFOTRAZA, datosApp.datosGenerales->parametrosMqtt.subscribe, msg_id);
         if (arranque == false ){
-        	appuser_arranque_aplicacion(&datosApp);
+        	appuser_notify_application_started(&datosApp);
         	arranque = true;
         }
         break;
@@ -84,7 +84,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
         if (strcmp(datosApp.datosGenerales->parametrosMqtt.subscribe, topic) == 0) {
         	mensaje_recibido(&datosApp);
         } else {
-        	app_user_mensaje_recibido_especifico(&datosApp);
+        	appuser_received_message_extra_subscription(&datosApp);
         }
 
         break;
@@ -266,7 +266,7 @@ esp_err_t establecer_conexion_mqtt(DATOS_APLICACION *datosApp) {
 
 
     ESP_LOGI(TAG, ""TRAZAR"Nos conectamos al broker %s", INFOTRAZA, mqtt_cfg.broker.address.uri);
-    appuser_broker_conectando(datosApp);
+    appuser_notify_connecting_broker_mqtt(datosApp);
     //client = esp_mqtt_client_init(&mqtt_cfg);
     //esp_mqtt_client_handle_t client = esp_mqtt_client_init(&mqtt_cfg);
     //esp_mqtt_client_register_event(client, ESP_EVENT_ANY_ID, mqtt_event_handler, client);

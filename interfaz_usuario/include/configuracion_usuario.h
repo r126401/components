@@ -27,6 +27,14 @@ Proyecto realizado por Emilio Jimenez Prieto
  * @brief Define el numero de alarmas del dispositivo
  *
  */
+
+enum COMANDOS_APP {
+    OPERAR_RELE = 50,
+    STATUS_DISPOSITIVO,
+	MODIFICAR_UMBRAL,
+	SELECCIONAR_SENSOR
+};
+
 #define NUM_TIPOS_ALARMAS 6
 #define ALARMA_WIFI 0
 #define ALARMA_MQTT 1

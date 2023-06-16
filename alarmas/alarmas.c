@@ -29,7 +29,7 @@ esp_err_t registrar_alarma(DATOS_APLICACION *datosApp, char* mnemonico_alarma, u
 	if (flag_envio == true) {
 		notificar_evento_alarma(datosApp, tipo_alarma, mnemonico_alarma);
 	}
-	appuser_notificar_alarma_localmente(datosApp, tipo_alarma);
+	appuser_notify_local_alarm(datosApp, tipo_alarma);
 	ESP_LOGW(TAG, ""TRAZAR" ALARMA %d ESTADO %d REGISTRADA", INFOTRAZA, tipo_alarma, estado_alarma);
 
 	return ESP_OK;

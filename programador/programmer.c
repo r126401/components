@@ -667,7 +667,7 @@ esp_err_t calcular_programa_activo(DATOS_APLICACION *datosApp, time_t *t_siguien
 	} else {
 		error = PROGRAMACION_NO_EXISTE;
 		ESP_LOGW(TAG, ""TRAZAR"No hay programacion o programa activo en este momento", INFOTRAZA);
-		appUser_ejecutar_accion_programa_defecto(datosApp);
+		appuser_set_action_without_schedule_active(datosApp);
 	}
 
 	return error;
@@ -769,7 +769,7 @@ void gestion_programas(void *arg) {
 
 	}
 
-	appuser_actualizar_gestion_programas(datosApp);
+	appuser_notify_schedule_events(datosApp);
 
 
 }
@@ -833,7 +833,7 @@ esp_err_t logica_temporizacion(DATOS_APLICACION *datosApp) {
     };
 
     const esp_timer_create_args_t second_shot_timer_args = {
-            .callback = &appuser_ejecucion_accion_temporizada,
+            .callback = &appuser_end_schedule,
             /* name is optional, but may help identify the timer when debugging */
             .name = "end schedule",
 			.arg = (void*) datosApp
@@ -868,7 +868,7 @@ esp_err_t logica_temporizacion(DATOS_APLICACION *datosApp) {
 
 		if (tiempo_restante < 0 ) {
 			ESP_LOGW(TAG, ""TRAZAR"LA DURACION YA HA EXCEDIDO DE LA HORA Y NO SE ACTIVA", INFOTRAZA);
-			appuser_ejecucion_accion_temporizada(datosApp);
+			appuser_end_schedule(datosApp);
 			return PROGRAMACION_DURACION_EXCEDIDA;
 		}
 	}
@@ -885,7 +885,7 @@ esp_err_t activacion_programa(DATOS_APLICACION *datosApp) {
 
 
 	logica_temporizacion(datosApp);
-	appuser_temporizador_cumplido(datosApp);
+	appuser_start_schedule(datosApp);
 
 
 

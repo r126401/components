@@ -80,7 +80,7 @@ cJSON*  analizar_comando(DATOS_APLICACION *datosApp, char* info) {
     respuesta = cabeceraRespuestaComando(datosApp, peticion);
     ESP_LOGW(TAG, ""TRAZAR"Memoria libre(4) Se ha creado la respuesta: %ld\n", INFOTRAZA, esp_get_free_heap_size());
     if (com >= 50) {
-        appUser_analizarComandoAplicacion(peticion, idComando->valueint, datosApp, respuesta);
+        appuser_set_command_application(peticion, idComando->valueint, datosApp, respuesta);
         ESP_LOGW(TAG, ""TRAZAR"Memoria libre(5). Se aumentan los campos de la cabecera: %ld\n", INFOTRAZA, esp_get_free_heap_size());
         printf("analizarComando-->comando de aplicacion ejecutado!!\n");
     } else {
@@ -500,7 +500,7 @@ esp_err_t   crear_programas_json(DATOS_APLICACION *datosApp, cJSON *respuesta) {
                 datosApp->datosGenerales->programacion[i].accion);
 
         cJSON_AddStringToObject(item, PROGRAM_ID, dato);
-        appuser_visualizar_dato_programa(&datosApp->datosGenerales->programacion[i], item);
+        appuser_reporting_schedule_extra_data(&datosApp->datosGenerales->programacion[i], item);
         /*
         if (datosApp->datosGenerales->programacion[i].duracion > 0) {
             cJSON_AddNumberToObject(item,DURATION_PROGRAM, datosApp->datosGenerales->programacion[i].duracion );
@@ -566,7 +566,7 @@ esp_err_t   insertar_nuevo_programa(cJSON *peticion,DATOS_APLICACION *datosApp, 
    //datosApp->datosGenerales->estadoApp = NORMAL_AUTO;
    extraer_dato_int(nodo, PROGRAM_ACTION, &programaActual->accion);
    extraer_dato_int(nodo, PROGRAM_MASK, (int*)&programaActual->mascara);
-   appuser_extraer_datos_programa(programaActual, nodo);
+   appuser_get_schedule_extra_data(programaActual, nodo);
    generarIdPrograma(programaActual);
    datosApp->datosGenerales->programacion = crearPrograma(programaActual, datosApp->datosGenerales->programacion, &datosApp->datosGenerales->nProgramacion);
 
@@ -701,7 +701,7 @@ esp_err_t   modificar_programa(cJSON *peticion,struct DATOS_APLICACION *datosApp
     	extraer_dato_int(nodo, PROGRAM_STATE, (int*) &datosApp->datosGenerales->programacion[nPrograma].estadoPrograma);
     	extraer_dato_int(nodo, PROGRAM_ACTION, &datosApp->datosGenerales->programacion[nPrograma].accion);
     	extraer_dato_uint8(nodo, PROGRAM_MASK, &datosApp->datosGenerales->programacion[nPrograma].mascara);
-        appuser_modificar_dato_programa(&datosApp->datosGenerales->programacion[nPrograma], nodo);
+        appuser_modify_schedule_extra_data(&datosApp->datosGenerales->programacion[nPrograma], nodo);
 
         generarIdPrograma(&datosApp->datosGenerales->programacion[nPrograma]);
         cJSON_AddStringToObject(respuesta, PROGRAM_ID, idPrograma);
@@ -709,7 +709,7 @@ esp_err_t   modificar_programa(cJSON *peticion,struct DATOS_APLICACION *datosApp
         cJSON_AddNumberToObject(respuesta, DEVICE_STATE, datosApp->datosGenerales->estadoApp);
         cJSON_AddNumberToObject(respuesta, PROGRAM_STATE, datosApp->datosGenerales->programacion[nPrograma].estadoPrograma);
         cJSON_AddNumberToObject(respuesta, PROGRAM_ACTION, datosApp->datosGenerales->programacion[nPrograma].accion);
-        appuser_visualizar_dato_programa(&datosApp->datosGenerales->programacion[nPrograma], respuesta);
+        appuser_reporting_schedule_extra_data(&datosApp->datosGenerales->programacion[nPrograma], respuesta);
 
         datosApp->datosGenerales->estadoApp = NORMAL_SINCRONIZANDO;
         appuser_notify_app_status(datosApp, NORMAL_SINCRONIZANDO);
@@ -787,7 +787,7 @@ esp_err_t   upgrade_ota(cJSON *peticion, struct DATOS_APLICACION *datosApp, cJSO
 
    if (datosApp->datosGenerales->estadoApp != UPGRADE_EN_PROGRESO) {
 	   codigoRespuesta(respuesta, RESP_OK);
-	   if (appuser_acciones_ota(datosApp) == RESP_RESTART) {
+	   if (appuser_start_ota(datosApp) == RESP_RESTART) {
 		   ejecutar_reset(datosApp, NULL);
 
 	   }else {
@@ -859,5 +859,5 @@ esp_err_t    visualizar_alarmas_activas(DATOS_APLICACION *datosApp, cJSON *respu
 
 esp_err_t   modificar_configuracion_app(cJSON *peticion,struct DATOS_APLICACION *datosApp, cJSON *respuesta) {
 
-	return appuser_modificarConfApp(peticion, datosApp, respuesta);
+	return appuser_modify_local_configuration_application(peticion, datosApp, respuesta);
 }

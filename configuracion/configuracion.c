@@ -37,7 +37,7 @@ esp_err_t crear_programas_defecto(DATOS_APLICACION *datosApp) {
 	array = cJSON_CreateArray();
 	//cJSON_AddItemToArray(array, item = cJSON_CreateObject());
 	//cJSON_AddStringToObject(item, PROGRAM_ID, "002359007f10");
-	appuser_cargar_programas_defecto(datosApp, array);
+	appuser_load_default_schedules(datosApp, array);
 
 	texto = cJSON_Print(array);
 	if (texto != NULL) {
@@ -73,7 +73,7 @@ esp_err_t configuracion_a_json(DATOS_APLICACION *datosApp, cJSON *conf) {
 	cJSON_AddStringToObject(conf, OTA_SW_VERSION, datosApp->datosGenerales->ota.swVersion->version);
 	cJSON_AddBoolToObject(conf, MQTT_TLS, datosApp->datosGenerales->parametrosMqtt.tls);
 	//cJSON_AddStringToObject(conf, MQTT_CERT_TLS, datosApp->datosGenerales->parametrosMqtt.cert);
-    appuser_configuracion_a_json(datosApp, conf);
+    appuser_set_configuration_to_json(datosApp, conf);
 
     	ESP_LOGI(TAG, ""TRAZAR"JSON creado:", INFOTRAZA);
     	return JSON_OK;
@@ -127,7 +127,7 @@ esp_err_t cargar_configuracion_defecto(DATOS_APLICACION *datosApp) {
     datosApp->datosGenerales->nProgramacion=0;
     datosApp->datosGenerales->nProgramaCandidato = -1;
     datosApp->datosGenerales->programacion = NULL;
-    appuser_configuracion_defecto(datosApp);
+    appuser_set_default_config(datosApp);
 	ESP_LOGI(TAG, ""TRAZAR" SALVAMOS LA CONFIGURACION GENERAL A NVS...", INFOTRAZA);
 	error = salvar_configuracion_general(datosApp);
 	if (error != ESP_OK) {
@@ -175,7 +175,7 @@ esp_err_t json_a_datos_aplicacion(DATOS_APLICACION *datosApp, char *datos) {
 			ESP_LOGI(TAG, ""TRAZAR"Se indica version OTA %d", INFOTRAZA, datosApp->datosGenerales->ota.swVersion);
 
 		}*/
-		appuser_json_a_datos(datosApp, nodo);
+		appuser_json_to_configuration(datosApp, nodo);
 	} else {
 		ESP_LOGE(TAG, ""TRAZAR"Error al extraer los datos del json", INFOTRAZA);
 		return ESP_FAIL;
@@ -226,7 +226,7 @@ esp_err_t inicializacion(DATOS_APLICACION *datosApp, bool forzado) {
 	inicializacion_registros_alarmas(datosApp);
 	datosApp->datosGenerales->estadoApp = NORMAL_ARRANCANDO;
 	inicializar_parametros_ntp(&datosApp->datosGenerales->clock);
-	appuser_obteniendo_sntp(datosApp);
+	appuser_get_date_sntp(datosApp);
 	ESP_LOGW(TAG, ""TRAZAR"(1)", INFOTRAZA);
 	error = obtener_fecha_hora(&datosApp->datosGenerales->clock);
 	ESP_LOGW(TAG, ""TRAZAR"(2)", INFOTRAZA);
@@ -234,7 +234,7 @@ esp_err_t inicializacion(DATOS_APLICACION *datosApp, bool forzado) {
 	if (error != ESP_OK) {
 		ESP_LOGW(TAG, ""TRAZAR"NO SE HA PODIDO OBTENER LA HORA DEL SERVIDOR NTP. NO HABRA PROGRAMACION. error: %d", INFOTRAZA, error);
 		datosApp->datosGenerales->estadoProgramacion = INVALID_PROG;
-		app_user_error_obteniendo_sntp(datosApp);
+		appuser_error_get_date_sntp(datosApp);
 		registrar_alarma(datosApp, NOTIFICACION_ALARMA_NTP, ALARMA_NTP, ALARMA_OFF, false);
 
 	} else {
@@ -463,7 +463,7 @@ esp_err_t cargar_programas(DATOS_APLICACION *datosApp, char *programas) {
 			break;
 
 		}
-		appuser_cargar_programa_especifico(datosApp, &programa_actual, nodo);
+		appuser_load_schedule_extra_data(datosApp, &programa_actual, nodo);
 
 		/*
 		switch(datosApp->datosGenerales->tipoDispositivo) {

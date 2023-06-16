@@ -80,7 +80,7 @@ void aplicar_temporizacion(int cadencia, esp_timer_cb_t funcion, char* nombre) {
 
 }
 
-esp_err_t appuser_configuracion_defecto(DATOS_APLICACION *datosApp) {
+esp_err_t appuser_set_default_config(DATOS_APLICACION *datosApp) {
 
 	ESP_LOGI(TAG, ""TRAZAR"Ejecutando configuraciones adicionales de la aplicacion por defecto...", INFOTRAZA);
 	datosApp->datosGenerales->tipoDispositivo = INTERRUPTOR;
@@ -94,17 +94,15 @@ esp_err_t appuser_configuracion_defecto(DATOS_APLICACION *datosApp) {
 
 
 
-esp_err_t appUser_ejecutar_accion_programa_defecto(DATOS_APLICACION *datosApp) {
+esp_err_t appuser_set_action_without_schedule_active(DATOS_APLICACION *datosApp) {
 
 	ESP_LOGI(TAG, ""TRAZAR"Ejecutando acciones de programa por defecto", INFOTRAZA);
-	//Escribe aquí lo que quieres que tu aplicacion haga tenga que ejecutar una accion por defecto
-    //GPIO_OUTPUT_SET(GPIO_ID_PIN(GPIO_RELE), OFF);
 
     return ESP_OK;
 }
 
 
-esp_err_t appuser_notificar_smartconfig() {
+esp_err_t appuser_notify_smartconfig() {
 
 
 	aplicar_temporizacion(CADENCIA_SMARTCONFIG, parapadeo_led, "smartconfig");
@@ -112,11 +110,11 @@ esp_err_t appuser_notificar_smartconfig() {
 	return ESP_OK;
 }
 
-esp_err_t appuser_arranque_aplicacion(DATOS_APLICACION *datosApp) {
+esp_err_t appuser_notify_application_started(DATOS_APLICACION *datosApp) {
 
 	cJSON *informe;
 
-	informe = appuser_generar_informe_espontaneo(datosApp, ARRANQUE_APLICACION, NULL);
+	informe = appuser_send_spontaneous_report(datosApp, ARRANQUE_APLICACION, NULL);
 
 	ESP_LOGI(TAG, ""TRAZAR" vamos a publicar el arranque del dispositivo", INFOTRAZA);
 	if (informe != NULL) {
@@ -128,7 +126,7 @@ esp_err_t appuser_arranque_aplicacion(DATOS_APLICACION *datosApp) {
 	return ESP_OK;
 }
 
-esp_err_t appuser_acciones_ota(DATOS_APLICACION *datosApp) {
+esp_err_t appuser_start_ota(DATOS_APLICACION *datosApp) {
 
 
 	//datosApp->datosGenerales->ota.puerto = 80;
@@ -141,12 +139,12 @@ esp_err_t appuser_acciones_ota(DATOS_APLICACION *datosApp) {
 	return ESP_OK;
 }
 
-esp_err_t appuser_obteniendo_sntp() {
+esp_err_t appuser_get_date_sntp() {
 
 	aplicar_temporizacion(CADENCIA_SNTP, parapadeo_led, "sntp");
 	return ESP_OK;
 }
-esp_err_t app_user_error_obteniendo_sntp() {
+esp_err_t appuser_error_get_date_sntp() {
 
 	aplicar_temporizacion(CADENCIA_SNTP, parapadeo_led, "sntp_error");
 	return ESP_OK;
@@ -161,7 +159,7 @@ esp_err_t appuser_sntp_ok() {
 
 
 
-esp_err_t appuser_wifi_conectando() {
+esp_err_t appuser_notify_connecting_wifi() {
 
 
 	aplicar_temporizacion(CADENCIA_WIFI, parapadeo_led, "wifi");
@@ -170,7 +168,7 @@ esp_err_t appuser_wifi_conectando() {
 	return ESP_OK;
 }
 
-esp_err_t appuser_wifi_conectado() {
+esp_err_t appuser_notify_wifi_connected_ok() {
 
 
 	eliminar_temporizacion("wifi");
@@ -181,20 +179,20 @@ esp_err_t appuser_wifi_conectado() {
 	return ESP_OK;
 }
 
-esp_err_t appuser_broker_conectando() {
+esp_err_t appuser_notify_connecting_broker_mqtt() {
 
 	ESP_LOGI(TAG, ""TRAZAR"BROKER CONECTANDO", INFOTRAZA);
 	aplicar_temporizacion(CADENCIA_BROKER, parapadeo_led, "mqtt");
 	return ESP_OK;
 }
-esp_err_t appuser_broker_conectado() {
+esp_err_t appuser_notify_broker_connected_ok() {
 
 	eliminar_temporizacion("mqtt");
 	gpio_set_level(CONFIG_GPIO_PIN_LED, ON);
 
 	return ESP_OK;
 }
-esp_err_t appuser_broker_desconectado() {
+esp_err_t appuser_notify_broker_disconnected() {
 
 	aplicar_temporizacion(CADENCIA_BROKER, parapadeo_led, "mqtt_error");
 	return ESP_OK;
@@ -204,19 +202,19 @@ esp_err_t appuser_broker_desconectado() {
 
 
 
-void appuser_ejecucion_accion_temporizada(void *arg) {
+void appuser_end_schedule(void *arg) {
 
 
 }
 
-esp_err_t appuser_temporizador_cumplido(DATOS_APLICACION *datosApp) {
+esp_err_t appuser_start_schedule(DATOS_APLICACION *datosApp) {
 
 
 
 	return ESP_OK;
 }
 
-esp_err_t appuser_notificar_alarma_localmente(DATOS_APLICACION *datosApp, uint8_t indice) {
+esp_err_t appuser_notify_local_alarm(DATOS_APLICACION *datosApp, uint8_t indice) {
 
 	if (datosApp->alarmas[indice].estado_alarma == ALARMA_OFF) {
 		//eliminar_temporizacion();
@@ -237,7 +235,7 @@ esp_err_t appuser_notificar_alarma_localmente(DATOS_APLICACION *datosApp, uint8_
 	return ESP_OK;
 }
 
-cJSON* appuser_generar_informe_espontaneo(DATOS_APLICACION *datosApp, enum TIPO_INFORME tipoInforme, cJSON *comandoOriginal) {
+cJSON* appuser_send_spontaneous_report(DATOS_APLICACION *datosApp, enum TIPO_INFORME tipoInforme, cJSON *comandoOriginal) {
 
 
     cJSON *respuesta = NULL;
@@ -284,7 +282,7 @@ cJSON* appuser_generar_informe_espontaneo(DATOS_APLICACION *datosApp, enum TIPO_
     return respuesta;
 
 }
-esp_err_t appuser_cargar_programa_especifico(DATOS_APLICACION *datosApp, TIME_PROGRAM *programa_actual, cJSON *nodo) {
+esp_err_t appuser_load_schedule_extra_data(DATOS_APLICACION *datosApp, TIME_PROGRAM *programa_actual, cJSON *nodo) {
 
 	cJSON *item;
 	char* dato;
@@ -323,19 +321,19 @@ esp_err_t appuser_cargar_programa_especifico(DATOS_APLICACION *datosApp, TIME_PR
 
 }
 
-esp_err_t appuser_configuracion_a_json(DATOS_APLICACION *datosApp, cJSON *conf) {
+esp_err_t appuser_set_configuration_to_json(DATOS_APLICACION *datosApp, cJSON *conf) {
 
 	//cJSON_AddNumberToObject(conf, DEVICE , INTERRUPTOR);
 	ESP_LOGI(TAG, ""TRAZAR" CONFIGURACION A JSON DEL DISPOSITIVO...", INFOTRAZA);
 	return ESP_OK;
 }
 
-esp_err_t appuser_json_a_datos(DATOS_APLICACION *datosApp, cJSON *datos) {
+esp_err_t appuser_json_to_configuration(DATOS_APLICACION *datosApp, cJSON *datos) {
 
 	return ESP_OK;
 }
 
-esp_err_t appuser_cargar_programas_defecto(DATOS_APLICACION *datosApp, cJSON *array) {
+esp_err_t appuser_load_default_schedules(DATOS_APLICACION *datosApp, cJSON *array) {
 
 	cJSON *item = NULL;
 
@@ -354,7 +352,7 @@ esp_err_t appuser_cargar_programas_defecto(DATOS_APLICACION *datosApp, cJSON *ar
 	return ESP_OK;
 }
 
-esp_err_t appuser_extraer_datos_programa(TIME_PROGRAM *programa_actual, cJSON *nodo) {
+esp_err_t appuser_get_schedule_extra_data(TIME_PROGRAM *programa_actual, cJSON *nodo) {
 
 
     if(extraer_dato_int(nodo, DURATION_PROGRAM, (int*) &programa_actual->duracion) != ESP_OK) {
@@ -365,7 +363,7 @@ esp_err_t appuser_extraer_datos_programa(TIME_PROGRAM *programa_actual, cJSON *n
 	return ESP_OK;
 }
 
-esp_err_t appuser_modificar_dato_programa(TIME_PROGRAM *programa_actual,cJSON *nodo) {
+esp_err_t appuser_modify_schedule_extra_data(TIME_PROGRAM *programa_actual,cJSON *nodo) {
 
 	extraer_dato_uint32(nodo, DURATION_PROGRAM, &programa_actual->duracion);
 
@@ -373,7 +371,7 @@ esp_err_t appuser_modificar_dato_programa(TIME_PROGRAM *programa_actual,cJSON *n
 	return ESP_OK;
 }
 
-esp_err_t appuser_visualizar_dato_programa(TIME_PROGRAM *programa_actual, cJSON *nodo) {
+esp_err_t appuser_reporting_schedule_extra_data(TIME_PROGRAM *programa_actual, cJSON *nodo) {
 
     if (programa_actual->duracion > 0) {
         cJSON_AddNumberToObject(nodo, DURATION_PROGRAM, programa_actual->duracion);
@@ -383,13 +381,13 @@ esp_err_t appuser_visualizar_dato_programa(TIME_PROGRAM *programa_actual, cJSON 
 	return ESP_OK;
 }
 
-esp_err_t appuser_modificarConfApp(cJSON *root, DATOS_APLICACION *datosApp, cJSON *respuesta) {
+esp_err_t appuser_modify_local_configuration_application(cJSON *root, DATOS_APLICACION *datosApp, cJSON *respuesta) {
 
 	return ESP_OK;
 
 }
 
-esp_err_t app_user_mensaje_recibido_especifico(DATOS_APLICACION *datosApp) {
+esp_err_t appuser_received_message_extra_subscription(DATOS_APLICACION *datosApp) {
 
 	ESP_LOGI(TAG, ""TRAZAR" mensaje del topic: %s", INFOTRAZA, datosApp->handle_mqtt->topic);
 	return ESP_OK;
@@ -431,17 +429,17 @@ esp_err_t appuser_notify_app_status(DATOS_APLICACION *datosApp, enum ESTADO_APP 
 }
 
 
-void appuser_actualizar_gestion_programas(DATOS_APLICACION *datosApp) {
+void appuser_notify_schedule_events(DATOS_APLICACION *datosApp) {
 
 }
 
 
-esp_err_t appUser_analizarComandoAplicacion(cJSON *peticion, int nComando, DATOS_APLICACION *datosApp, cJSON *respuesta) {
+esp_err_t appuser_set_command_application(cJSON *peticion, int nComando, DATOS_APLICACION *datosApp, cJSON *respuesta) {
 
 	return ESP_OK;
 }
 
-esp_err_t appuser_inicializar_aplicacion(DATOS_APLICACION *datosApp) {
+esp_err_t appuser_init_application(DATOS_APLICACION *datosApp) {
 
 
 	return ESP_OK;

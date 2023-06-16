@@ -246,7 +246,7 @@ static void on_got_ip(void *arg, esp_event_base_t event_base,
     memcpy(&s_ip_addr, &event->ip_info.ip, sizeof(s_ip_addr));
     xEventGroupSetBits(grupo_eventos, CONNECTED_BIT);
     registrar_alarma(&datosApp, NOTIFICACION_ALARMA_WIFI, ALARMA_WIFI, ALARMA_ON, false);
-    appuser_wifi_conectado(&datosApp);
+    appuser_notify_wifi_connected_ok(&datosApp);
 }
 
 
@@ -271,7 +271,7 @@ inline static void inicializar_wifi() {
 
 	ESP_LOGI(TAG, ""TRAZAR" INICIALIZAR_WIFI", INFOTRAZA);
     //tcpip_adapter_init();
-	appuser_wifi_conectando(&datosApp);
+	appuser_notify_connecting_wifi(&datosApp);
     grupo_eventos = xEventGroupCreate();
     esp_netif_init();
     ESP_ERROR_CHECK(esp_event_loop_create_default());
@@ -314,7 +314,7 @@ void tarea_smartconfig(void* parm) {
     EventBits_t uxBits;
     DATOS_APLICACION *datosApp;
     datosApp = (DATOS_APLICACION*) parm;
-    appuser_notificar_smartconfig(datosApp);
+    appuser_notify_smartconfig(datosApp);
     ESP_ERROR_CHECK(esp_smartconfig_set_type(SC_TYPE_ESPTOUCH));
     smartconfig_start_config_t cfg = SMARTCONFIG_START_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_smartconfig_start(&cfg));
