@@ -7,7 +7,9 @@
 
 
 #include "logging.h"
-
+#include <stdio.h>
+#include <stdarg.h>
+#include "esp_log.h"
 
 char* pintar_fecha() {
 
@@ -31,3 +33,5 @@ char* pintar_fecha() {
 	return fecha_actual;
 
 }
+
+

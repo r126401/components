@@ -11,6 +11,7 @@
 #include "esp_app_desc.h"
 
 
+
 typedef struct OTADATA {
     char server[100];
     char url[150];

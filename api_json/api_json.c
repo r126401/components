@@ -23,6 +23,7 @@
 #include "espota.h"
 
 
+
 #define DELAY_TIME_RESET 3000 //ms o 3s
 
 static const char *TAG = "API_JSON";

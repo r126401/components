@@ -403,6 +403,6 @@ typedef enum CODIGO_RESPUESTA {
  esp_err_t notificar_evento_ota(DATOS_APLICACION *datosApp, ESTADO_OTA codeOta);
  esp_err_t notificar_evento_alarma(DATOS_APLICACION *datosApp, int tipo_alarma, char* mnemonico_alarma);
  esp_err_t visualizar_alarmas_activas(DATOS_APLICACION *datosApp, cJSON *respuesta);
-
+ void tarea_upgrade_firmware(DATOS_APLICACION *datosApp);
 
 #endif /* COMPONENTS_API_JSON_INCLUDE_API_JSON_H_ */
