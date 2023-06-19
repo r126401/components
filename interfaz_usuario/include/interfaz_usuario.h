@@ -48,7 +48,7 @@ esp_err_t appuser_start_schedule(DATOS_APLICACION *datosApp);
  * @param datosApp es la estructura de aplicacion
  * @return ESP_OK cuando la inicializacion del dispositivo especifico es correcta
  */
-esp_err_t appuser_init_application(DATOS_APLICACION *datosApp);
+esp_err_t init_code_application(DATOS_APLICACION *datosApp);
 /**
  * @fn esp_err_t appuser_wifi_conectando()
  * @brief Llamado desde el modulo conexiones de manera que el usuario pueda notificar en la aplicacion que el dispositivo

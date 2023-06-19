@@ -439,11 +439,6 @@ esp_err_t appuser_set_command_application(cJSON *peticion, int nComando, DATOS_A
 	return ESP_OK;
 }
 
-esp_err_t appuser_init_application(DATOS_APLICACION *datosApp) {
-
-
-	return ESP_OK;
-}
 
 
 
