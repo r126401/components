@@ -13,7 +13,6 @@
 #include "esp_https_ota.h"
 #include "esp_system.h"
 #include "esp_event.h"
-#include "datos_comunes.h"
 #include "configuracion_usuario.h"
 #include <sys/socket.h>
 #include <netdb.h>
@@ -23,6 +22,7 @@
 #include "conexiones_mqtt.h"
 #include "configuracion.h"
 #include "dialogos_json.h"
+
 
 
 

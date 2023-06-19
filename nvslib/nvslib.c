@@ -6,12 +6,14 @@
  */
 
 
+
 #include "esp_err.h"
 #include "esp_log.h"
 #include "nvs_flash.h"
 #include "nvslib.h"
 #include "esp_partition.h"
-#include "datos_comunes.h"
+#include "logging.h"
+
 
 static const char *TAG = "NVS";
 

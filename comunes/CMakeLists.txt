@@ -1,4 +1,4 @@
-idf_component_register(SRCS "datos_comunes.c" INCLUDE_DIRS "include" 
+idf_component_register(SRCS "logging.c" INCLUDE_DIRS "include" 
 REQUIRES alarmas
 api_json
 conexiones

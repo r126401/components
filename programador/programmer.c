@@ -4,6 +4,7 @@
  * and open the template in the editor.
  */
 
+#include <errores_proyecto.h>
 #include "programmer.h"
 #include "configuracion_usuario.h"
 #include <stdio.h>
@@ -12,7 +13,6 @@
 #include "esp_log.h"
 //#include "FreeRTOS.h"
 #include "esp_err.h"
-#include "errores_proyecto.h"
 #include "interfaz_usuario.h"
 #include "esp_timer.h"
 

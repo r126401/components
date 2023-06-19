@@ -9,10 +9,10 @@
 #include "alarmas.h"
 #include "ntp.h"
 #include "stdint.h"
-#include "datos_comunes.h"
 #include "configuracion_usuario.h"
 #include "api_json.h"
 #include "interfaz_usuario.h"
+#include "alarm_data.h"
 
 
 

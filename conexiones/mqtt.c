@@ -10,13 +10,13 @@
 #include "esp_log.h"
 #include "conexiones_mqtt.h"
 #include "mqtt_client.h"
-#include "datos_comunes.h"
 #include "api_json.h"
 #include "alarmas.h"
 #include "interfaz_usuario.h"
 #include "dialogos_json.h"
 #include "esp_tls.h"
 #include "conexiones_mqtt.h"
+
 
 
 static const char *TAG = "MQTT";

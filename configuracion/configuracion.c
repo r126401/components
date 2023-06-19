@@ -6,6 +6,7 @@
  */
 
 
+#include <errores_proyecto.h>
 #include "dialogos_json.h"
 #include "interfaz_usuario.h"
 #include "esp_log.h"
@@ -18,7 +19,6 @@
 #include "esp_wifi.h"
 #include "configuracion.h"
 #include "programmer.h"
-#include "errores_proyecto.h"
 #include "api_json.h"
 #include "alarmas.h"
 #include "esp_app_format.h"

@@ -5,12 +5,10 @@
  *      Author: t126401
  */
 
-#include "mqtt_client.h"
-#include "configuracion_usuario.h"
-#include "esp_err.h"
-#include "esp_log.h"
-#include "comandos_json.h"
-#include "espota.h"
+
+
+
+
 
 
 
@@ -19,6 +17,32 @@
 
 #ifndef COMPONENTS_API_JSON_INCLUDE_API_JSON_H_
 #define COMPONENTS_API_JSON_INCLUDE_API_JSON_H_
+
+
+#include "mqtt_client.h"
+#include "configuracion_usuario.h"
+#include "esp_err.h"
+#include "esp_log.h"
+#include "comandos_json.h"
+#include "espota.h"
+#include "logging.h"
+
+
+typedef enum TIPO_INFORME {
+    ARRANQUE_APLICACION,
+    ACTUACION_RELE_LOCAL,
+    ACTUACION_RELE_REMOTO,
+    UPGRADE_FIRMWARE_FOTA,
+    CAMBIO_DE_PROGRAMA,
+    COMANDO_APLICACION,
+    CAMBIO_TEMPERATURA,
+    ESTADO,
+    RELE_TEMPORIZADO,
+    INFORME_ALARMA,
+    CAMBIO_UMBRAL_TEMPERATURA,
+	CAMBIO_ESTADO_APLICACION,
+    ERROR
+}TIPO_INFORME;
 
 
 /**

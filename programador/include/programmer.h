@@ -30,8 +30,9 @@
 #define PROGRAMMER_H
 
 #include "ntp.h"
-#include "datos_comunes.h"
 #include "programmer.h"
+
+
 #include "configuracion_usuario.h"
 
 //#define uint8_t uint8_t_t

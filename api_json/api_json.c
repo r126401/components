@@ -13,7 +13,6 @@
 #include "esp_err.h"
 #include "configuracion.h"
 #include "conexiones.h"
-#include "datos_comunes.h"
 #include "esp_wifi.h"
 #include "programmer.h"
 #include "conexiones_mqtt.h"
@@ -22,6 +21,7 @@
 #include "alarmas.h"
 #include "esp_timer.h"
 #include "espota.h"
+
 
 #define DELAY_TIME_RESET 3000 //ms o 3s
 

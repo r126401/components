@@ -8,6 +8,20 @@
 #ifndef COMPONENTS_ESPOTA_INCLUDE_ESPOTA_H_
 #define COMPONENTS_ESPOTA_INCLUDE_ESPOTA_H_
 #include "configuracion_usuario.h"
+#include "esp_app_desc.h"
+
+
+typedef struct OTADATA {
+    char server[100];
+    char url[150];
+    int puerto;
+    char file[50];
+    const esp_app_desc_t* swVersion;
+    char newVersion[32];
+
+
+}OTADATA;
+
 
 typedef enum ESTADO_OTA {
 
@@ -28,7 +42,7 @@ typedef enum ESTADO_OTA {
 } ESTADO_OTA;
 
 
-void tarea_upgrade_firmware(DATOS_APLICACION *datosApp);
+
 
 
 #endif /* COMPONENTS_ESPOTA_INCLUDE_ESPOTA_H_ */

@@ -20,6 +20,7 @@ extern "C" {
 #include "configuracion_usuario.h"
 
 
+
 /**
  * Counterpart to example_connect, de-initializes Wi-Fi or Ethernet
  */

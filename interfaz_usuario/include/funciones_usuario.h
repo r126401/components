@@ -9,8 +9,8 @@ Proyecto realizado por Emilio Jimenez Prieto
  *      Author: t126401
  */
 
+
 #include "configuracion_usuario.h"
-#include "datos_comunes.h"
 
 #ifndef MAIN_INCLUDE_IOTONOFF_H_
 #define MAIN_INCLUDE_IOTONOFF_H_
