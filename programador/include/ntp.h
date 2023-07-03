@@ -33,8 +33,8 @@
 #ifndef __NTP_H__
 #define __NTP_H__
 
-#include "lwip/apps/sntp.h"
-
+//#include "lwip/apps/sntp.h"
+#include "esp_sntp.h"
 
 
 //#include "esp_common.h"

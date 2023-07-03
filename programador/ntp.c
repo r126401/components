@@ -57,11 +57,11 @@ esp_err_t obtener_fecha_hora(NTP_CLOCK *clock) {
     const int retry_count = 10;
 
 	ESP_LOGI(TAG, ""TRAZAR"Inicializando ntp", INFOTRAZA);
-    sntp_setoperatingmode(SNTP_OPMODE_POLL);
-    sntp_setservername(0, CONFIG_SERVIDOR_NTP);
+	esp_sntp_setoperatingmode(SNTP_OPMODE_POLL);
+	esp_sntp_setservername(0, CONFIG_SERVIDOR_NTP);
     sntp_set_time_sync_notification_cb(notificar_sincronizacion_ntp);
     sntp_set_sync_mode(SNTP_SYNC_MODE_SMOOTH);
-    sntp_init();
+    esp_sntp_init();
 
 
     while (timeinfo.tm_year < (2016 - 1900) && ++retry < retry_count) {
