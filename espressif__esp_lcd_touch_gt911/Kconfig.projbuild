@@ -1,0 +1,19 @@
+menu "GT911 CONFIGURATION"
+    config TOUCH_GT911_SDA
+        int "pin SDA to touch"
+        default 19
+        help
+            Pin sda to i2c
+
+    config TOUCH_GT911_SCL
+        int "pin SCL to touch"
+        default 20
+        help
+            Pin sda to i2c
+
+    config TOUCH_GT911_CLOCK_HZ
+        int "Frecuency the device"
+        default 400
+        help
+            is the frecuency to the device noted in Khz
+endmenu
