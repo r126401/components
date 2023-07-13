@@ -40,16 +40,7 @@ esp_err_t appuser_set_command_application(cJSON *peticion, int nComando, DATOS_A
  * @return ESP_OK cuando el resultado es ok
  */
 esp_err_t appuser_start_schedule(DATOS_APLICACION *datosApp);
-/**
- * @fn esp_err_t appuser_init_application(DATOS_APLICACION*)
- * @brief Esta funcion es llamada desde la aplicacion de usuario y determina las acciones de inicializacion del despositivo especifico.
- *
- * @pre
- * @post
- * @param datosApp es la estructura de aplicacion
- * @return ESP_OK cuando la inicializacion del dispositivo especifico es correcta
- */
-esp_err_t init_code_application(DATOS_APLICACION *datosApp);
+
 /**
  * @fn esp_err_t appuser_wifi_conectando()
  * @brief Llamado desde el modulo conexiones de manera que el usuario pueda notificar en la aplicacion que el dispositivo
@@ -160,13 +151,13 @@ void appuser_end_schedule(void *arg);
 esp_err_t appuser_start_ota(DATOS_APLICACION *datosApp);
 
 /**
- * @fn esp_err_t appuser_notify_smartconfig()
  * @brief Es llamada desde la libreria conexiones cuando se comienza la tarea de smartconfig para que el usuario
  * pueda señalizar o establecer las acciones oportunas en el dispositivo cuando comienza el proceso de smartconfig.
  *
- * @return ESP_OK por defecto.
+ * @param datosApp
+ * @return
  */
-esp_err_t appuser_notify_smartconfig();
+esp_err_t appuser_notify_smartconfig(DATOS_APLICACION *datosApp);
 
 /**
  * @fn esp_err_t appuser_notify_local_alarm(DATOS_APLICACION*, uint8_t)
@@ -324,4 +315,7 @@ cJSON* appuser_send_spontaneous_report(DATOS_APLICACION *datosApp, enum TIPO_INF
  * @return
  */
 esp_err_t appuser_load_schedule_extra_data(DATOS_APLICACION *datosApp, TIME_PROGRAM *programa_actual, cJSON *nodo);
+
+
+
 #endif /* COMPONENTS_INTERFAZ_USUARIO_INCLUDE_INTERFAZ_USUARIO_H_ */

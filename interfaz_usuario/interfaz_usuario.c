@@ -102,7 +102,7 @@ esp_err_t appuser_set_action_without_schedule_active(DATOS_APLICACION *datosApp)
 }
 
 
-esp_err_t appuser_notify_smartconfig() {
+esp_err_t appuser_notify_smartconfig(DATOS_APLICACION *datosApp) {
 
 
 	aplicar_temporizacion(CADENCIA_SMARTCONFIG, parapadeo_led, "smartconfig");
