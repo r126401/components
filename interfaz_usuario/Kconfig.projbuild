@@ -12,37 +12,6 @@ config GPIO_PIN_RELE
 	help 
 		Indica el pin gpio con el que se activa el rele
 
-config GPIO_PIN_LED
-	int "Pin gipo para activar el led"
-	default 13
-	help 
-		Indica el pin gpio con el que se activa el LED
-
-config GPIO_PIN_BOTON
-	int "Pin gipo para activar el boton"
-	default 0
-	help 
-		Indica el pin gpio con el que se activa el boton
-		
-config GPIO_PIN_LED_LCD
-	int "Pin gipo para activar display LCD"
-	default 33
-	help 
-		Indica el pin gpio con el que se activa el lcd
-		
-
-choice
-	prompt "Seleccion del tipo de sensor de temperatura"
-        default DHT22
-        help
-            Selecciona el tipo de sensor
-    
-        config DHT22
-            bool "DHT22"
-        config DS18B20
-            bool "DS18B20"
-        endchoice
-	
 
 
 endmenu

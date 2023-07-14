@@ -264,7 +264,7 @@ inline static void conectar_wifi() {
 
 inline static void inicializar_wifi() {
 
-#ifdef CONFIG_IDF_TARGET_ESP32
+#if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32S3)
     esp_event_handler_instance_t instance_any_id;
     esp_event_handler_instance_t instance_got_ip;
 #endif
@@ -273,15 +273,15 @@ inline static void inicializar_wifi() {
     //tcpip_adapter_init();
 	appuser_notify_connecting_wifi(&datosApp);
     grupo_eventos = xEventGroupCreate();
-    esp_netif_init();
+    ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
-#ifdef CONFIG_IDF_TARGET_ESP32
+#if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32S3)
     esp_netif_create_default_wifi_sta ();
 #endif
 
 
     //ESP_ERROR_CHECK(esp_wifi_set_ps(WIFI_PS_NONE));
-#ifdef CONFIG_IDF_TARGET_ESP32
+#if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32S3)
     ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &on_wifi_disconnect, &instance_any_id));
     ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &on_got_ip, &instance_got_ip));
     ESP_ERROR_CHECK(esp_event_handler_register(SC_EVENT, ESP_EVENT_ANY_ID, &manejador_eventos_smart, NULL));
