@@ -54,18 +54,18 @@ void parapadeo_led() {
 }
 
 void eliminar_temporizacion(char* nombre) {
-
+/*
 	if (temporizador_nuevo != NULL) {
 		ESP_LOGW(TAG, ""TRAZAR" elminando temporizador %s ", INFOTRAZA, nombre);
 		esp_timer_stop(temporizador_nuevo);
 		esp_timer_delete(temporizador_nuevo);
 		temporizador_nuevo = NULL;
 	}
-
+*/
 }
 
 void aplicar_temporizacion(int cadencia, esp_timer_cb_t funcion, char* nombre) {
-
+/*
 	esp_timer_create_args_t temporizador;
 
 	ESP_LOGW(TAG, ""TRAZAR" aplicando temporizador %s ", INFOTRAZA, nombre);
@@ -76,7 +76,7 @@ void aplicar_temporizacion(int cadencia, esp_timer_cb_t funcion, char* nombre) {
 
 	esp_timer_create(&temporizador, &temporizador_nuevo);
 	esp_timer_start_periodic(temporizador_nuevo, cadencia * 1000);
-
+*/
 
 }
 
@@ -105,7 +105,7 @@ esp_err_t appuser_set_action_without_schedule_active(DATOS_APLICACION *datosApp)
 esp_err_t appuser_notify_smartconfig(DATOS_APLICACION *datosApp) {
 
 
-	aplicar_temporizacion(CADENCIA_SMARTCONFIG, parapadeo_led, "smartconfig");
+	//aplicar_temporizacion(CADENCIA_SMARTCONFIG, parapadeo_led, "smartconfig");
 
 	return ESP_OK;
 }
@@ -141,20 +141,22 @@ esp_err_t appuser_start_ota(DATOS_APLICACION *datosApp) {
 
 esp_err_t appuser_get_date_sntp() {
 
-	aplicar_temporizacion(CADENCIA_SNTP, parapadeo_led, "sntp");
+	//aplicar_temporizacion(CADENCIA_SNTP, parapadeo_led, "sntp");
 	return ESP_OK;
 }
 esp_err_t appuser_error_get_date_sntp() {
 
-	aplicar_temporizacion(CADENCIA_SNTP, parapadeo_led, "sntp_error");
+	//aplicar_temporizacion(CADENCIA_SNTP, parapadeo_led, "sntp_error");
 	return ESP_OK;
 }
 
 esp_err_t appuser_sntp_ok() {
-
+/*
 	eliminar_temporizacion("sntp");
 	gpio_set_level(CONFIG_GPIO_PIN_LED, ON);
+	*/
 	return ESP_OK;
+
 }
 
 
@@ -162,7 +164,7 @@ esp_err_t appuser_sntp_ok() {
 esp_err_t appuser_notify_connecting_wifi() {
 
 
-	aplicar_temporizacion(CADENCIA_WIFI, parapadeo_led, "wifi");
+	//aplicar_temporizacion(CADENCIA_WIFI, parapadeo_led, "wifi");
 
 
 	return ESP_OK;
@@ -171,30 +173,31 @@ esp_err_t appuser_notify_connecting_wifi() {
 esp_err_t appuser_notify_wifi_connected_ok() {
 
 
-	eliminar_temporizacion("wifi");
+	//eliminar_temporizacion("wifi");
 	//os_timer_disarm(&temporizador_general);
-	gpio_set_level(CONFIG_GPIO_PIN_LED, ON);
+	//gpio_set_level(CONFIG_GPIO_PIN_LED, ON);
 
 
 	return ESP_OK;
 }
 
 esp_err_t appuser_notify_connecting_broker_mqtt() {
-
+/*
 	ESP_LOGI(TAG, ""TRAZAR"BROKER CONECTANDO", INFOTRAZA);
 	aplicar_temporizacion(CADENCIA_BROKER, parapadeo_led, "mqtt");
+	*/
 	return ESP_OK;
 }
 esp_err_t appuser_notify_broker_connected_ok() {
 
-	eliminar_temporizacion("mqtt");
-	gpio_set_level(CONFIG_GPIO_PIN_LED, ON);
+	//eliminar_temporizacion("mqtt");
+	//gpio_set_level(CONFIG_GPIO_PIN_LED, ON);
 
 	return ESP_OK;
 }
 esp_err_t appuser_notify_broker_disconnected() {
 
-	aplicar_temporizacion(CADENCIA_BROKER, parapadeo_led, "mqtt_error");
+	//aplicar_temporizacion(CADENCIA_BROKER, parapadeo_led, "mqtt_error");
 	return ESP_OK;
 }
 
