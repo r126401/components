@@ -225,6 +225,7 @@ esp_err_t inicializacion(DATOS_APLICACION *datosApp, bool forzado) {
 
 	inicializacion_registros_alarmas(datosApp);
 	datosApp->datosGenerales->estadoApp = NORMAL_ARRANCANDO;
+	/*
 	inicializar_parametros_ntp(&datosApp->datosGenerales->clock);
 	appuser_get_date_sntp(datosApp);
 	ESP_LOGW(TAG, ""TRAZAR"(1)", INFOTRAZA);
@@ -248,7 +249,7 @@ esp_err_t inicializacion(DATOS_APLICACION *datosApp, bool forzado) {
 
 
 	}
-
+*/
 	if ((error = inicializar_nvs(CONFIG_NAMESPACE, &datosApp->handle))!= ESP_OK) {
 		ESP_LOGE(TAG, ""TRAZAR"ERROR POR FALLO NVS %d", INFOTRAZA, error);
 		registrar_alarma(datosApp, NOTIFICACION_ALARMA_NVS, ALARMA_NVS, ALARMA_ON, true);

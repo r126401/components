@@ -372,6 +372,34 @@ esp_err_t conectar_dispositivo_wifi() {
 }
 
 
+void sync_app_by_ntp(DATOS_APLICACION *datosApp) {
+
+	esp_err_t error;
+
+	inicializar_parametros_ntp(&datosApp->datosGenerales->clock);
+	appuser_get_date_sntp(datosApp);
+	ESP_LOGW(TAG, ""TRAZAR"(1)", INFOTRAZA);
+	error = obtener_fecha_hora(&datosApp->datosGenerales->clock);
+	ESP_LOGW(TAG, ""TRAZAR"(2)", INFOTRAZA);
+
+	if (error != ESP_OK) {
+		ESP_LOGW(TAG, ""TRAZAR"NO SE HA PODIDO OBTENER LA HORA DEL SERVIDOR NTP. NO HABRA PROGRAMACION. error: %d", INFOTRAZA, error);
+		datosApp->datosGenerales->estadoProgramacion = INVALID_PROG;
+		appuser_error_get_date_sntp(datosApp);
+		registrar_alarma(datosApp, NOTIFICACION_ALARMA_NTP, ALARMA_NTP, ALARMA_OFF, false);
+
+	} else {
+		ESP_LOGI(TAG, ""TRAZAR" VAMOS A REGISTRAR ALARMA", INFOTRAZA);
+		registrar_alarma(datosApp, NOTIFICACION_ALARMA_NTP, ALARMA_NTP, ALARMA_OFF, false);
+		appuser_sntp_ok(datosApp);
+		actualizar_hora(&datosApp->datosGenerales->clock);
+		//ESP_LOGI(TAG, ""TRAZAR"Hora inicializada:%s", INFOTRAZA, pintar_fecha(datosApp->datosGenerales->clock.date);
+		ESP_LOGI(TAG, ""TRAZAR"Hora inicializada:%s", INFOTRAZA,pintar_fecha(datosApp->datosGenerales->clock.date));
+	    datosApp->datosGenerales->estadoProgramacion = VALID_PROG;
+
+
+	}
+}
 
 
 

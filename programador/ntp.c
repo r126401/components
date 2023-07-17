@@ -139,3 +139,6 @@ void acciones_reloj(NTP_CLOCK *clock, TIME_PROGRAM *programs) {
 
 
 
+
+
+
