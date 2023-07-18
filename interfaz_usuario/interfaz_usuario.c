@@ -21,6 +21,10 @@
 #include "funciones_usuario.h"
 #include "esp_timer.h"
 
+#include "lv_factory_reset.h"
+#include "lv_init_thermostat.h"
+#include "lv_thermostat.h"
+
 #define CADENCIA_WIFI 250
 #define CADENCIA_BROKER 300
 #define CADENCIA_SMARTCONFIG 80
@@ -32,8 +36,6 @@
 static const char *TAG = "INTERFAZ_USUARIO";
 
 
-//static os_timer_t temporizador_general;
-static esp_timer_handle_t temporizador_nuevo = NULL;
 
 
 
@@ -105,7 +107,10 @@ esp_err_t appuser_set_action_without_schedule_active(DATOS_APLICACION *datosApp)
 esp_err_t appuser_notify_smartconfig(DATOS_APLICACION *datosApp) {
 
 
+	lv_smartconfig_notify(datosApp);
+
 	//aplicar_temporizacion(CADENCIA_SMARTCONFIG, parapadeo_led, "smartconfig");
+
 
 	return ESP_OK;
 }
@@ -161,10 +166,16 @@ esp_err_t appuser_sntp_ok() {
 
 
 
-esp_err_t appuser_notify_connecting_wifi() {
+esp_err_t appuser_notify_connecting_wifi(DATOS_APLICACION *datosApp) {
 
 
+	ESP_LOGI(TAG, ""TRAZAR" appuser notificando connecting wifi", INFOTRAZA);
 	//aplicar_temporizacion(CADENCIA_WIFI, parapadeo_led, "wifi");
+	lv_init_data_init_thermostat(datosApp);
+	if (datosApp->datosGenerales->estadoApp == ARRANQUE_FABRICA) {
+
+		datosApp->datosGenerales->estadoApp = NORMAL_ARRANCANDO;
+	}
 
 
 	return ESP_OK;
@@ -440,6 +451,18 @@ void appuser_notify_schedule_events(DATOS_APLICACION *datosApp) {
 esp_err_t appuser_set_command_application(cJSON *peticion, int nComando, DATOS_APLICACION *datosApp, cJSON *respuesta) {
 
 	return ESP_OK;
+}
+
+esp_err_t appuser_notify_error_wifi_connection(DATOS_APLICACION *datosApp) {
+
+	if (datosApp->datosGenerales->estadoApp == NORMAL_ARRANCANDO) {
+
+		ESP_LOGE(TAG, ""TRAZAR"ERROR EN LA CONEXION WIFI EN FASE DE ARRANQUE. ESTADO %d", INFOTRAZA,  datosApp->datosGenerales->estadoApp);
+	}
+
+
+	return ESP_OK;
+
 }
 
 

@@ -122,7 +122,7 @@ esp_err_t cargar_configuracion_defecto(DATOS_APLICACION *datosApp) {
     //strcpy(datosApp->datosGenerales->parametrosMqtt.cert, (const char *) mqtt_jajica_pem_start);
     //datosApp->datosGenerales->parametrosMqtt.cert = (const char *) mqtt_jajica_pem_start;
     ESP_LOGI(TAG, ""TRAZAR"PARAMETROS CARGADOS EN DATOSAPP", INFOTRAZA);
-    datosApp->datosGenerales->estadoApp = NORMAL_ARRANCANDO;
+    //datosApp->datosGenerales->estadoApp = NORMAL_ARRANCANDO;
     datosApp->datosGenerales->estadoProgramacion = INVALID_PROG;
     datosApp->datosGenerales->nProgramacion=0;
     datosApp->datosGenerales->nProgramaCandidato = -1;
@@ -224,7 +224,7 @@ esp_err_t inicializacion(DATOS_APLICACION *datosApp, bool forzado) {
     ESP_LOGE(TAG, ""TRAZAR" VERSION DE LA APLICACION %s", INFOTRAZA, datosApp->datosGenerales->ota.swVersion->version);
 
 	inicializacion_registros_alarmas(datosApp);
-	datosApp->datosGenerales->estadoApp = NORMAL_ARRANCANDO;
+	//datosApp->datosGenerales->estadoApp = NORMAL_ARRANCANDO;
 	/*
 	inicializar_parametros_ntp(&datosApp->datosGenerales->clock);
 	appuser_get_date_sntp(datosApp);
@@ -269,7 +269,11 @@ esp_err_t inicializacion(DATOS_APLICACION *datosApp, bool forzado) {
 		} else {
 			ESP_LOGW(TAG, ""TRAZAR"La configuracion no se ha cargado. Se carga la de defecto.", INFOTRAZA);
 			cargar_configuracion_defecto(datosApp);
-			return error;
+			ESP_LOGI(TAG, ""TRAZAR" eL ESADO DE LA APP ES %d",INFOTRAZA, datosApp->datosGenerales->estadoApp);
+			if (datosApp->datosGenerales->estadoApp != ARRANQUE_FABRICA) {
+				return error;
+			}
+
 		}
 
 		//ESP_LOGI(TAG, ""TRAZAR" SALVAMOS LA CONFIGURACION GENERAL A NVS...", INFOTRAZA);

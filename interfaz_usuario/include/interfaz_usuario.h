@@ -50,7 +50,7 @@ esp_err_t appuser_start_schedule(DATOS_APLICACION *datosApp);
  * @post
  * @return
  */
-esp_err_t appuser_notify_connecting_wifi();
+esp_err_t appuser_notify_connecting_wifi(DATOS_APLICACION *datosApp);
 /**
  * @fn esp_err_t appuser_wifi_conectado()
  * @brief Llamado desde el modulo conexiones de manera que el usuario pueda notificar en la aplicacion que el dispositivo
@@ -315,6 +315,9 @@ cJSON* appuser_send_spontaneous_report(DATOS_APLICACION *datosApp, enum TIPO_INF
  * @return
  */
 esp_err_t appuser_load_schedule_extra_data(DATOS_APLICACION *datosApp, TIME_PROGRAM *programa_actual, cJSON *nodo);
+
+
+esp_err_t appuser_notify_error_wifi_connection(DATOS_APLICACION *datosApp);
 
 
 

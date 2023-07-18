@@ -134,6 +134,7 @@ void volcar_datos_conexion(void * event_data){
     if (wifi_config.sta.bssid_set == true) {
         memcpy(wifi_config.sta.bssid, evt->bssid, sizeof(wifi_config.sta.bssid));
     }
+    appuser_notify_connecting_wifi(&datosApp);
     ESP_ERROR_CHECK(esp_wifi_disconnect());
     ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config));
     ESP_ERROR_CHECK(esp_wifi_connect());
@@ -235,6 +236,8 @@ static void on_wifi_disconnect(void *arg, esp_event_base_t event_base,
     	xEventGroupClearBits(grupo_eventos, CONNECTED_BIT);
     }
 
+    appuser_notify_error_wifi_connection(&datosApp);
+
 
 }
 
@@ -271,7 +274,10 @@ inline static void inicializar_wifi() {
 
 	ESP_LOGI(TAG, ""TRAZAR" INICIALIZAR_WIFI", INFOTRAZA);
     //tcpip_adapter_init();
-	appuser_notify_connecting_wifi(&datosApp);
+	if (datosApp.datosGenerales->estadoApp != ARRANQUE_FABRICA) {
+		appuser_notify_connecting_wifi(&datosApp);
+	}
+
     grupo_eventos = xEventGroupCreate();
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
