@@ -1,0 +1,15 @@
+menu "Configuracion General"
+	
+config DEFAULT_SCAN_LIST_SIZE
+	int "Size scan list wifi"
+	default 10
+	help
+		Define size scan list wifi
+		
+
+		
+
+
+
+
+endmenu
