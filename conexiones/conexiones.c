@@ -178,6 +178,9 @@ static void manejador_eventos_smart(void* arg, esp_event_base_t event_base,
 
 
 
+
+
+
 const char * get_my_id(void)
 {
    // Use MAC address for Station as unique ID
@@ -405,6 +408,45 @@ void sync_app_by_ntp(DATOS_APLICACION *datosApp) {
 
 
 	}
+}
+
+esp_err_t get_scan_station_list(wifi_ap_record_t *ap_info, uint16_t *ap_count) {
+
+
+		uint16_t number = CONFIG_DEFAULT_SCAN_LIST_SIZE;
+	    *ap_count = 0;
+
+	    //ap_info = (wifi_ap_record_t*) calloc(20, sizeof(wifi_ap_record_t));
+
+	    //memset(ap_info, 0, sizeof(ap_info));
+
+	    wifi_scan_config_t config_scan = {
+	    		.ssid = 0,
+				.bssid = 0,
+	    		.channel = 0,
+				.scan_type = WIFI_SCAN_TYPE_PASSIVE,
+				.scan_time.active.min = 120,
+				.scan_time.active.max = 150
+	    };
+
+	    esp_wifi_disconnect();
+	    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+	    ESP_ERROR_CHECK(esp_wifi_start());
+	    esp_wifi_scan_start(&config_scan, true);
+	    ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&number, ap_info));
+	    ESP_ERROR_CHECK(esp_wifi_scan_get_ap_num(ap_count));
+	    ESP_LOGI(TAG, "Total APs scanned = %u", *ap_count);
+	    if (*ap_count > number) *ap_count = number;
+	    for (int i = 0; i < *ap_count; i++) {
+	        ESP_LOGI(TAG, "SSID \t\t%s", ap_info[i].ssid);
+	        ESP_LOGI(TAG, "RSSI \t\t%d", ap_info[i].rssi);
+	        ESP_LOGI(TAG, "Channel \t\t%d", ap_info[i].primary);
+	    }
+	    esp_wifi_scan_stop();
+
+
+	return ESP_OK;
+
 }
 
 

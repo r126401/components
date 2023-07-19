@@ -18,6 +18,7 @@ extern "C" {
 #include "esp_smartconfig.h"
 #include "smartconfig_ack.h"
 #include "configuracion_usuario.h"
+#include "esp_wifi.h"
 
 
 
@@ -54,6 +55,7 @@ esp_err_t establecer_conexion_wifi(void);
 esp_err_t restaurar_wifi_fabrica();
 esp_err_t conectar_dispositivo_wifi();
 void sync_app_by_ntp(DATOS_APLICACION *datosApp);
+esp_err_t get_scan_station_list(wifi_ap_record_t *ap_info, uint16_t *ap_count);
 
 
 #ifdef __cplusplus

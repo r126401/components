@@ -172,10 +172,21 @@ esp_err_t appuser_notify_connecting_wifi(DATOS_APLICACION *datosApp) {
 	ESP_LOGI(TAG, ""TRAZAR" appuser notificando connecting wifi", INFOTRAZA);
 	//aplicar_temporizacion(CADENCIA_WIFI, parapadeo_led, "wifi");
 	lv_init_data_init_thermostat(datosApp);
-	if (datosApp->datosGenerales->estadoApp == ARRANQUE_FABRICA) {
 
+	switch (datosApp->datosGenerales->estadoApp) {
+
+	case ARRANQUE_FABRICA:
 		datosApp->datosGenerales->estadoApp = NORMAL_ARRANCANDO;
+		break;
+
+	case NORMAL_ARRANCANDO:
+		lv_connecting_to_wifi_station(datosApp);
+		break;
+	default:
+		break;
+
 	}
+
 
 
 	return ESP_OK;
