@@ -11,6 +11,8 @@
 #include "configuracion_usuario.h"
 #include "programmer.h"
 #include "api_json.h"
+#include "esp_wifi.h"
+
 
 
 
@@ -319,6 +321,7 @@ esp_err_t appuser_load_schedule_extra_data(DATOS_APLICACION *datosApp, TIME_PROG
 
 esp_err_t appuser_notify_error_wifi_connection(DATOS_APLICACION *datosApp);
 
+void app_user_notify_scan_done(DATOS_APLICACION *datosApp, wifi_ap_record_t *ap_info, uint16_t *ap_count);
 
 
 #endif /* COMPONENTS_INTERFAZ_USUARIO_INCLUDE_INTERFAZ_USUARIO_H_ */

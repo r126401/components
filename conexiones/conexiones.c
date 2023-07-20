@@ -47,7 +47,7 @@ static EventGroupHandle_t grupo_eventos;
  ip4_addr_t s_ip_addr;
 static const char *TAG = "CONEXIONES";
 extern DATOS_APLICACION datosApp;
-
+wifi_ap_record_t ap_info[CONFIG_DEFAULT_SCAN_LIST_SIZE];
 /*
 void extraer_datos_mqtt(void * event_data, wifi_config_t *wifi_config) {
 
@@ -267,12 +267,41 @@ inline static void conectar_wifi() {
 }
 
 
+static void on_wifi_scan_done(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data) {
+
+
+
+	uint16_t number = CONFIG_DEFAULT_SCAN_LIST_SIZE;
+	uint16_t ap_count = 0;
+
+
+	ESP_LOGI(TAG, ""TRAZAR"RECIBIDO SCANDONE", INFOTRAZA);
+
+
+    ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&number, ap_info));
+    ESP_LOGI(TAG, ""TRAZAR"RECIBIDO SCANDONE 2", INFOTRAZA);
+    ESP_ERROR_CHECK(esp_wifi_scan_get_ap_num(&ap_count));
+    ESP_LOGI(TAG, ""TRAZAR"RECIBIDO SCANDONE 3", INFOTRAZA);
+    if (ap_count > number) {
+    	ap_count = number;
+    }
+    app_user_notify_scan_done(&datosApp, ap_info, &ap_count);
+    ESP_LOGI(TAG, ""TRAZAR"RECIBIDO SCANDONE 4", INFOTRAZA);
+	esp_wifi_scan_stop();
+
+
+
+}
+
+
+
 
 inline static void inicializar_wifi() {
 
 #if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32S3)
     esp_event_handler_instance_t instance_any_id;
     esp_event_handler_instance_t instance_got_ip;
+
 #endif
 
 	ESP_LOGI(TAG, ""TRAZAR" INICIALIZAR_WIFI", INFOTRAZA);
@@ -294,6 +323,7 @@ inline static void inicializar_wifi() {
     ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &on_wifi_disconnect, &instance_any_id));
     ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &on_got_ip, &instance_got_ip));
     ESP_ERROR_CHECK(esp_event_handler_register(SC_EVENT, ESP_EVENT_ANY_ID, &manejador_eventos_smart, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_SCAN_DONE, &on_wifi_scan_done, NULL));
 #else
     ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &on_wifi_disconnect, NULL));
     ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &on_got_ip, NULL));
@@ -410,11 +440,11 @@ void sync_app_by_ntp(DATOS_APLICACION *datosApp) {
 	}
 }
 
-esp_err_t get_scan_station_list(wifi_ap_record_t *ap_info, uint16_t *ap_count) {
+esp_err_t get_scan_station_list() {
 
 
-		uint16_t number = CONFIG_DEFAULT_SCAN_LIST_SIZE;
-	    *ap_count = 0;
+
+
 
 	    //ap_info = (wifi_ap_record_t*) calloc(20, sizeof(wifi_ap_record_t));
 
@@ -424,7 +454,7 @@ esp_err_t get_scan_station_list(wifi_ap_record_t *ap_info, uint16_t *ap_count) {
 	    		.ssid = 0,
 				.bssid = 0,
 	    		.channel = 0,
-				.scan_type = WIFI_SCAN_TYPE_PASSIVE,
+				.scan_type = WIFI_SCAN_TYPE_ACTIVE,
 				.scan_time.active.min = 120,
 				.scan_time.active.max = 150
 	    };
@@ -432,7 +462,8 @@ esp_err_t get_scan_station_list(wifi_ap_record_t *ap_info, uint16_t *ap_count) {
 	    esp_wifi_disconnect();
 	    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
 	    ESP_ERROR_CHECK(esp_wifi_start());
-	    esp_wifi_scan_start(&config_scan, true);
+	    esp_wifi_scan_start(&config_scan, false);
+	    /*
 	    ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&number, ap_info));
 	    ESP_ERROR_CHECK(esp_wifi_scan_get_ap_num(ap_count));
 	    ESP_LOGI(TAG, "Total APs scanned = %u", *ap_count);
@@ -443,7 +474,7 @@ esp_err_t get_scan_station_list(wifi_ap_record_t *ap_info, uint16_t *ap_count) {
 	        ESP_LOGI(TAG, "Channel \t\t%d", ap_info[i].primary);
 	    }
 	    esp_wifi_scan_stop();
-
+*/
 
 	return ESP_OK;
 

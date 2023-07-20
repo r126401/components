@@ -476,6 +476,24 @@ esp_err_t appuser_notify_error_wifi_connection(DATOS_APLICACION *datosApp) {
 
 }
 
+void app_user_notify_scan_done(DATOS_APLICACION *datosApp, wifi_ap_record_t *ap_info, uint16_t *ap_count) {
+
+
+	ESP_LOGI(TAG, ""TRAZAR"RECIBIDAS %d redes en app", INFOTRAZA, *ap_count);
+	lv_create_layout_search_ssid(datosApp, ap_info, ap_count);
+	/*
+	if (*ap_count == 0) {
+		return;
+	}
+    for (i = 0; i < *ap_count; i++) {
+        ESP_LOGI(TAG, "SSID \t\t%s", ap_info[i].ssid);
+        ESP_LOGI(TAG, "RSSI \t\t%d", ap_info[i].rssi);
+        ESP_LOGI(TAG, "Channel \t\t%d", ap_info[i].primary);
+    }
+*/
+
+}
+
 
 
 
