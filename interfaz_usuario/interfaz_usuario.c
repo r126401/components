@@ -466,10 +466,23 @@ esp_err_t appuser_set_command_application(cJSON *peticion, int nComando, DATOS_A
 
 esp_err_t appuser_notify_error_wifi_connection(DATOS_APLICACION *datosApp) {
 
+	static uint8_t fail = 0;
+
+
 	if (datosApp->datosGenerales->estadoApp == NORMAL_ARRANCANDO) {
 
-		ESP_LOGE(TAG, ""TRAZAR"ERROR EN LA CONEXION WIFI EN FASE DE ARRANQUE. ESTADO %d", INFOTRAZA,  datosApp->datosGenerales->estadoApp);
+		fail ++;
+		ESP_LOGI(TAG, ""TRAZAR"FAIL VALE %d", INFOTRAZA, fail);
+		if (fail == 2) {
+			lv_set_button_wifi(datosApp, false);
+		}
+
+		if (fail > 5) {
+			lv_set_button_wifi(datosApp, true);
+			fail = 5;
+		}
 	}
+
 
 
 	return ESP_OK;

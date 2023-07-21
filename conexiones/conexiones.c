@@ -443,13 +443,6 @@ void sync_app_by_ntp(DATOS_APLICACION *datosApp) {
 esp_err_t get_scan_station_list() {
 
 
-
-
-
-	    //ap_info = (wifi_ap_record_t*) calloc(20, sizeof(wifi_ap_record_t));
-
-	    //memset(ap_info, 0, sizeof(ap_info));
-
 	    wifi_scan_config_t config_scan = {
 	    		.ssid = 0,
 				.bssid = 0,
@@ -463,18 +456,7 @@ esp_err_t get_scan_station_list() {
 	    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
 	    ESP_ERROR_CHECK(esp_wifi_start());
 	    esp_wifi_scan_start(&config_scan, false);
-	    /*
-	    ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&number, ap_info));
-	    ESP_ERROR_CHECK(esp_wifi_scan_get_ap_num(ap_count));
-	    ESP_LOGI(TAG, "Total APs scanned = %u", *ap_count);
-	    if (*ap_count > number) *ap_count = number;
-	    for (int i = 0; i < *ap_count; i++) {
-	        ESP_LOGI(TAG, "SSID \t\t%s", ap_info[i].ssid);
-	        ESP_LOGI(TAG, "RSSI \t\t%d", ap_info[i].rssi);
-	        ESP_LOGI(TAG, "Channel \t\t%d", ap_info[i].primary);
-	    }
-	    esp_wifi_scan_stop();
-*/
+
 
 	return ESP_OK;
 
