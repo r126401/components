@@ -273,6 +273,7 @@ static void on_wifi_scan_done(void *arg, esp_event_base_t event_base, int32_t ev
 
 	uint16_t number = CONFIG_DEFAULT_SCAN_LIST_SIZE;
 	uint16_t ap_count = 0;
+	memset(ap_info, 0, sizeof(ap_info));
 
 
 	ESP_LOGI(TAG, ""TRAZAR"RECIBIDO SCANDONE", INFOTRAZA);
@@ -285,9 +286,10 @@ static void on_wifi_scan_done(void *arg, esp_event_base_t event_base, int32_t ev
     if (ap_count > number) {
     	ap_count = number;
     }
-    app_user_notify_scan_done(&datosApp, ap_info, &ap_count);
+
     ESP_LOGI(TAG, ""TRAZAR"RECIBIDO SCANDONE 4", INFOTRAZA);
 	esp_wifi_scan_stop();
+	appuser_notify_scan_done(&datosApp, ap_info, &ap_count);
 
 
 

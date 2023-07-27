@@ -171,7 +171,7 @@ esp_err_t appuser_notify_connecting_wifi(DATOS_APLICACION *datosApp) {
 
 	ESP_LOGI(TAG, ""TRAZAR" appuser notificando connecting wifi", INFOTRAZA);
 	//aplicar_temporizacion(CADENCIA_WIFI, parapadeo_led, "wifi");
-	lv_init_data_init_thermostat(datosApp);
+	//lv_init_thermostat(datosApp);
 
 	switch (datosApp->datosGenerales->estadoApp) {
 
@@ -469,16 +469,19 @@ esp_err_t appuser_notify_error_wifi_connection(DATOS_APLICACION *datosApp) {
 	static uint8_t fail = 0;
 
 
+	lv_set_button_wifi(true);
+	return ESP_OK;
+
 	if (datosApp->datosGenerales->estadoApp == NORMAL_ARRANCANDO) {
 
 		fail ++;
 		ESP_LOGI(TAG, ""TRAZAR"FAIL VALE %d", INFOTRAZA, fail);
 		if (fail == 2) {
-			lv_set_button_wifi(datosApp, false);
+			lv_set_button_wifi(false);
 		}
 
 		if (fail > 5) {
-			lv_set_button_wifi(datosApp, true);
+			lv_set_button_wifi(true);
 			fail = 5;
 		}
 	}
@@ -489,11 +492,11 @@ esp_err_t appuser_notify_error_wifi_connection(DATOS_APLICACION *datosApp) {
 
 }
 
-void app_user_notify_scan_done(DATOS_APLICACION *datosApp, wifi_ap_record_t *ap_info, uint16_t *ap_count) {
+void appuser_notify_scan_done(DATOS_APLICACION *datosApp, wifi_ap_record_t *ap_info, uint16_t *ap_count) {
 
 
 	ESP_LOGI(TAG, ""TRAZAR"RECIBIDAS %d redes en app", INFOTRAZA, *ap_count);
-	lv_create_layout_search_ssid(datosApp, ap_info, ap_count);
+	lv_create_layout_search_ssid(ap_info, ap_count);
 	/*
 	if (*ap_count == 0) {
 		return;
