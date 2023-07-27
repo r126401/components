@@ -1,10 +1,6 @@
 menu "Configuracion Termostato"
 
-config TIPO_DISPOSITIVO
-	int "Tipo de dispositivo"
-	default 0
-	help
-		indica el tipo de dispositivo
+
 
 config GPIO_PIN_RELE
 	int "Pin gipo para activar el rele"

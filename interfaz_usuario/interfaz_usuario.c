@@ -24,6 +24,8 @@
 #include "lv_factory_reset.h"
 #include "lv_init_thermostat.h"
 #include "lv_thermostat.h"
+#include "code_application.h"
+#include "configuracion.h"
 
 #define CADENCIA_WIFI 250
 #define CADENCIA_BROKER 300
@@ -85,10 +87,25 @@ void aplicar_temporizacion(int cadencia, esp_timer_cb_t funcion, char* nombre) {
 esp_err_t appuser_set_default_config(DATOS_APLICACION *datosApp) {
 
 	ESP_LOGI(TAG, ""TRAZAR"Ejecutando configuraciones adicionales de la aplicacion por defecto...", INFOTRAZA);
-	datosApp->datosGenerales->tipoDispositivo = INTERRUPTOR;
+	if (datosApp->datosGenerales->tipoDispositivo == DESCONOCIDO) {
+		datosApp->datosGenerales->tipoDispositivo = CRONOTERMOSTATO;
+	}
+
     //Escribe aqui el codigo de inicializacion por defecto de la aplicacion.
 	// Esta funcion es llamada desde el componente configuracion defaultConfig.
 	// Aqui puedes establecer los valores por defecto para tu aplicacion.
+
+    datosApp->termostato.reintentosLectura = 5;
+    datosApp->termostato.intervaloReintentos = 3;
+    datosApp->termostato.margenTemperatura = 0.5;
+    datosApp->termostato.intervaloLectura = 10;
+    datosApp->termostato.tempUmbral = 21.5;
+    datosApp->termostato.tempUmbralDefecto = 21.5;
+    datosApp->termostato.calibrado = -3.5;
+    datosApp->termostato.master = true;
+    datosApp->termostato.incdec = 0.1;
+    memset(datosApp->termostato.sensor_remoto, 0, sizeof(datosApp->termostato.sensor_remoto));
+
 
 	return ESP_OK;
 }
@@ -118,7 +135,10 @@ esp_err_t appuser_notify_smartconfig(DATOS_APLICACION *datosApp) {
 esp_err_t appuser_notify_application_started(DATOS_APLICACION *datosApp) {
 
 	cJSON *informe;
+	ESP_LOGI(TAG, ""TRAZAR" Notificando arranque de la aplicacion.", INFOTRAZA);
 
+
+	lv_screen_thermostat(datosApp);
 	informe = appuser_send_spontaneous_report(datosApp, ARRANQUE_APLICACION, NULL);
 
 	ESP_LOGI(TAG, ""TRAZAR" vamos a publicar el arranque del dispositivo", INFOTRAZA);
@@ -350,10 +370,31 @@ esp_err_t appuser_set_configuration_to_json(DATOS_APLICACION *datosApp, cJSON *c
 
 	//cJSON_AddNumberToObject(conf, DEVICE , INTERRUPTOR);
 	ESP_LOGI(TAG, ""TRAZAR" CONFIGURACION A JSON DEL DISPOSITIVO...", INFOTRAZA);
+	ESP_LOGI(TAG, ""TRAZAR"SE CARGAN DATOS PARTICULARES DE LA APLICACION", INFOTRAZA);
+    cJSON_AddNumberToObject(conf, MARGEN_TEMPERATURA, datosApp->termostato.margenTemperatura);
+    cJSON_AddNumberToObject(conf, INTERVALO_LECTURA, datosApp->termostato.intervaloLectura);
+    cJSON_AddNumberToObject(conf, INTERVALO_REINTENTOS, datosApp->termostato.intervaloReintentos);
+    cJSON_AddNumberToObject(conf, REINTENTOS_LECTURA, datosApp->termostato.reintentosLectura);
+    cJSON_AddNumberToObject(conf, CALIBRADO, datosApp->termostato.calibrado);
+    cJSON_AddBoolToObject(conf, MASTER, datosApp->termostato.master);
+    cJSON_AddStringToObject(conf, SENSOR_REMOTO, datosApp->termostato.sensor_remoto);
+    cJSON_AddNumberToObject(conf, UMBRAL_DEFECTO, datosApp->termostato.tempUmbralDefecto);
+    cJSON_AddNumberToObject(conf, INCDEC, datosApp->termostato.incdec);
 	return ESP_OK;
 }
 
 esp_err_t appuser_json_to_configuration(DATOS_APLICACION *datosApp, cJSON *datos) {
+
+	extraer_dato_double(datos, MARGEN_TEMPERATURA, &datosApp->termostato.margenTemperatura);
+	extraer_dato_uint8(datos, INTERVALO_LECTURA, &datosApp->termostato.intervaloLectura);
+	extraer_dato_uint8(datos, INTERVALO_REINTENTOS, &datosApp->termostato.intervaloReintentos);
+	extraer_dato_uint8(datos, REINTENTOS_LECTURA, &datosApp->termostato.reintentosLectura);
+	extraer_dato_double(datos, CALIBRADO, &datosApp->termostato.calibrado);
+	extraer_dato_uint8(datos,  MASTER, (uint8_t*) &datosApp->termostato.master);
+	extraer_dato_string(datos, SENSOR_REMOTO, datosApp->termostato.sensor_remoto);
+	extraer_dato_float(datos,  UMBRAL_DEFECTO, &datosApp->termostato.tempUmbralDefecto);
+	extraer_dato_float(datos, INCDEC, &datosApp->termostato.incdec);
+
 
 	return ESP_OK;
 }
@@ -459,7 +500,158 @@ void appuser_notify_schedule_events(DATOS_APLICACION *datosApp) {
 }
 
 
+void consultarEstadoAplicacion(DATOS_APLICACION *datosApp, cJSON *respuesta) {
+
+	ESP_LOGI(TAG, ""TRAZAR"Consultamos el estado de la aplicacion", INFOTRAZA);
+	//gpio_rele_in();
+    cJSON_AddNumberToObject(respuesta, APP_COMAND_ESTADO_RELE, gpio_get_level(CONFIG_GPIO_PIN_RELE));
+    cJSON_AddNumberToObject(respuesta, DEVICE_STATE, datosApp->datosGenerales->estadoApp);
+    cJSON_AddNumberToObject(respuesta, PROGRAMMER_STATE, datosApp->datosGenerales->estadoProgramacion);
+    cJSON_AddNumberToObject(respuesta, TEMPERATURA, datosApp->termostato.tempActual);
+    cJSON_AddNumberToObject(respuesta, HUMEDAD, datosApp->termostato.humedad);
+    cJSON_AddNumberToObject(respuesta, UMBRAL_TEMPERATURA, datosApp->termostato.tempUmbral);
+    cJSON_AddNumberToObject(respuesta, MARGEN_TEMPERATURA, datosApp->termostato.margenTemperatura);
+    cJSON_AddNumberToObject(respuesta, INTERVALO_LECTURA, datosApp->termostato.intervaloLectura);
+    cJSON_AddNumberToObject(respuesta, INTERVALO_REINTENTOS, datosApp->termostato.intervaloReintentos);
+    cJSON_AddNumberToObject(respuesta, REINTENTOS_LECTURA, datosApp->termostato.reintentosLectura);
+    cJSON_AddNumberToObject(respuesta, CALIBRADO, datosApp->termostato.calibrado);
+    cJSON_AddBoolToObject(respuesta, MASTER, datosApp->termostato.master);
+    cJSON_AddStringToObject(respuesta, SENSOR_REMOTO, datosApp->termostato.sensor_remoto);
+    cJSON_AddNumberToObject(respuesta, UMBRAL_DEFECTO, datosApp->termostato.tempUmbralDefecto);
+
+
+    //appUser_parametrosAplicacion(datosApp, respuesta);
+    escribir_programa_actual(datosApp, respuesta);
+    codigoRespuesta(respuesta,RESP_OK);
+
+
+
+}
+
+
+void respuesta_actuacion_rele_remoto(DATOS_APLICACION *datosApp, cJSON *respuesta) {
+
+    cJSON_AddNumberToObject(respuesta, DLG_COD_RESPUESTA, DLG_OK_CODE);
+    //gpio_rele_in();
+    cJSON_AddNumberToObject(respuesta, APP_COMAND_ESTADO_RELE, gpio_get_level(CONFIG_GPIO_PIN_RELE));
+    cJSON_AddNumberToObject(respuesta, DEVICE_STATE, datosApp->datosGenerales->estadoApp);
+    cJSON_AddNumberToObject(respuesta, PROGRAMMER_STATE, datosApp->datosGenerales->estadoProgramacion);
+    cJSON_AddNumberToObject(respuesta, TEMPERATURA, datosApp->termostato.tempActual);
+    cJSON_AddNumberToObject(respuesta, HUMEDAD, datosApp->termostato.humedad);
+    cJSON_AddNumberToObject(respuesta, UMBRAL_TEMPERATURA, datosApp->termostato.tempUmbral);
+    escribir_programa_actual(datosApp, respuesta);
+    codigoRespuesta(respuesta,DLG_OK_CODE);
+}
+
+
+bool modificarUmbralTemperatura(cJSON *peticion, DATOS_APLICACION *datosApp, cJSON *respuesta) {
+
+    cJSON *nodo = NULL;
+    cJSON *campo = NULL;
+
+
+
+
+    nodo = cJSON_GetObjectItem(peticion, MODIFICAR_APP);
+   if(nodo == NULL) {
+       return NULL;
+   }
+
+    printf("modificarUmbralTemperatura-->comienzo\n");
+    campo = cJSON_GetObjectItem(nodo, UMBRAL_TEMPERATURA);
+       if((campo != NULL) && (campo->type == cJSON_Number)) {
+           printf("modificando umbral\n");
+           datosApp->termostato.tempUmbral = campo->valuedouble;
+           /*
+           if (datosApp->datosGenerales->estadoApp == NORMAL_AUTO) {
+        	   appuser_cambiar_modo_aplicacion(datosApp, NORMAL_AUTOMAN);
+           }
+           */
+           lv_update_device(datosApp);
+           //datosApp->datosGenerales->estadoApp = NORMAL_AUTOMAN;
+           //guardarConfiguracion(datosApp, 0);
+           accionar_termostato(datosApp);
+           cJSON_AddNumberToObject(respuesta, UMBRAL_TEMPERATURA, datosApp->termostato.tempUmbral);
+           cJSON_AddNumberToObject(respuesta, APP_COMAND_ESTADO_RELE, gpio_get_level(CONFIG_GPIO_PIN_RELE));
+           codigoRespuesta(respuesta, RESP_OK);
+       } else {
+           codigoRespuesta(respuesta, RESP_NOK);
+       }
+    return true;
+}
+
+
+esp_err_t seleccionarSensorTemperatura(cJSON *peticion, DATOS_APLICACION *datosApp, cJSON *respuesta) {
+
+	cJSON *nodo = NULL;
+    bool master = true;
+
+
+    nodo = cJSON_GetObjectItem(peticion, MODIFICAR_SENSOR_TEMPERATURA);
+   if(nodo == NULL) {
+	   ESP_LOGE(TAG, ""TRAZAR" NO SE ENCUENTRA EL PATRON DE SENSOR EN EL COMANDO", INFOTRAZA);
+	   codigoRespuesta(respuesta, RESP_NOK);
+	   return ESP_FAIL;
+   }
+
+
+
+   if (extraer_dato_uint8(nodo,  MASTER, (uint8_t*) &master) != ESP_OK) {
+	   ESP_LOGE(TAG, ""TRAZAR" NO VIENE EL CAMPO MASTER EN LA PETICION", INFOTRAZA);
+	   codigoRespuesta(respuesta, RESP_NOK);
+	   return ESP_FAIL;
+   }
+
+   if (master) {
+	   ESP_LOGI(TAG, ""TRAZAR" Se modifica el sensor para que el master sea el dispositivo", INFOTRAZA);
+	   memset(datosApp->termostato.sensor_remoto, 0,sizeof(datosApp->termostato.sensor_remoto));
+   } else {
+	   ESP_LOGE(TAG, ""TRAZAR"ante: %ld\n", INFOTRAZA, esp_get_free_heap_size());
+	   //strcpy(datosApp->termostato.sensor_remoto, cJSON_GetObjectItem(nodo, SENSOR_REMOTO)->valuestring);
+	   extraer_dato_string(nodo, SENSOR_REMOTO, datosApp->termostato.sensor_remoto);
+	   ESP_LOGE(TAG, ""TRAZAR"despues: %ld\n", INFOTRAZA, esp_get_free_heap_size());
+	   ESP_LOGW(TAG, ""TRAZAR" Se selecciona el sensor remoto a :%s", INFOTRAZA, datosApp->termostato.sensor_remoto);
+   }
+   datosApp->termostato.master = master;
+   salvar_configuracion_general(datosApp);
+   codigoRespuesta(respuesta, RESP_OK);
+
+	return ESP_OK;
+}
+
+
 esp_err_t appuser_set_command_application(cJSON *peticion, int nComando, DATOS_APLICACION *datosApp, cJSON *respuesta) {
+
+
+    switch(nComando) {
+        case OPERAR_RELE:
+            operacion_rele(datosApp, MANUAL, INDETERMINADO);
+            respuesta_actuacion_rele_remoto(datosApp, respuesta);
+            break;
+
+        case STATUS_DISPOSITIVO:
+            consultarEstadoAplicacion(datosApp, respuesta);
+            break;
+        case MODIFICAR_UMBRAL:
+        	modificarUmbralTemperatura(peticion, datosApp, respuesta);
+        	//modificarUmbralTemperatura(peticion, datosApp, respuesta);
+        	break;
+			/*
+            if ((modificarUmbralTemperatura(peticion, datosApp, respuesta) == true)) {
+            	accionar_termostato(datosApp);
+            }
+            */
+        case SELECCIONAR_SENSOR:
+        	seleccionarSensorTemperatura(peticion, datosApp, respuesta);
+        	break;
+
+        default:
+            visualizar_comando_desconocido(datosApp, respuesta);
+            break;
+    }
+
+
+
 
 	return ESP_OK;
 }

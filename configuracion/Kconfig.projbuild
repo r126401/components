@@ -67,11 +67,6 @@ config TAMANO_BUFFER_LECTURA
 	help
 		Es el tamano de buffer para leer datos en nvs y enviarlos por mqtt
 		
-config TIPO_DISPOSITIVO
-	int "Tipo de dispositivo"
-	default 0
-	help
-		indica el tipo de dispositivo
 
 config NUMERO_ALARMAS_PROVISIONADAS
 	int "Numero de alarmas provisionadas"
