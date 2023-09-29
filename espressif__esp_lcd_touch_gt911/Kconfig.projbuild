@@ -1,4 +1,8 @@
 menu "GT911 CONFIGURATION"
+
+	depends on GT911
+	
+	
     config TOUCH_GT911_SDA
         int "pin SDA to touch"
         default 19
