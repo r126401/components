@@ -312,6 +312,7 @@ cJSON* appuser_send_spontaneous_report(DATOS_APLICACION *datosApp, enum TIPO_INF
             codigoRespuesta(respuesta,RESP_OK);
             break;
         case RELE_TEMPORIZADO:
+        case CAMBIO_TEMPERATURA:
             cJSON_AddNumberToObject(respuesta, PROGRAMMER_STATE, datosApp->datosGenerales->estadoProgramacion);
             cJSON_AddNumberToObject(respuesta, APP_COMAND_ESTADO_RELE, gpio_get_level(CONFIG_GPIO_PIN_RELE));
             cJSON_AddNumberToObject(respuesta, DEVICE_STATE, datosApp->datosGenerales->estadoApp);
