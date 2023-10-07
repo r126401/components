@@ -911,10 +911,10 @@ esp_err_t iniciar_gestion_programacion(DATOS_APLICACION *datosApp) {
 
 
 
-	gestion_programas(datosApp);
+	//gestion_programas(datosApp);
     //ets_timer_disarm(&temporizador);
     ESP_ERROR_CHECK(esp_timer_create(&schedules_shot_timer_args, &temporizador));
-    ESP_ERROR_CHECK(esp_timer_start_periodic(temporizador, 1000));
+    ESP_ERROR_CHECK(esp_timer_start_periodic(temporizador, 1000000));
     //ets_timer_setfn(&temporizador, (ETSTimerFunc*) gestion_programas, datosApp);
     //ets_timer_arm(&temporizador, 1000, true);
 

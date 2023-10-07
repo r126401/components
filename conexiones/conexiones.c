@@ -28,14 +28,12 @@
 #include "esp_log.h"
 #include "esp_system.h"
 #include "nvs_flash.h"
-//#include "tcpip_adapter.h"
-//#include "esp_netif.h"
-//#include "esp_smartconfig.h"
 #include "smartconfig_ack.h"
 #include "esp_err.h"
 #include "esp_smartconfig.h"
 #include "esp_netif.h"
 #include "alarmas.h"
+#include "conexiones_mqtt.h"
 
 
 
@@ -259,6 +257,8 @@ static void on_got_ip(void *arg, esp_event_base_t event_base,
 inline static void conectar_wifi() {
 
 	ESP_LOGW(TAG, ""TRAZAR"Wi-Fi vamos a conectar", INFOTRAZA);
+	ESP_ERROR_CHECK(esp_wifi_start());
+	ESP_LOGW(TAG, ""TRAZAR"Wi-Fi vamos 2.A a conectar", INFOTRAZA);
 	esp_wifi_connect();
 	ESP_LOGW(TAG, ""TRAZAR"Wi-Fi vamos 2 a conectar", INFOTRAZA);
 	xEventGroupWaitBits(grupo_eventos, CONNECTED_BIT, true, true, portMAX_DELAY);
@@ -384,13 +384,13 @@ esp_err_t conectar_dispositivo_wifi() {
     esp_wifi_get_config(WIFI_IF_STA, &conf_wifi);
     conf_wifi.sta.pmf_cfg.capable = true;
     conf_wifi.sta.pmf_cfg.required = false;
-    //ESP_LOGW(TAG, ""TRAZAR"(1)", INFOTRAZA);
+    ESP_LOGW(TAG, ""TRAZAR"(1)", INFOTRAZA);
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
-    //ESP_LOGW(TAG, ""TRAZAR"(2)", INFOTRAZA);
+    ESP_LOGW(TAG, ""TRAZAR"(2)", INFOTRAZA);
     ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &conf_wifi) );
-    //ESP_LOGW(TAG, ""TRAZAR"(3)", INFOTRAZA);
-    ESP_ERROR_CHECK(esp_wifi_start());
-    //ESP_LOGW(TAG, ""TRAZAR"(4)", INFOTRAZA);
+    ESP_LOGW(TAG, ""TRAZAR"(3)", INFOTRAZA);
+
+    ESP_LOGW(TAG, ""TRAZAR"(4)", INFOTRAZA);
 
 	for (i=0;i<32;i++) {
 		if (conf_wifi.sta.ssid[i] != 0) {
@@ -401,6 +401,7 @@ esp_err_t conectar_dispositivo_wifi() {
 	}
 
 	ESP_LOGW(TAG, ""TRAZAR" WIFI NO CONFIGURADA", INFOTRAZA);
+
 	xTaskCreate(tarea_smartconfig, "tarea_smart", 4096, (void*)&datosApp, tskIDLE_PRIORITY + 0, NULL);
 	//xEventGroupWaitBits(grupo_eventos, CONNECTED_BIT, true, true, portMAX_DELAY);
 	conectar_wifi();
@@ -465,4 +466,35 @@ esp_err_t get_scan_station_list() {
 }
 
 
+void wifi_task(void *arg) {
 
+	DATOS_APLICACION *datosApp = (DATOS_APLICACION*) arg;
+	while (1) {
+		conectar_dispositivo_wifi();
+		sync_app_by_ntp(datosApp);
+		crear_tarea_mqtt(datosApp);
+		iniciar_gestion_programacion(datosApp);
+	}
+
+	vTaskDelete(NULL);
+
+
+}
+
+static bool is_wifi_configured(wifi_config_t *conf_wifi) {
+
+	int i;
+    esp_wifi_get_config(WIFI_IF_STA, conf_wifi);
+    conf_wifi->sta.pmf_cfg.capable = true;
+    conf_wifi->sta.pmf_cfg.required = false;
+
+	for (i=0;i<32;i++) {
+		if (conf_wifi->sta.ssid[i] != 0) {
+			ESP_LOGW(TAG, ""TRAZAR" WIFI CONFIGURADA %s, %s", INFOTRAZA, (char*) conf_wifi->sta.ssid, (char*) conf_wifi->sta.password);
+			return conf_wifi;
+		}
+	}
+
+	return NULL;
+
+}

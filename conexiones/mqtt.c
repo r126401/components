@@ -37,10 +37,9 @@ extern TaskHandle_t handle;
 static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data)
 {
     static bool arranque = false;
-    ESP_LOGD(TAG, "Event dispatched from event loop base=%s, event_id=%ld", base, event_id);
+    ESP_LOGI(TAG, "Event dispatched from event loop base=%s, event_id=%ld", base, event_id);
     esp_mqtt_event_handle_t event = event_data;
     esp_mqtt_client_handle_t client = event->client;
-    datosApp.handle_mqtt = event;
     int msg_id = 0;
     switch ((esp_mqtt_event_id_t)event_id) {
     case MQTT_EVENT_CONNECTED:
@@ -110,74 +109,6 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
     }
 }
 
-/*
-static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
-{
-    esp_mqtt_client_handle_t client = event->client;
-    int msg_id = -1;
-    // your_context_t *context = event->context;
-    datosApp.handle_mqtt = event;
-    static bool arranque = false;
-
-    switch (event->event_id) {
-        case MQTT_EVENT_CONNECTED:
-            ESP_LOGI(TAG, ""TRAZAR"MQTT_EVENT_CONNECTED: CONECTADO AL BROKER", INFOTRAZA);
-            appuser_broker_conectado(&datosApp);
-            msg_id = esp_mqtt_client_subscribe(client, datosApp.datosGenerales->parametrosMqtt.subscribe,datosApp.datosGenerales->parametrosMqtt.qos);
-            ESP_LOGI(TAG, ""TRAZAR"ACCION PARA SUBSCRIBIR AL TOPIC :%s msg_id=%d", INFOTRAZA, datosApp.datosGenerales->parametrosMqtt.subscribe, msg_id);
-            if (datosApp.alarmas[ALARMA_MQTT].estado_alarma == ALARMA_ON) {
-            	registrar_alarma(&datosApp, NOTIFICACION_ALARMA_MQTT, ALARMA_MQTT, ALARMA_OFF, true);
-            }
-
-            break;
-
-        case MQTT_EVENT_DISCONNECTED:
-            ESP_LOGW(TAG, ""TRAZAR"MQTT_EVENT_DISCONNECTED: Desconectado del broker :%s msg_id=%d", INFOTRAZA, datosApp.datosGenerales->parametrosMqtt.broker, msg_id);
-            registrar_alarma(&datosApp, NOTIFICACION_ALARMA_MQTT, ALARMA_MQTT, ALARMA_ON, false);
-            appuser_broker_desconectado(&datosApp);
-            break;
-
-        case MQTT_EVENT_SUBSCRIBED:
-            ESP_LOGI(TAG, ""TRAZAR"MQTT_EVENT_SUBSCRIBED: SUBSCRITOS CON EXITO AL TOPIC :%s msg_id=%d", INFOTRAZA, datosApp.datosGenerales->parametrosMqtt.subscribe, msg_id);
-            if (arranque == false ){
-            	appuser_arranque_aplicacion(&datosApp);
-            	arranque = true;
-            }
-            break;
-        case MQTT_EVENT_UNSUBSCRIBED:
-            ESP_LOGW(TAG, ""TRAZAR"MQTT_EVENT_UNSUBSCRIBED: YA NO ESTAS SUBSCRITO AL TOPIC :%s msg_id=%d", INFOTRAZA, datosApp.datosGenerales->parametrosMqtt.subscribe, msg_id);
-            break;
-        case MQTT_EVENT_PUBLISHED:
-            ESP_LOGI(TAG, ""TRAZAR"MQTT_EVENT_PUBLISHED: CONFIRMACION DE EVENTO PUBLICADO. TOPIC :%s msg_id=%d", INFOTRAZA, datosApp.datosGenerales->parametrosMqtt.subscribe, msg_id);
-
-            break;
-        case MQTT_EVENT_DATA:
-            ESP_LOGI(TAG, ""TRAZAR"MQTT_EVENT_DATA: RECIBIDO MENSAJE", INFOTRAZA);
-
-            char topic[55] = {0};
-            strncpy(topic, event->topic, event->topic_len);
-
-            if (strcmp(datosApp.datosGenerales->parametrosMqtt.subscribe, topic) == 0) {
-            	mensaje_recibido(&datosApp);
-            } else {
-            	app_user_mensaje_recibido_especifico(&datosApp);
-            }
-
-            break;
-        case MQTT_EVENT_ERROR:
-            ESP_LOGE(TAG, ""TRAZAR"MQTT_EVENT_ERROR", INFOTRAZA);
-            registrar_alarma(&datosApp, NOTIFICACION_ALARMA_MQTT, ALARMA_MQTT, ALARMA_ON, false);
-            break;
-        case MQTT_EVENT_BEFORE_CONNECT:
-        	ESP_LOGE(TAG, ""TRAZAR"MQTT_EVENT_BEFORE_CONNECT. EVENTO NUEVO DESPUES DE CONECTAR", INFOTRAZA);
-        	break;
-        default:
-        	break;
-    }
-    return ESP_OK;
-}
-
-*/
 
 void mqtt_task(void *arg) {
 
@@ -220,21 +151,15 @@ esp_err_t establecer_conexion_mqtt(DATOS_APLICACION *datosApp) {
         },
     };
 
-    esp_mqtt_client_handle_t client = esp_mqtt_client_init(&mqtt_cfg);
+    client = esp_mqtt_client_init(&mqtt_cfg);
 
-    /*
-    esp_mqtt_client_config_t mqtt_cfg = {
-		.uri = datosApp->datosGenerales->parametrosMqtt.broker,
-		.port = datosApp->datosGenerales->parametrosMqtt.port,
-        .event_handle = mqtt_event_handler,
-		.username = datosApp->datosGenerales->parametrosMqtt.user,
-		.password = datosApp->datosGenerales->parametrosMqtt.password,
-		//.cert_pem = (const char *) mqtt_jajica_pem_start,
-    };
-*/
-    ESP_LOGE(TAG, ""TRAZAR"crear (4)", INFOTRAZA);
+
+    if (!client) {
+    	ESP_LOGE(TAG, ""TRAZAR"El cliente no esta inicializado", INFOTRAZA);
+    }
+
     esp_mqtt_client_register_event(client, ESP_EVENT_ANY_ID, mqtt_event_handler, NULL);
-    esp_mqtt_client_start(client);
+
     if (datosApp->datosGenerales->parametrosMqtt.tls == true) {
     	ESP_LOGI(TAG, ""TRAZAR"Añadimos el certificado %s", INFOTRAZA, mqtt_jajica_pem_start);
 
@@ -261,6 +186,7 @@ esp_err_t establecer_conexion_mqtt(DATOS_APLICACION *datosApp) {
     	datosApp->datosGenerales->parametrosMqtt.cert = (char*) mqtt_jajica_pem_start;
     	//strcpy(datosApp->datosGenerales->parametrosMqtt.cert, (const char*) mqtt_jajica_pem_start);
     }
+    esp_mqtt_client_start(client);
 
 
 
@@ -275,37 +201,37 @@ esp_err_t establecer_conexion_mqtt(DATOS_APLICACION *datosApp) {
 
     return ESP_OK;
 }
-esp_err_t publicar_mensaje(DATOS_APLICACION *datosApp, COLA_MQTT *cola) {
+esp_err_t publicar_mensaje(DATOS_APLICACION *datosAppp, COLA_MQTT *cola) {
 
-	int msg_id;
+	int msg_id = 0;
 
 	//esp_mqtt_client_handle_t client = cliente->client;
-	if (datosApp->handle_mqtt == NULL) {
+	if (client == NULL) {
 		ESP_LOGE(TAG, ""TRAZAR"NO HAY CONEXION CON EL BROKER Y NO SE PUEDE ENVIAR EL MENSAJE", INFOTRAZA);
 		return ESP_FAIL;
 	}
 
-	if (datosApp->datosGenerales->estadoApp == NORMAL_ARRANCANDO) {
+	if (datosApp.datosGenerales->estadoApp == NORMAL_ARRANCANDO) {
 		ESP_LOGW(TAG, "NO SE ENVIA NADA PORQUE EL DISPOSITIVO ESTA AUN EN FASE DE ARRANQUE");
 		return ESP_OK;
 	}
 
-	msg_id = esp_mqtt_client_publish(datosApp->handle_mqtt->client,
+	msg_id = esp_mqtt_client_publish(client,
 			cola->topic,
 			cola->buffer,
 			0,
-			datosApp->datosGenerales->parametrosMqtt.qos,
+			datosApp.datosGenerales->parametrosMqtt.qos,
 			0);
 	ESP_LOGI(TAG, ""TRAZAR" MENSAJE %d PUBLICADO.%s \n %s", INFOTRAZA, msg_id, cola->topic, cola->buffer);
 	return ESP_OK;
 }
 
-esp_err_t publicar_mensaje_json(DATOS_APLICACION *datosApp, cJSON *mensaje, char *topic) {
+esp_err_t publicar_mensaje_json(DATOS_APLICACION *datosAppp, cJSON *mensaje, char *topic) {
 
 	char* texto;
 	COLA_MQTT cola;
 	memset(&cola, 0, sizeof(COLA_MQTT));
-	if (datosApp->handle_mqtt == NULL) {
+	if (client == NULL) {
 		ESP_LOGE(TAG, ""TRAZAR"NO HAY CONEXION CON EL BROKER Y NO SE PUEDE ENVIAR EL MENSAJE", INFOTRAZA);
 		return ESP_FAIL;
 	}
@@ -313,7 +239,7 @@ esp_err_t publicar_mensaje_json(DATOS_APLICACION *datosApp, cJSON *mensaje, char
 	if (topic != NULL) {
 		strcpy(cola.topic, topic);
 	} else {
-		strcpy(cola.topic, datosApp->datosGenerales->parametrosMqtt.publish);
+		strcpy(cola.topic, datosApp.datosGenerales->parametrosMqtt.publish);
 	}
 	strcpy(cola.buffer, texto);
 	ESP_LOGE(TAG, ""TRAZAR" tamano de cola %d", INFOTRAZA, strlen(cola.topic) + strlen(cola.buffer));
@@ -331,7 +257,7 @@ void crear_tarea_mqtt(DATOS_APLICACION *datosApp) {
 
 
 	ESP_LOGE(TAG, ""TRAZAR"crear (1)", INFOTRAZA);
-    xTaskCreate(mqtt_task, "mqtt_task", 8192, (void*) datosApp, 10, &handle);
+    xTaskCreate(mqtt_task, "mqtt_task", 8192, (void*) datosApp, 4, &handle);
     ESP_LOGE(TAG, ""TRAZAR"crear (2)", INFOTRAZA);
     configASSERT(handle);
     ESP_LOGE(TAG, ""TRAZAR"crear (3)", INFOTRAZA);
@@ -349,7 +275,7 @@ void crear_tarea_mqtt(DATOS_APLICACION *datosApp) {
 
 void eliminar_tarea_mqtt() {
 
-	esp_mqtt_client_destroy(client);
+	esp_mqtt_client_destroy(datosApp.handle_mqtt->client);
 	vTaskDelete(handle);
 
 

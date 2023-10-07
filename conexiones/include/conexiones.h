@@ -56,6 +56,7 @@ esp_err_t restaurar_wifi_fabrica();
 esp_err_t conectar_dispositivo_wifi();
 void sync_app_by_ntp(DATOS_APLICACION *datosApp);
 esp_err_t get_scan_station_list();
+void wifi_task(void *arg);
 
 
 #ifdef __cplusplus

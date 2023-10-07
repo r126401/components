@@ -26,6 +26,8 @@
 #include "lv_thermostat.h"
 #include "code_application.h"
 #include "configuracion.h"
+#include "lv_rgb_main.h"
+#include "lvgl.h"
 
 #define CADENCIA_WIFI 250
 #define CADENCIA_BROKER 300
@@ -38,51 +40,6 @@
 static const char *TAG = "INTERFAZ_USUARIO";
 
 
-
-
-
-
-void parapadeo_led() {
-
-	static bool luz = false;
-
-	if (luz == false) {
-		gpio_set_level(CONFIG_GPIO_PIN_LED, ON);
-		luz = true;
-	} else {
-		gpio_set_level(CONFIG_GPIO_PIN_LED, OFF);
-		luz = false;
-	}
-
-
-}
-
-void eliminar_temporizacion(char* nombre) {
-/*
-	if (temporizador_nuevo != NULL) {
-		ESP_LOGW(TAG, ""TRAZAR" elminando temporizador %s ", INFOTRAZA, nombre);
-		esp_timer_stop(temporizador_nuevo);
-		esp_timer_delete(temporizador_nuevo);
-		temporizador_nuevo = NULL;
-	}
-*/
-}
-
-void aplicar_temporizacion(int cadencia, esp_timer_cb_t funcion, char* nombre) {
-/*
-	esp_timer_create_args_t temporizador;
-
-	ESP_LOGW(TAG, ""TRAZAR" aplicando temporizador %s ", INFOTRAZA, nombre);
-	eliminar_temporizacion(nombre);
-	temporizador.arg = NULL;
-	temporizador.callback = funcion;
-	temporizador.name = nombre;
-
-	esp_timer_create(&temporizador, &temporizador_nuevo);
-	esp_timer_start_periodic(temporizador_nuevo, cadencia * 1000);
-*/
-
-}
 
 esp_err_t appuser_set_default_config(DATOS_APLICACION *datosApp) {
 
@@ -124,7 +81,7 @@ esp_err_t appuser_set_action_without_schedule_active(DATOS_APLICACION *datosApp)
 esp_err_t appuser_notify_smartconfig(DATOS_APLICACION *datosApp) {
 
 
-	lv_smartconfig_notify(datosApp);
+	//lv_smartconfig_notify(datosApp);
 
 	//aplicar_temporizacion(CADENCIA_SMARTCONFIG, parapadeo_led, "smartconfig");
 
@@ -138,7 +95,7 @@ esp_err_t appuser_notify_application_started(DATOS_APLICACION *datosApp) {
 	ESP_LOGI(TAG, ""TRAZAR" Notificando arranque de la aplicacion.", INFOTRAZA);
 
 
-	lv_screen_thermostat(datosApp);
+	//lv_screen_thermostat(datosApp);
 	informe = appuser_send_spontaneous_report(datosApp, ARRANQUE_APLICACION, NULL);
 
 	ESP_LOGI(TAG, ""TRAZAR" vamos a publicar el arranque del dispositivo", INFOTRAZA);
@@ -200,7 +157,9 @@ esp_err_t appuser_notify_connecting_wifi(DATOS_APLICACION *datosApp) {
 		break;
 
 	case NORMAL_ARRANCANDO:
+		//lv_send_lcd_commands(CONNECTING_WIFI);
 		lv_connecting_to_wifi_station(datosApp);
+		lv_timer_handler();
 		break;
 	default:
 		break;
@@ -289,36 +248,22 @@ cJSON* appuser_send_spontaneous_report(DATOS_APLICACION *datosApp, enum TIPO_INF
     respuesta = cabecera_espontaneo(datosApp, tipoInforme);
     switch(tipoInforme) {
         case ARRANQUE_APLICACION:
-            printf("generarReporte--> enviando arranqueAplicacion");
-            cJSON_AddNumberToObject(respuesta, APP_COMAND_ESTADO_RELE, gpio_get_level(CONFIG_GPIO_PIN_RELE));
-            cJSON_AddNumberToObject(respuesta, PROGRAMMER_STATE, datosApp->datosGenerales->estadoProgramacion);
-            cJSON_AddNumberToObject(respuesta, DEVICE_STATE, datosApp->datosGenerales->estadoApp);
-            escribir_programa_actual(datosApp, respuesta);
-            codigoRespuesta(respuesta,RESP_OK);
-            break;
         case ACTUACION_RELE_LOCAL:
-            cJSON_AddNumberToObject(respuesta, APP_COMAND_ESTADO_RELE, gpio_get_level(CONFIG_GPIO_PIN_RELE));
-            cJSON_AddNumberToObject(respuesta, PROGRAMMER_STATE, datosApp->datosGenerales->estadoProgramacion);
-            cJSON_AddNumberToObject(respuesta, DEVICE_STATE, datosApp->datosGenerales->estadoApp);
-            escribir_programa_actual(datosApp, respuesta);
-            codigoRespuesta(respuesta,RESP_OK);
-
-            break;
         case CAMBIO_DE_PROGRAMA:
-            cJSON_AddNumberToObject(respuesta, PROGRAMMER_STATE, datosApp->datosGenerales->estadoProgramacion);
-            cJSON_AddNumberToObject(respuesta, APP_COMAND_ESTADO_RELE, gpio_get_level(CONFIG_GPIO_PIN_RELE));
-            cJSON_AddNumberToObject(respuesta, DEVICE_STATE, datosApp->datosGenerales->estadoApp);
-            escribir_programa_actual(datosApp, respuesta);
-            codigoRespuesta(respuesta,RESP_OK);
-            break;
         case RELE_TEMPORIZADO:
         case CAMBIO_TEMPERATURA:
-            cJSON_AddNumberToObject(respuesta, PROGRAMMER_STATE, datosApp->datosGenerales->estadoProgramacion);
             cJSON_AddNumberToObject(respuesta, APP_COMAND_ESTADO_RELE, gpio_get_level(CONFIG_GPIO_PIN_RELE));
+            cJSON_AddNumberToObject(respuesta, PROGRAMMER_STATE, datosApp->datosGenerales->estadoProgramacion);
             cJSON_AddNumberToObject(respuesta, DEVICE_STATE, datosApp->datosGenerales->estadoApp);
+            cJSON_AddNumberToObject(respuesta, TEMPERATURA, datosApp->termostato.tempActual);
+            cJSON_AddNumberToObject(respuesta, HUMEDAD, datosApp->termostato.humedad);
+            cJSON_AddNumberToObject(respuesta, UMBRAL_TEMPERATURA, datosApp->termostato.tempUmbral);
+            cJSON_AddBoolToObject(respuesta, MASTER, datosApp->termostato.master);
+            cJSON_AddStringToObject(respuesta, SENSOR_REMOTO, datosApp->termostato.sensor_remoto);
             escribir_programa_actual(datosApp, respuesta);
             codigoRespuesta(respuesta,RESP_OK);
             break;
+
         default:
             codigoRespuesta(respuesta, RESP_NOK);
             printf("enviarReporte--> Salida no prevista\n");
@@ -498,6 +443,27 @@ esp_err_t appuser_notify_app_status(DATOS_APLICACION *datosApp, enum ESTADO_APP 
 
 void appuser_notify_schedule_events(DATOS_APLICACION *datosApp) {
 
+	static bool start = true;
+	char fecha_actual[10] = {0};
+	time_t now;
+	struct tm fecha;
+
+
+	ESP_LOGI(TAG, ""TRAZAR"Actualizando hora", INFOTRAZA);
+    time(&now);
+    localtime_r(&now, &fecha);
+    if ((start) || (fecha.tm_min == 0)) {
+    	sprintf(fecha_actual, "%02d:%02d", fecha.tm_hour, fecha.tm_min);
+    	ESP_LOGI(TAG, ""TRAZAR"hora actualizada: %s", INFOTRAZA, fecha_actual);
+    	start = false;
+    } else {
+    	ESP_LOGI(TAG, ""TRAZAR"Todavia no hay que actualizar hora", INFOTRAZA);
+    }
+
+
+
+
+
 }
 
 
@@ -662,7 +628,7 @@ esp_err_t appuser_notify_error_wifi_connection(DATOS_APLICACION *datosApp) {
 	static uint8_t fail = 0;
 
 
-	lv_set_button_wifi(true);
+	lv_update_button_wifi(true);
 	return ESP_OK;
 
 	if (datosApp->datosGenerales->estadoApp == NORMAL_ARRANCANDO) {
@@ -670,11 +636,11 @@ esp_err_t appuser_notify_error_wifi_connection(DATOS_APLICACION *datosApp) {
 		fail ++;
 		ESP_LOGI(TAG, ""TRAZAR"FAIL VALE %d", INFOTRAZA, fail);
 		if (fail == 2) {
-			lv_set_button_wifi(false);
+			lv_update_button_wifi(false);
 		}
 
 		if (fail > 5) {
-			lv_set_button_wifi(true);
+			lv_update_button_wifi(true);
 			fail = 5;
 		}
 	}
