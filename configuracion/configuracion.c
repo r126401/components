@@ -252,9 +252,11 @@ esp_err_t inicializacion(DATOS_APLICACION *datosApp, bool forzado) {
 */
 	if ((error = inicializar_nvs(CONFIG_NAMESPACE, &datosApp->handle))!= ESP_OK) {
 		ESP_LOGE(TAG, ""TRAZAR"ERROR POR FALLO NVS %d", INFOTRAZA, error);
-		registrar_alarma(datosApp, NOTIFICACION_ALARMA_NVS, ALARMA_NVS, ALARMA_ON, true);
+		registrar_alarma(datosApp, NOTIFICACION_ALARMA_NVS, ALARMA_NVS, ALARMA_ON, false);
 		return error;
 
+	} else {
+		registrar_alarma(datosApp, NOTIFICACION_ALARMA_NVS, ALARMA_NVS, ALARMA_OFF, false);
 	}
 	if (forzado) {
 		error = cargar_configuracion_defecto(datosApp);

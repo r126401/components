@@ -49,7 +49,7 @@ esp_err_t leer_temperatura(DATOS_APLICACION *datosApp);
 void tarea_lectura_temperatura(void *parametros);
 esp_err_t leer_temperatura_remota(DATOS_APLICACION *datosApp);
 enum TIPO_ACCION_TERMOSTATO calcular_accion_termostato(DATOS_APLICACION *datosApp, enum ESTADO_RELE *accion);
-esp_err_t seleccionarSensorTemperatura(cJSON *peticion, DATOS_APLICACION *datosApp, cJSON *respuesta);
+esp_err_t select_temperature_sensor(cJSON *peticion, DATOS_APLICACION *datosApp, cJSON *respuesta);
 esp_err_t notificar_fin_arranque(DATOS_APLICACION *datosApp);
 void gpio_rele_in();
 void gpio_rele_out();

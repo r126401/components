@@ -743,6 +743,7 @@ void gestion_programas(void *arg) {
 		break;
 
 	case ESPERA_FIN_ARRANQUE:
+		calcular_programa_activo(datosApp, &t_siguiente_intervalo);
 		appuser_notify_app_status(datosApp, ESPERA_FIN_ARRANQUE);
 		ESP_LOGI(TAG, ""TRAZAR" EN ESPERA DE FIN DE ARRANQUE", INFOTRAZA);
 		if (datosApp->datosGenerales->nProgramacion == 0) {
@@ -848,7 +849,7 @@ esp_err_t logica_temporizacion(DATOS_APLICACION *datosApp) {
 		if (tiempo_restante > TEMPORIZADOR_MAXIMO_EN_SEGUNDOS ) {
 			ESP_LOGW(TAG, ""TRAZAR"ACTIVADO TEMPORIZADOR DE TEMPORIZACION INTERMEDIA.  QUEDAN %d repeticiones", INFOTRAZA, tiempo_restante/TEMPORIZADOR_MAXIMO_EN_SEGUNDOS);
 		    ESP_ERROR_CHECK(esp_timer_create(&first_shot_timer_args, &temporizador_duracion));
-		    ESP_ERROR_CHECK(esp_timer_start_once(temporizador_duracion, (TEMPORIZADOR_MAXIMO_EN_SEGUNDOS * 1000)));
+		    ESP_ERROR_CHECK(esp_timer_start_once(temporizador_duracion, (TEMPORIZADOR_MAXIMO_EN_SEGUNDOS * 1000000)));
 			/*
 			ets_timer_disarm(&temporizador_duracion);
 			ets_timer_setfn(&temporizador_duracion, (ETSTimerFunc*) temporizacion_intermedia, datosApp);
@@ -857,7 +858,7 @@ esp_err_t logica_temporizacion(DATOS_APLICACION *datosApp) {
 		} else {
 			//ets_timer_disarm(&temporizador_duracion);
 		    ESP_ERROR_CHECK(esp_timer_create(&second_shot_timer_args, &temporizador_duracion));
-		    ESP_ERROR_CHECK(esp_timer_start_once(temporizador_duracion, (tiempo_restante * 1000)));
+		    ESP_ERROR_CHECK(esp_timer_start_once(temporizador_duracion, (tiempo_restante * 1000000)));
 		    /*
 						ets_timer_setfn(&temporizador_duracion, (ETSTimerFunc*) appuser_ejecucion_accion_temporizada, datosApp);
 						ets_timer_arm(&temporizador_duracion, (tiempo_restante * 1000), false);

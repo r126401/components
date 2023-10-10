@@ -29,9 +29,27 @@ esp_err_t registrar_alarma(DATOS_APLICACION *datosApp, char* mnemonico_alarma, u
 	if (flag_envio == true) {
 		notificar_evento_alarma(datosApp, tipo_alarma, mnemonico_alarma);
 	}
-	appuser_notify_local_alarm(datosApp, tipo_alarma);
-	ESP_LOGW(TAG, ""TRAZAR" ALARMA %d ESTADO %d REGISTRADA", INFOTRAZA, tipo_alarma, estado_alarma);
 
+
+	switch(estado_alarma) {
+
+	case ALARMA_OFF:
+		ESP_LOGI(TAG, ""TRAZAR" ALARMA OFF %d ESTADO %d REGISTRADA", INFOTRAZA, tipo_alarma, estado_alarma);
+		break;
+	case ALARMA_WARNING:
+		ESP_LOGW(TAG, ""TRAZAR" ALARMA WARNING %d ESTADO %d REGISTRADA", INFOTRAZA, tipo_alarma, estado_alarma);
+		break;
+	case ALARMA_ON:
+		ESP_LOGW(TAG, ""TRAZAR" ALARMA ON %d ESTADO %d REGISTRADA", INFOTRAZA, tipo_alarma, estado_alarma);
+		break;
+	default:
+		ESP_LOGI(TAG, ""TRAZAR" ALARMA INDETERMINADA %d ESTADO %d REGISTRADA", INFOTRAZA, tipo_alarma, estado_alarma);
+		break;
+
+	}
+
+
+	appuser_notify_local_alarm(datosApp, tipo_alarma);
 	return ESP_OK;
 }
 
@@ -46,7 +64,7 @@ esp_err_t inicializacion_registros_alarmas(DATOS_APLICACION *datosApp) {
 	for (i=0;i<NUM_TIPOS_ALARMAS;i++) {
 
 		datosApp->alarmas[i].tipo_alarma = i;
-		datosApp->alarmas[i].estado_alarma = ALARMA_OFF;
+		datosApp->alarmas[i].estado_alarma = ALARMA_ON;
 		actualizar_hora(&clock);
 		datosApp->alarmas[i].fecha_alarma = clock.time;
 		ESP_LOGI(TAG, ""TRAZAR" INICIALIZADAS ALARMAS, TIPO_ALARMA: %d, ESTADO: %d, FECHA: %llu", INFOTRAZA,

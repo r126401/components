@@ -45,7 +45,7 @@ static EventGroupHandle_t grupo_eventos;
  ip4_addr_t s_ip_addr;
 static const char *TAG = "CONEXIONES";
 extern DATOS_APLICACION datosApp;
-wifi_ap_record_t ap_info[CONFIG_DEFAULT_SCAN_LIST_SIZE];
+
 /*
 void extraer_datos_mqtt(void * event_data, wifi_config_t *wifi_config) {
 
@@ -237,6 +237,7 @@ static void on_wifi_disconnect(void *arg, esp_event_base_t event_base,
     	xEventGroupClearBits(grupo_eventos, CONNECTED_BIT);
     }
 
+    registrar_alarma(&datosApp, NOTIFICACION_ALARMA_WIFI, ALARMA_WIFI, ALARMA_ON, false);
     appuser_notify_error_wifi_connection(&datosApp);
 
 
@@ -249,7 +250,7 @@ static void on_got_ip(void *arg, esp_event_base_t event_base,
     ip_event_got_ip_t *event = (ip_event_got_ip_t *)event_data;
     memcpy(&s_ip_addr, &event->ip_info.ip, sizeof(s_ip_addr));
     xEventGroupSetBits(grupo_eventos, CONNECTED_BIT);
-    registrar_alarma(&datosApp, NOTIFICACION_ALARMA_WIFI, ALARMA_WIFI, ALARMA_ON, false);
+    registrar_alarma(&datosApp, NOTIFICACION_ALARMA_WIFI, ALARMA_WIFI, ALARMA_OFF, false);
     appuser_notify_wifi_connected_ok(&datosApp);
 }
 
@@ -270,7 +271,7 @@ inline static void conectar_wifi() {
 static void on_wifi_scan_done(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data) {
 
 
-
+	wifi_ap_record_t ap_info[CONFIG_DEFAULT_SCAN_LIST_SIZE];
 	uint16_t number = CONFIG_DEFAULT_SCAN_LIST_SIZE;
 	uint16_t ap_count = 0;
 	memset(ap_info, 0, sizeof(ap_info));
@@ -428,7 +429,7 @@ void sync_app_by_ntp(DATOS_APLICACION *datosApp) {
 		ESP_LOGW(TAG, ""TRAZAR"NO SE HA PODIDO OBTENER LA HORA DEL SERVIDOR NTP. NO HABRA PROGRAMACION. error: %d", INFOTRAZA, error);
 		datosApp->datosGenerales->estadoProgramacion = INVALID_PROG;
 		appuser_error_get_date_sntp(datosApp);
-		registrar_alarma(datosApp, NOTIFICACION_ALARMA_NTP, ALARMA_NTP, ALARMA_OFF, false);
+		registrar_alarma(datosApp, NOTIFICACION_ALARMA_NTP, ALARMA_NTP, ALARMA_ON, false);
 
 	} else {
 		ESP_LOGI(TAG, ""TRAZAR" VAMOS A REGISTRAR ALARMA", INFOTRAZA);
@@ -480,7 +481,7 @@ void wifi_task(void *arg) {
 
 
 }
-
+/*
 static bool is_wifi_configured(wifi_config_t *conf_wifi) {
 
 	int i;
@@ -498,3 +499,4 @@ static bool is_wifi_configured(wifi_config_t *conf_wifi) {
 	return NULL;
 
 }
+*/

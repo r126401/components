@@ -62,7 +62,7 @@ esp_err_t appuser_notify_connecting_wifi(DATOS_APLICACION *datosApp);
  * @post
  * @return
  */
-esp_err_t appuser_notify_wifi_connected_ok();
+esp_err_t appuser_notify_wifi_connected_ok(DATOS_APLICACION *datosApp);
 /**
  * @fn esp_err_t appuser_broker_conectando()
  * @brief Llamado desde el modulo de conexiones, el usuario puede indicar que la aplicacion esta conectandose al broker mqtt
@@ -71,7 +71,7 @@ esp_err_t appuser_notify_wifi_connected_ok();
  * @post
  * @return
  */
-esp_err_t appuser_notify_connecting_broker_mqtt();
+esp_err_t appuser_notify_connecting_broker_mqtt(DATOS_APLICACION *datosApp);
 /**
  * @fn esp_err_t appuser_broker_conectado()
  * @brief Llamado desde el modulo de conexion indica al usuario que la aplicacion se ha conec
@@ -80,7 +80,7 @@ esp_err_t appuser_notify_connecting_broker_mqtt();
  * @post
  * @return
  */
-esp_err_t appuser_notify_broker_connected_ok();
+esp_err_t appuser_notify_broker_connected_ok(DATOS_APLICACION *datosApp);
 /**
  * @fn esp_err_t appuser_broker_desconectado()
  * @brief El usuario puede indicar acciones en el dispositivo para notificar el evento.
@@ -89,7 +89,7 @@ esp_err_t appuser_notify_broker_connected_ok();
  * @post
  * @return
  */
-esp_err_t appuser_notify_broker_disconnected();
+esp_err_t appuser_notify_broker_disconnected(DATOS_APLICACION *datosApp);
 /**
  * @fn esp_err_t appuser_obteniendo_sntp()
  * @brief llamada desde el modulo de ntp tiene la finalidad de comunicar al usuario que se esta intentando sincronizar la hora
@@ -99,7 +99,7 @@ esp_err_t appuser_notify_broker_disconnected();
  * @post
  * @return
  */
-esp_err_t appuser_get_date_sntp();
+esp_err_t appuser_get_date_sntp(DATOS_APLICACION *datosApp);
 /**
  * @fn esp_err_t appuser_error_get_date_sntp()
  * @brief La funcion es llamada desde el modulo ntp para indicar a la aplicacion que no se ha podido sincronizar la hora
@@ -108,7 +108,7 @@ esp_err_t appuser_get_date_sntp();
  * @post
  * @return
  */
-esp_err_t appuser_error_get_date_sntp();
+esp_err_t appuser_error_get_date_sntp(DATOS_APLICACION *datosApp);
 /**
  * @fn esp_err_t appuser_sntp_ok()
  * @brief Llamada desde el modulo ntp para indicar que la aplicacion ha sincronizado la hora correctamente
@@ -117,7 +117,7 @@ esp_err_t appuser_error_get_date_sntp();
  * @post
  * @return
  */
-esp_err_t appuser_sntp_ok();
+esp_err_t appuser_sntp_ok(DATOS_APLICACION *datosApp);
 /**
  * @fn esp_err_t appuser_arranque_aplicacion(DATOS_APLICACION*)
  * @brief Esta funcion es llamada despues de la inicializacion del dispositivo y una vez suscrito al topic para que se pueda notificar
@@ -139,7 +139,7 @@ esp_err_t appuser_notify_application_started(DATOS_APLICACION *datosApp);
  * @post
  * @param datosApp
  */
-void appuser_end_schedule(void *arg);
+void appuser_end_schedule(DATOS_APLICACION *datosApp);
 /**
  * @fn esp_err_t appuser_acciones_ota(DATOS_APLICACION*)
  * @brief Esta funcion es invocada desde apijson despues de responder al comando de iniciar upgrade ota y tiene la finalidad de
@@ -322,6 +322,6 @@ esp_err_t appuser_load_schedule_extra_data(DATOS_APLICACION *datosApp, TIME_PROG
 esp_err_t appuser_notify_error_wifi_connection(DATOS_APLICACION *datosApp);
 
 void appuser_notify_scan_done(DATOS_APLICACION *datosApp, wifi_ap_record_t *ap_info, uint16_t *ap_count);
-
+esp_err_t notify_end_starting(DATOS_APLICACION *datosApp);
 
 #endif /* COMPONENTS_INTERFAZ_USUARIO_INCLUDE_INTERFAZ_USUARIO_H_ */
