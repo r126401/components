@@ -212,7 +212,7 @@ esp_err_t publicar_mensaje(DATOS_APLICACION *datosAppp, COLA_MQTT *cola) {
 		return ESP_FAIL;
 	}
 
-	if (datosApp.datosGenerales->estadoApp == NORMAL_ARRANCANDO) {
+	if (datosApp.datosGenerales->estadoApp == STARTING) {
 		ESP_LOGW(TAG, "NO SE ENVIA NADA PORQUE EL DISPOSITIVO ESTA AUN EN FASE DE ARRANQUE");
 		return ESP_OK;
 	}

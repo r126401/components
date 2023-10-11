@@ -54,7 +54,7 @@ enum ESTADO_APP change_status_application(DATOS_APLICACION *datosApp) {
 			estado_final = NORMAL_AUTO;
 		}
 	break;
-	case NORMAL_ARRANCANDO:
+	case STARTING:
 		datosApp->datosGenerales->estadoApp = ESPERA_FIN_ARRANQUE;
 		estado_final = ESPERA_FIN_ARRANQUE;
 		break;
@@ -192,11 +192,11 @@ esp_err_t appuser_notify_connecting_wifi(DATOS_APLICACION *datosApp) {
 
 	switch (datosApp->datosGenerales->estadoApp) {
 
-	case ARRANQUE_FABRICA:
-		datosApp->datosGenerales->estadoApp = NORMAL_ARRANCANDO;
+	case FACTORY:
+		datosApp->datosGenerales->estadoApp = STARTING;
 		break;
 
-	case NORMAL_ARRANCANDO:
+	case STARTING:
 		//lv_send_lcd_commands(CONNECTING_WIFI);
 		lv_connecting_to_wifi_station(datosApp);
 		lv_timer_handler();
@@ -227,7 +227,7 @@ esp_err_t appuser_notify_error_wifi_connection(DATOS_APLICACION *datosApp) {
 	ESP_LOGI(TAG, ""TRAZAR"appuser_notify_error_wifi_connection", INFOTRAZA);
 	lv_update_alarm_device(datosApp);
 
-	if (datosApp->datosGenerales->estadoApp == NORMAL_ARRANCANDO) {
+	if (datosApp->datosGenerales->estadoApp == STARTING) {
 		lv_update_button_wifi(true);
 
 		fail ++;
@@ -659,7 +659,7 @@ esp_err_t appuser_notify_app_status(DATOS_APLICACION *datosApp, enum ESTADO_APP 
 	case NORMAL_MANUAL:
 		datosApp->termostato.tempUmbral = datosApp->termostato.tempUmbralDefecto;
 		lv_update_threshold(datosApp);
-	case NORMAL_ARRANCANDO:
+	case STARTING:
 		break;
 	case NORMAL_SIN_PROGRAMACION:
 		ESP_LOGI(TAG, ""TRAZAR" PONEMOS EL UMBRAL A %lf", INFOTRAZA, datosApp->termostato.tempUmbralDefecto);
@@ -672,9 +672,13 @@ esp_err_t appuser_notify_app_status(DATOS_APLICACION *datosApp, enum ESTADO_APP 
 		break;
 	case ESPERA_FIN_ARRANQUE:
 		break;
-	case ARRANQUE_FABRICA:
+	case FACTORY:
 		break;
 	case NORMAL_FIN_PROGRAMA_ACTIVO:
+		break;
+	case ERROR_APP:
+		break;
+	case DEVICE_ALONE:
 		break;
 
 

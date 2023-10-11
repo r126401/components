@@ -695,7 +695,7 @@ void gestion_programas(void *arg) {
 
 	switch(datosApp->datosGenerales->estadoApp) {
 
-	case NORMAL_ARRANCANDO:
+	case STARTING:
 		calcular_programa_activo(datosApp, &t_siguiente_intervalo);
 		datosApp->datosGenerales->estadoApp = ESPERA_FIN_ARRANQUE;
 		break;

@@ -252,6 +252,7 @@ static void on_got_ip(void *arg, esp_event_base_t event_base,
     xEventGroupSetBits(grupo_eventos, CONNECTED_BIT);
     registrar_alarma(&datosApp, NOTIFICACION_ALARMA_WIFI, ALARMA_WIFI, ALARMA_OFF, false);
     appuser_notify_wifi_connected_ok(&datosApp);
+    sync_app_by_ntp(&datosApp);
 }
 
 
@@ -309,7 +310,7 @@ inline static void inicializar_wifi() {
 
 	ESP_LOGI(TAG, ""TRAZAR" INICIALIZAR_WIFI", INFOTRAZA);
     //tcpip_adapter_init();
-	if (datosApp.datosGenerales->estadoApp != ARRANQUE_FABRICA) {
+	if (datosApp.datosGenerales->estadoApp != FACTORY) {
 		appuser_notify_connecting_wifi(&datosApp);
 	}
 
@@ -408,10 +409,6 @@ esp_err_t conectar_dispositivo_wifi() {
 	conectar_wifi();
 	return ESP_FAIL;
 
-
-
-
-	return ESP_OK;
 }
 
 

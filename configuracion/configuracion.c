@@ -122,7 +122,6 @@ esp_err_t cargar_configuracion_defecto(DATOS_APLICACION *datosApp) {
     //strcpy(datosApp->datosGenerales->parametrosMqtt.cert, (const char *) mqtt_jajica_pem_start);
     //datosApp->datosGenerales->parametrosMqtt.cert = (const char *) mqtt_jajica_pem_start;
     ESP_LOGI(TAG, ""TRAZAR"PARAMETROS CARGADOS EN DATOSAPP", INFOTRAZA);
-    //datosApp->datosGenerales->estadoApp = NORMAL_ARRANCANDO;
     datosApp->datosGenerales->estadoProgramacion = INVALID_PROG;
     datosApp->datosGenerales->nProgramacion=0;
     datosApp->datosGenerales->nProgramaCandidato = -1;
@@ -224,32 +223,6 @@ esp_err_t inicializacion(DATOS_APLICACION *datosApp, bool forzado) {
     ESP_LOGE(TAG, ""TRAZAR" VERSION DE LA APLICACION %s", INFOTRAZA, datosApp->datosGenerales->ota.swVersion->version);
 
 	inicializacion_registros_alarmas(datosApp);
-	//datosApp->datosGenerales->estadoApp = NORMAL_ARRANCANDO;
-	/*
-	inicializar_parametros_ntp(&datosApp->datosGenerales->clock);
-	appuser_get_date_sntp(datosApp);
-	ESP_LOGW(TAG, ""TRAZAR"(1)", INFOTRAZA);
-	error = obtener_fecha_hora(&datosApp->datosGenerales->clock);
-	ESP_LOGW(TAG, ""TRAZAR"(2)", INFOTRAZA);
-
-	if (error != ESP_OK) {
-		ESP_LOGW(TAG, ""TRAZAR"NO SE HA PODIDO OBTENER LA HORA DEL SERVIDOR NTP. NO HABRA PROGRAMACION. error: %d", INFOTRAZA, error);
-		datosApp->datosGenerales->estadoProgramacion = INVALID_PROG;
-		appuser_error_get_date_sntp(datosApp);
-		registrar_alarma(datosApp, NOTIFICACION_ALARMA_NTP, ALARMA_NTP, ALARMA_OFF, false);
-
-	} else {
-		ESP_LOGI(TAG, ""TRAZAR" VAMOS A REGISTRAR ALARMA", INFOTRAZA);
-		registrar_alarma(datosApp, NOTIFICACION_ALARMA_NTP, ALARMA_NTP, ALARMA_OFF, false);
-		appuser_sntp_ok(datosApp);
-		actualizar_hora(&datosApp->datosGenerales->clock);
-		//ESP_LOGI(TAG, ""TRAZAR"Hora inicializada:%s", INFOTRAZA, pintar_fecha(datosApp->datosGenerales->clock.date);
-		ESP_LOGI(TAG, ""TRAZAR"Hora inicializada:%s", INFOTRAZA,pintar_fecha(datosApp->datosGenerales->clock.date));
-	    datosApp->datosGenerales->estadoProgramacion = VALID_PROG;
-
-
-	}
-*/
 	if ((error = inicializar_nvs(CONFIG_NAMESPACE, &datosApp->handle))!= ESP_OK) {
 		ESP_LOGE(TAG, ""TRAZAR"ERROR POR FALLO NVS %d", INFOTRAZA, error);
 		registrar_alarma(datosApp, NOTIFICACION_ALARMA_NVS, ALARMA_NVS, ALARMA_ON, false);
@@ -271,16 +244,11 @@ esp_err_t inicializacion(DATOS_APLICACION *datosApp, bool forzado) {
 		} else {
 			ESP_LOGW(TAG, ""TRAZAR"La configuracion no se ha cargado. Se carga la de defecto.", INFOTRAZA);
 			cargar_configuracion_defecto(datosApp);
-			ESP_LOGI(TAG, ""TRAZAR" eL ESADO DE LA APP ES %d",INFOTRAZA, datosApp->datosGenerales->estadoApp);
-			if (datosApp->datosGenerales->estadoApp != ARRANQUE_FABRICA) {
+			if (datosApp->datosGenerales->estadoApp != FACTORY) {
 				return error;
 			}
 
 		}
-
-		//ESP_LOGI(TAG, ""TRAZAR" SALVAMOS LA CONFIGURACION GENERAL A NVS...", INFOTRAZA);
-		//salvar_configuracion_general(datosApp);
-
 		// leemos la configuracion de programas desde nvs
 		if ((error = leer_configuracion(datosApp, CONFIG_CLAVE_PROGRAMACION, datos)) == ESP_OK) {
 			ESP_LOGI(TAG, ""TRAZAR"Programas leidos desde nvs", INFOTRAZA);
