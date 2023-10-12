@@ -40,7 +40,7 @@
 static const char *TAG = "INTERFAZ_USUARIO";
 
 
-
+/*
 enum ESTADO_APP change_status_application(DATOS_APLICACION *datosApp) {
 
 	enum ESTADO_APP estado_final;
@@ -71,7 +71,7 @@ enum ESTADO_APP change_status_application(DATOS_APLICACION *datosApp) {
 
 	return estado_final;
 }
-
+*/
 
 esp_err_t appuser_set_default_config(DATOS_APLICACION *datosApp) {
 
@@ -679,6 +679,8 @@ esp_err_t appuser_notify_app_status(DATOS_APLICACION *datosApp, enum ESTADO_APP 
 	case ERROR_APP:
 		break;
 	case DEVICE_ALONE:
+		break;
+	case CHECK_PROGRAMS:
 		break;
 
 

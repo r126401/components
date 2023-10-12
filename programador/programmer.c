@@ -662,10 +662,11 @@ esp_err_t calcular_programa_activo(DATOS_APLICACION *datosApp, time_t *t_siguien
 		ESP_LOGI(TAG, ""TRAZAR"El elemento seleccionado es %d", INFOTRAZA, datosApp->datosGenerales->nProgramaCandidato);
 		visualizartiempo(datosApp->datosGenerales->programacion[datosApp->datosGenerales->nProgramaCandidato].programacion);
 		ESP_LOGI(TAG, ""TRAZAR"START_SCHEDULE", INFOTRAZA);
+		change_status_application(datosApp, NORMAL_AUTO);
 		activacion_programa(datosApp);
 
 	} else {
-		error = PROGRAMACION_NO_EXISTE;
+		error = INTERVALO_SIN_PROGRAMACION;
 		ESP_LOGW(TAG, ""TRAZAR"No hay programacion o programa activo en este momento", INFOTRAZA);
 		appuser_set_action_without_schedule_active(datosApp);
 	}
@@ -695,13 +696,34 @@ void gestion_programas(void *arg) {
 
 	switch(datosApp->datosGenerales->estadoApp) {
 
+	case CHECK_PROGRAMS:
+		ESP_LOGW(TAG, ""TRAZAR"CHECK_PROGRAMS", INFOTRAZA);
+		if (datosApp->alarmas[ALARMA_NTP].estado_alarma == ALARMA_ON) {
+			ESP_LOGW(TAG, ""TRAZAR"SIN CALCULO DE PROGRAMA ACTIVO POR FALLO NTP", INFOTRAZA);
+		} else {
+			if (datosApp->datosGenerales->nProgramacion == 0) {
+				change_status_application(datosApp, NORMAL_SIN_PROGRAMACION);
+			} else {
+				if (calcular_programa_activo(datosApp, &t_siguiente_intervalo) == INTERVALO_SIN_PROGRAMACION) {
+					ESP_LOGI(TAG, ""TRAZAR"INTERVALO SIN PROGRAMACION ACTIVA", INFOTRAZA);
+				} else {
+					ESP_LOGI(TAG, ""TRAZAR"ENCONTRADA PROGRAMACION ACTIVA", INFOTRAZA);
+				}
+			}
+
+		}
+
+		break;
+
 	case STARTING:
+		ESP_LOGW(TAG, ""TRAZAR"STARTING", INFOTRAZA);
 		calcular_programa_activo(datosApp, &t_siguiente_intervalo);
 		datosApp->datosGenerales->estadoApp = ESPERA_FIN_ARRANQUE;
 		break;
 
 	case NORMAL_AUTO:
 	case NORMAL_AUTOMAN:
+		ESP_LOGW(TAG, ""TRAZAR"NORMAL_AUTO", INFOTRAZA);
 		if((hora.tm_hour == 0) && (hora.tm_min == 0) && (hora.tm_sec == 0)) {
 			calcular_programa_activo(datosApp, &t_siguiente_intervalo);
 		}
@@ -720,10 +742,11 @@ void gestion_programas(void *arg) {
 
 		break;
 	case NORMAL_SIN_PROGRAMACION:
+		ESP_LOGW(TAG, ""TRAZAR"NORMAL_SIN_PROGRAMACION", INFOTRAZA);
 		//ESP_LOGI(TAG, ""TRAZAR"ESTAMOS SIN PROGRAMACION", INFOTRAZA);
 		break;
 	case NORMAL_SINCRONIZANDO:
-		ESP_LOGI(TAG, ""TRAZAR"ESTAMOS SINCRONIZANDO LA PROGRAMACION", INFOTRAZA);
+		ESP_LOGW(TAG, ""TRAZAR"NORMAL_SINCRONIZANDO", INFOTRAZA);
 		if (calcular_programa_activo(datosApp, &t_siguiente_intervalo) == ESP_OK) {
 			ESP_LOGI(TAG, ""TRAZAR"AJUSTE DE PROGRAMA REALIZADO", INFOTRAZA);
 			datosApp->datosGenerales->estadoApp = NORMAL_AUTO;
@@ -743,6 +766,7 @@ void gestion_programas(void *arg) {
 		break;
 
 	case ESPERA_FIN_ARRANQUE:
+		ESP_LOGW(TAG, ""TRAZAR"ESPERA_FIN_ARRANQUE", INFOTRAZA);
 		calcular_programa_activo(datosApp, &t_siguiente_intervalo);
 		appuser_notify_app_status(datosApp, ESPERA_FIN_ARRANQUE);
 		ESP_LOGI(TAG, ""TRAZAR" EN ESPERA DE FIN DE ARRANQUE", INFOTRAZA);
@@ -754,6 +778,7 @@ void gestion_programas(void *arg) {
 		break;
 
 	case NORMAL_FIN_PROGRAMA_ACTIVO:
+		ESP_LOGW(TAG, ""TRAZAR"NORMAL_FIN_PROGRAMA_ACTIVO", INFOTRAZA);
 		if (calcular_programa_activo(datosApp, &t_siguiente_intervalo) == ESP_OK) {
 					ESP_LOGI(TAG, ""TRAZAR"FIN DE PROGRAMA REALIZADO", INFOTRAZA);
 					//datosApp->datosGenerales->estadoApp = NORMAL_AUTO;
@@ -884,7 +909,6 @@ esp_err_t activacion_programa(DATOS_APLICACION *datosApp) {
 
 
 
-
 	logica_temporizacion(datosApp);
 	appuser_start_schedule(datosApp);
 
@@ -910,14 +934,10 @@ esp_err_t iniciar_gestion_programacion(DATOS_APLICACION *datosApp) {
 			.arg = datosApp
     };
 
-
-
-	//gestion_programas(datosApp);
-    //ets_timer_disarm(&temporizador);
     ESP_ERROR_CHECK(esp_timer_create(&schedules_shot_timer_args, &temporizador));
     ESP_ERROR_CHECK(esp_timer_start_periodic(temporizador, 1000000));
-    //ets_timer_setfn(&temporizador, (ETSTimerFunc*) gestion_programas, datosApp);
-    //ets_timer_arm(&temporizador, 1000, true);
+    change_status_application(datosApp, CHECK_PROGRAMS);
+
 
 	return ESP_OK;
 }
@@ -929,6 +949,14 @@ esp_err_t parar_gestion_programacion(DATOS_APLICACION *datosApp) {
 	return ESP_OK;
 }
 
+void change_status_application(DATOS_APLICACION *datosApp, ESTADO_APP new_status) {
+
+	datosApp->datosGenerales->estadoApp = new_status;
+	ESP_LOGW(TAG, ""TRAZAR"ESTADO ANTERIOR %d, ESTADO POSTERIOR %d", INFOTRAZA, datosApp->datosGenerales->estadoApp, new_status);
+
+
+
+}
 
 
 

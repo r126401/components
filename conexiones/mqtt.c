@@ -62,7 +62,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
         ESP_LOGI(TAG, ""TRAZAR"MQTT_EVENT_SUBSCRIBED: SUBSCRITOS CON EXITO AL TOPIC :%s msg_id=%d", INFOTRAZA, datosApp.datosGenerales->parametrosMqtt.subscribe, msg_id);
         if (arranque == false ){
         	appuser_notify_application_started(&datosApp);
-        	datosApp.datosGenerales->estadoApp = ESPERA_FIN_ARRANQUE;
+        	//datosApp.datosGenerales->estadoApp = ESPERA_FIN_ARRANQUE;
         	arranque = true;
         }
         break;
