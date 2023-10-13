@@ -222,14 +222,15 @@ esp_err_t inicializacion(DATOS_APLICACION *datosApp, bool forzado) {
     ESP_LOGE(TAG, ""TRAZAR" VERSION DE LA APLICACION (1)", INFOTRAZA);
     ESP_LOGE(TAG, ""TRAZAR" VERSION DE LA APLICACION %s", INFOTRAZA, datosApp->datosGenerales->ota.swVersion->version);
 
-	inicializacion_registros_alarmas(datosApp);
+	//inicializacion_registros_alarmas(datosApp);
 	if ((error = inicializar_nvs(CONFIG_NAMESPACE, &datosApp->handle))!= ESP_OK) {
 		ESP_LOGE(TAG, ""TRAZAR"ERROR POR FALLO NVS %d", INFOTRAZA, error);
-		registrar_alarma(datosApp, NOTIFICACION_ALARMA_NVS, ALARMA_NVS, ALARMA_ON, false);
+
 		return error;
 
 	} else {
-		registrar_alarma(datosApp, NOTIFICACION_ALARMA_NVS, ALARMA_NVS, ALARMA_OFF, false);
+		//registrar_alarma(datosApp, NOTIFICACION_ALARMA_NVS, ALARMA_NVS, ALARMA_OFF, false);
+
 	}
 	if (forzado) {
 		error = cargar_configuracion_defecto(datosApp);
@@ -241,10 +242,12 @@ esp_err_t inicializacion(DATOS_APLICACION *datosApp, bool forzado) {
 			ESP_LOGI(TAG, ""TRAZAR" Configuracion general leida correctamente",INFOTRAZA);
 			// cargamos en la estructura dinamica la configuracion leida
 			error = json_a_datos_aplicacion(datosApp, datos);
+			send_event(EVENT_APP_OK);
 		} else {
 			ESP_LOGW(TAG, ""TRAZAR"La configuracion no se ha cargado. Se carga la de defecto.", INFOTRAZA);
 			cargar_configuracion_defecto(datosApp);
 			if (datosApp->datosGenerales->estadoApp != FACTORY) {
+				send_event(EVENT_ERROR_APP);
 				return error;
 			}
 

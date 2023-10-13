@@ -13,6 +13,8 @@
 #include "nvslib.h"
 #include "esp_partition.h"
 #include "logging.h"
+#include "common_data.h"
+#include "alarmas.h"
 
 
 static const char *TAG = "NVS";
@@ -35,8 +37,12 @@ esp_err_t inicializar_nvs(char* namespace, nvs_handle *handle) {
     error = nvs_open(namespace, NVS_READWRITE, handle);
     if (error == ESP_OK) {
     	ESP_LOGI(TAG, ""TRAZAR"NVS abierto correctamente. handle = %ld", INFOTRAZA, *handle);
+    	//send_event_application(datosApp, NOTIFICACION_ALARMA_NVS, EVENT_NVS_OK);
+    	send_event(EVENT_NVS_OK);
     } else {
     	ESP_LOGE(TAG, ""TRAZAR"Error al abrir nvs", INFOTRAZA);
+    	//send_event_application(datosApp, NOTIFICACION_ALARMA_NVS, EVENT_ERROR_NVS);
+    	send_event(EVENT_ERROR_NVS);
     }
 
 	return error;

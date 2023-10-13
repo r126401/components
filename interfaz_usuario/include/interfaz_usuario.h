@@ -323,5 +323,6 @@ esp_err_t appuser_notify_error_wifi_connection(DATOS_APLICACION *datosApp);
 
 void appuser_notify_scan_done(DATOS_APLICACION *datosApp, wifi_ap_record_t *ap_info, uint16_t *ap_count);
 esp_err_t notify_end_starting(DATOS_APLICACION *datosApp);
+void appuser_process_event(DATOS_APLICACION *datosApp, EVENT_TYPE event);
 
 #endif /* COMPONENTS_INTERFAZ_USUARIO_INCLUDE_INTERFAZ_USUARIO_H_ */

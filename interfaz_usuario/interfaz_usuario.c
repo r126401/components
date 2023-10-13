@@ -587,7 +587,6 @@ esp_err_t appuser_received_message_extra_subscription(DATOS_APLICACION *datosApp
 	char* texto_respuesta;
 	double dato;
 	char topic[55] = {0};
-	bool flag_envio = false;
 	//ets_timer_disarm(&temporizador_lectura_remota);
 	strncpy(topic, datosApp->handle_mqtt->topic, datosApp->handle_mqtt->topic_len);
 	texto_respuesta = (char*) calloc((datosApp->handle_mqtt->data_len + 1), sizeof(char));
@@ -603,11 +602,9 @@ esp_err_t appuser_received_message_extra_subscription(DATOS_APLICACION *datosApp
 	}
 	ESP_LOGI(TAG, ""TRAZAR" temperatura remota :%lf, humedad remota:%lf", INFOTRAZA, datosApp->termostato.tempActual,datosApp->termostato.humedad);
 	cJSON_Delete(respuesta);
-	if(datosApp->alarmas[ALARMA_SENSOR_REMOTO].estado_alarma > ALARMA_OFF) {
-		flag_envio = true;
 
-	}
-	registrar_alarma(datosApp, NOTIFICACION_ALARMA_SENSOR_REMOTO, ALARMA_SENSOR_REMOTO, ALARMA_OFF, flag_envio);
+	//registrar_alarma(datosApp, NOTIFICACION_ALARMA_SENSOR_REMOTO, ALARMA_SENSOR_REMOTO, ALARMA_OFF, flag_envio);
+	send_event(EVENT_DEVICE_OK);
 
 	notify_end_starting(datosApp);
 	return ESP_OK;
@@ -884,6 +881,48 @@ void appuser_notify_scan_done(DATOS_APLICACION *datosApp, wifi_ap_record_t *ap_i
 	ESP_LOGI(TAG, ""TRAZAR"appuser_notify_scan_done", INFOTRAZA);
 	ESP_LOGI(TAG, ""TRAZAR"RECIBIDAS %d redes en app", INFOTRAZA, *ap_count);
 	lv_create_layout_search_ssid(ap_info, ap_count);
+
+
+}
+
+void appuser_process_event(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
+
+	switch (datosApp->datosGenerales->estadoApp) {
+
+	case ERROR_APP:
+		break;
+
+	case DEVICE_ALONE:
+		break;
+	case NORMAL_AUTO:
+		break;
+	case NORMAL_AUTOMAN:
+		break;
+	case NORMAL_MANUAL:
+		break;
+	case STARTING:
+		break;
+	case NORMAL_SIN_PROGRAMACION:
+		break;
+	case UPGRADE_EN_PROGRESO:
+		break;
+	case NORMAL_SINCRONIZANDO:
+		break;
+	case ESPERA_FIN_ARRANQUE:
+		break;
+	case FACTORY:
+		break;
+	case NORMAL_FIN_PROGRAMA_ACTIVO:
+		break;
+	case CHECK_PROGRAMS:
+		break;
+	default:
+		break;
+
+
+
+	}
+
 
 
 }

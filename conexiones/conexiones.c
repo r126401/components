@@ -232,12 +232,13 @@ static void on_wifi_disconnect(void *arg, esp_event_base_t event_base,
     }
 */
     if (datosApp.datosGenerales->estadoApp != UPGRADE_EN_PROGRESO) {
-    	registrar_alarma(&datosApp, NOTIFICACION_ALARMA_WIFI, ALARMA_WIFI, ALARMA_ON, false);
+    	//registrar_alarma(&datosApp, NOTIFICACION_ALARMA_WIFI, ALARMA_WIFI, ALARMA_ON, false);
+    	send_event(EVENT_ERROR_WIFI);
     	ESP_ERROR_CHECK(esp_wifi_connect());
     	xEventGroupClearBits(grupo_eventos, CONNECTED_BIT);
     }
-
-    registrar_alarma(&datosApp, NOTIFICACION_ALARMA_WIFI, ALARMA_WIFI, ALARMA_ON, false);
+    send_event(EVENT_ERROR_WIFI);
+    //registrar_alarma(&datosApp, NOTIFICACION_ALARMA_WIFI, ALARMA_WIFI, ALARMA_ON, false);
     appuser_notify_error_wifi_connection(&datosApp);
 
 
@@ -250,9 +251,12 @@ static void on_got_ip(void *arg, esp_event_base_t event_base,
     ip_event_got_ip_t *event = (ip_event_got_ip_t *)event_data;
     memcpy(&s_ip_addr, &event->ip_info.ip, sizeof(s_ip_addr));
     xEventGroupSetBits(grupo_eventos, CONNECTED_BIT);
-    registrar_alarma(&datosApp, NOTIFICACION_ALARMA_WIFI, ALARMA_WIFI, ALARMA_OFF, false);
-    appuser_notify_wifi_connected_ok(&datosApp);
-    sync_app_by_ntp(&datosApp);
+    //registrar_alarma(&datosApp, NOTIFICACION_ALARMA_WIFI, ALARMA_WIFI, ALARMA_OFF, false);
+    //send_event_application(&datosApp, NOTIFICACION_ALARMA_WIFI, EVENT_WIFI_OK);
+    send_event(EVENT_WIFI_OK);
+    //appuser_notify_wifi_connected_ok(&datosApp);
+
+
 }
 
 
@@ -426,11 +430,13 @@ void sync_app_by_ntp(DATOS_APLICACION *datosApp) {
 		ESP_LOGW(TAG, ""TRAZAR"NO SE HA PODIDO OBTENER LA HORA DEL SERVIDOR NTP. NO HABRA PROGRAMACION. error: %d", INFOTRAZA, error);
 		datosApp->datosGenerales->estadoProgramacion = INVALID_PROG;
 		appuser_error_get_date_sntp(datosApp);
-		registrar_alarma(datosApp, NOTIFICACION_ALARMA_NTP, ALARMA_NTP, ALARMA_ON, false);
+		//registrar_alarma(datosApp, NOTIFICACION_ALARMA_NTP, ALARMA_NTP, ALARMA_ON, false);
+		send_event(EVENT_ERROR_NTP);
 
 	} else {
 		ESP_LOGI(TAG, ""TRAZAR" VAMOS A REGISTRAR ALARMA", INFOTRAZA);
-		registrar_alarma(datosApp, NOTIFICACION_ALARMA_NTP, ALARMA_NTP, ALARMA_OFF, false);
+		//registrar_alarma(datosApp, NOTIFICACION_ALARMA_NTP, ALARMA_NTP, ALARMA_OFF, false);
+		send_event(EVENT_NTP_OK);
 		appuser_sntp_ok(datosApp);
 		actualizar_hora(&datosApp->datosGenerales->clock);
 		//ESP_LOGI(TAG, ""TRAZAR"Hora inicializada:%s", INFOTRAZA, pintar_fecha(datosApp->datosGenerales->clock.date);
