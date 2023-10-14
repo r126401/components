@@ -170,7 +170,11 @@ esp_err_t appuser_notify_smartconfig(DATOS_APLICACION *datosApp);
  * @return
  */
 
-esp_err_t appuser_notify_local_alarm(DATOS_APLICACION *datosApp, uint8_t indice);
+esp_err_t appuser_notify_error_device(DATOS_APLICACION *datosApp);
+
+esp_err_t appuser_notify_device_ok(DATOS_APLICACION *datosApp);
+
+
 
 
 /**

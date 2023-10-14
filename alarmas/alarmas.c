@@ -152,7 +152,7 @@ static esp_err_t registrar_alarma(DATOS_APLICACION *datosApp, char* mnemonico_al
 
 
 
-	appuser_notify_local_alarm(datosApp, tipo_alarma);
+	//appuser_notify_error_device(datosApp, tipo_alarma);
 	return ESP_OK;
 }
 
@@ -239,25 +239,12 @@ void process_event_wifi_ok(DATOS_APLICACION *datosApp) {
 
 	switch(datosApp->datosGenerales->estadoApp) {
 
-	case NORMAL_AUTOMAN:
-	case NORMAL_MANUAL:
-	case NORMAL_SIN_PROGRAMACION:
-	case UPGRADE_EN_PROGRESO:
-	case NORMAL_SINCRONIZANDO:
-	case ESPERA_FIN_ARRANQUE:
-	case NORMAL_AUTO:
-	case ERROR_APP:
-	case DEVICE_ALONE:
-	case CHECK_PROGRAMS:
+
+	default:
 		registrar_alarma(datosApp, MNEMONIC_ALARM_WIFI, ALARM_WIFI, ALARM_OFF, true);
-		//appuser_notify_wifi_connected_ok(datosApp);
 		break;
 
-	case FACTORY:
-	case NORMAL_FIN_PROGRAMA_ACTIVO:
-	case STARTING:
-		registrar_alarma(datosApp, MNEMONIC_ALARM_WIFI, ALARM_WIFI, ALARM_OFF, false);
-		break;
+
 	}
 
 	appuser_notify_wifi_connected_ok(datosApp);
@@ -268,25 +255,12 @@ void process_event_error_wifi(DATOS_APLICACION *datosApp) {
 
 	switch(datosApp->datosGenerales->estadoApp) {
 
-	case NORMAL_AUTO:
-	case NORMAL_AUTOMAN:
-	case NORMAL_MANUAL:
-	case STARTING:
-	case NORMAL_SIN_PROGRAMACION:
-	case NORMAL_SINCRONIZANDO:
-	case ESPERA_FIN_ARRANQUE:
-	case UPGRADE_EN_PROGRESO:
-	case NORMAL_FIN_PROGRAMA_ACTIVO:
-	case ERROR_APP:
-	case DEVICE_ALONE:
-	case CHECK_PROGRAMS:
-	case FACTORY:
 
+
+	default:
 		registrar_alarma(datosApp, MNEMONIC_ALARM_WIFI, ALARM_WIFI, ALARM_ON, false);
 		registrar_alarma(datosApp, MNEMONIC_ALARM_NTP, ALARM_NTP, ALARM_ON, false);
 		registrar_alarma(datosApp, MNEMONIC_ALARM_MQTT, ALARM_MQTT, ALARM_ON, false);
-
-	default:
 		break;
 
 	}
@@ -309,6 +283,10 @@ void receive_event(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 	case EVENT_WARNING_DEVICE:
 		break;
 	case EVENT_ERROR_DEVICE:
+		if (datosApp->alarmas[ALARM_DEVICE].estado_alarma == ALARM_OFF) {
+			registrar_alarma(datosApp, MNEMONIC_ALARM_DEVICE, ALARM_DEVICE, ALARM_ON, true);
+		}
+		appuser_notify_error_device(datosApp);
 		break;
 	case EVENT_ERROR_APP:
 		ESP_LOGE(TAG, ""TRAZAR"RECIBIDO ERROR APP", INFOTRAZA);
@@ -337,6 +315,10 @@ void receive_event(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 		registrar_alarma(datosApp, MNEMONIC_ALARM_MQTT, ALARM_MQTT, ALARM_ON, false);
 		break;
 	case EVENT_DEVICE_OK:
+		if (datosApp->alarmas[ALARM_DEVICE].estado_alarma == ALARM_ON) {
+			registrar_alarma(datosApp, MNEMONIC_ALARM_DEVICE, ALARM_DEVICE, ALARM_OFF, true);
+		}
+		appuser_notify_device_ok(datosApp);
 		break;
 	case EVENT_APP_OK:
 		ESP_LOGE(TAG, ""TRAZAR"RECIBIDO APP OK", INFOTRAZA);
@@ -355,7 +337,7 @@ void receive_event(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 		process_event_wifi_ok(datosApp);
 		break;
 	case EVENT_MQTT_OK:
-		registrar_alarma(datosApp, MNEMONIC_ALARM_MQTT, ALARM_MQTT, ALARM_ON, true);
+		registrar_alarma(datosApp, MNEMONIC_ALARM_MQTT, ALARM_MQTT, ALARM_OFF, true);
 		break;
 	case EVENT_INSERT_SCHEDULE:
 		break;
@@ -397,6 +379,7 @@ void init_alarms(DATOS_APLICACION *datosApp) {
 		strncpy(datosApp->alarmas[ALARM_WIFI].nemonico, MNEMONIC_ALARM_WIFI, 50);
 		strncpy(datosApp->alarmas[ALARM_NTP].nemonico, MNEMONIC_ALARM_NTP, 50);
 		strncpy(datosApp->alarmas[ALARM_MQTT].nemonico, MNEMONIC_ALARM_MQTT, 50);
+		strncpy(datosApp->alarmas[ALARM_DEVICE_WARNING].nemonico, MNEMONIC_ALARM_DEVICE_WARNING, 50);
 		ESP_LOGI(TAG, ""TRAZAR" INICIALIZADAS ALARMAS, TIPO_ALARMA: %s, ESTADO: %s, FECHA: %llu", INFOTRAZA,
 				datosApp->alarmas[i].nemonico,
 				status_alarm_to_mnemonic(datosApp->alarmas[i].estado_alarma),

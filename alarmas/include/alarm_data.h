@@ -17,6 +17,7 @@
 
 
 #define MNEMONIC_ALARM_DEVICE	"alarmDevice"
+#define MNEMONIC_ALARM_DEVICE_WARNING	"alarmDevice"
 #define MNEMONIC_ALARM_APP		"alarmApp"
 #define MNEMONIC_ALARM_LCD		"alarmLcd"
 #define MNEMONIC_ALARM_WIFI		"alarmaWifi"
@@ -42,6 +43,7 @@ typedef enum ALARM_STATUS {
 
 typedef enum ALARM_TYPE {
 	ALARM_DEVICE,
+	ALARM_DEVICE_WARNING,
 	ALARM_APP,
 	ALARM_LCD,
 	ALARM_NVS,

@@ -316,7 +316,17 @@ esp_err_t appuser_start_schedule(DATOS_APLICACION *datosApp) {
 	return ESP_OK;
 }
 
-esp_err_t appuser_notify_local_alarm(DATOS_APLICACION *datosApp, uint8_t indice) {
+esp_err_t appuser_notify_error_device(DATOS_APLICACION *datosApp) {
+
+	ESP_LOGI(TAG, ""TRAZAR"appuser_notify_local_alarm", INFOTRAZA);
+	lv_update_alarm_device(datosApp);
+
+
+	return ESP_OK;
+}
+
+
+esp_err_t appuser_notify_device_ok(DATOS_APLICACION *datosApp) {
 	
 	ESP_LOGI(TAG, ""TRAZAR"appuser_notify_local_alarm", INFOTRAZA);
 	lv_update_alarm_device(datosApp);
@@ -324,6 +334,7 @@ esp_err_t appuser_notify_local_alarm(DATOS_APLICACION *datosApp, uint8_t indice)
 
 	return ESP_OK;
 }
+
 
 cJSON* appuser_send_spontaneous_report(DATOS_APLICACION *datosApp, enum TIPO_INFORME tipoInforme, cJSON *comandoOriginal) {
 

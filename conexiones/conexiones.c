@@ -239,7 +239,7 @@ static void on_wifi_disconnect(void *arg, esp_event_base_t event_base,
     }
     send_event(EVENT_ERROR_WIFI);
     //registrar_alarma(&datosApp, NOTIFICACION_ALARMA_WIFI, ALARMA_WIFI, ALARMA_ON, false);
-    appuser_notify_error_wifi_connection(&datosApp);
+    //appuser_notify_error_wifi_connection(&datosApp);
 
 
 }
