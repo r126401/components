@@ -79,6 +79,9 @@ cJSON*  analizar_comando(DATOS_APLICACION *datosApp, char* info) {
     }
     ESP_LOGW(TAG, ""TRAZAR"Memoria libre(3) Se ha creado el objeto peticion: %ld\n", INFOTRAZA, esp_get_free_heap_size());
     respuesta = cabeceraRespuestaComando(datosApp, peticion);
+    if (respuesta == NULL) {
+    	return NULL;
+    }
     ESP_LOGW(TAG, ""TRAZAR"Memoria libre(4) Se ha creado la respuesta: %ld\n", INFOTRAZA, esp_get_free_heap_size());
     if (com >= 50) {
         appuser_set_command_application(peticion, idComando->valueint, datosApp, respuesta);
@@ -199,6 +202,9 @@ cJSON*  analizar_comando(DATOS_APLICACION *datosApp, char* info) {
      cJSON *com = NULL;
 
      respuesta = cabeceraGeneral(datosApp);
+     if (respuesta == NULL) {
+    	 return NULL;
+     }
      if (peticion != NULL) {
          parteComando = cJSON_GetObjectItem(peticion, COMANDO);
          if (parteComando != NULL) {
@@ -225,13 +231,16 @@ cJSON*  analizar_comando(DATOS_APLICACION *datosApp, char* info) {
 
      char fecha[100];
      cJSON *respuesta = NULL;
+     char *mac = NULL;
 
      sprintf(fecha, "%02d/%02d/%d %02d:%02d:%02d",
         datosApp->datosGenerales->clock.date.tm_mday,datosApp->datosGenerales->clock.date.tm_mon+1, datosApp->datosGenerales->clock.date.tm_year+1900,
         datosApp->datosGenerales->clock.date.tm_hour, datosApp->datosGenerales->clock.date.tm_min, datosApp->datosGenerales->clock.date.tm_sec);
-
+     if ((mac = get_my_id()) == NULL) {
+    	 return NULL;
+     }
      respuesta = cJSON_CreateObject();
-     cJSON_AddStringToObject(respuesta, ID_DEVICE, get_my_id());
+     cJSON_AddStringToObject(respuesta, ID_DEVICE, mac);
      cJSON_AddNumberToObject(respuesta, DEVICE, datosApp->datosGenerales->tipoDispositivo);
      cJSON_AddStringToObject(respuesta, OTA_SW_VERSION, datosApp->datosGenerales->ota.swVersion->version);
      cJSON_AddStringToObject(respuesta, DATE, fecha);
@@ -729,7 +738,12 @@ cJSON*   cabecera_espontaneo(DATOS_APLICACION *datosApp, enum TIPO_INFORME tipo_
 
     cJSON *respuesta;
     respuesta = cabeceraGeneral(datosApp);
-    cJSON_AddNumberToObject(respuesta, TIPO_REPORT, tipo_report);
+    if (respuesta == NULL) {
+    	return NULL;
+    } else {
+    	cJSON_AddNumberToObject(respuesta, TIPO_REPORT, tipo_report);
+    }
+
     return respuesta;
 
 }
@@ -839,6 +853,9 @@ esp_err_t notificar_evento_alarma(DATOS_APLICACION *datosApp, int tipo_alarma, c
 	cJSON *respuesta;
 
 	respuesta = cabecera_espontaneo(datosApp, INFORME_ALARMA);
+	if (respuesta == NULL) {
+		return ESP_FAIL;
+	}
 	cJSON_AddNumberToObject(respuesta, mnemonico_alarma, datosApp->alarmas[tipo_alarma].estado_alarma);
 	cJSON_AddNumberToObject(respuesta, FECHA_ALARMA, datosApp->alarmas[tipo_alarma].fecha_alarma);
 	publicar_mensaje_json(datosApp, respuesta, NULL);
@@ -849,10 +866,10 @@ esp_err_t notificar_evento_alarma(DATOS_APLICACION *datosApp, int tipo_alarma, c
 esp_err_t    visualizar_alarmas_activas(DATOS_APLICACION *datosApp, cJSON *respuesta) {
 
 
-	cJSON_AddNumberToObject(respuesta, NOTIFICACION_ALARMA_WIFI, datosApp->alarmas[0].estado_alarma);
-	cJSON_AddNumberToObject(respuesta, NOTIFICACION_ALARMA_MQTT, datosApp->alarmas[1].estado_alarma);
-	cJSON_AddNumberToObject(respuesta, NOTIFICACION_ALARMA_NTP, datosApp->alarmas[2].estado_alarma);
-	cJSON_AddNumberToObject(respuesta, NOTIFICACION_ALARMA_NVS, datosApp->alarmas[3].estado_alarma);
+	cJSON_AddNumberToObject(respuesta, MNEMONIC_ALARM_WIFI, datosApp->alarmas[0].estado_alarma);
+	cJSON_AddNumberToObject(respuesta, MNEMONIC_ALARM_MQTT, datosApp->alarmas[1].estado_alarma);
+	cJSON_AddNumberToObject(respuesta, MNEMONIC_ALARM_NTP, datosApp->alarmas[2].estado_alarma);
+	cJSON_AddNumberToObject(respuesta, MNEMONIC_ALARM_NVS, datosApp->alarmas[3].estado_alarma);
 	codigoRespuesta(respuesta, RESP_OK);
 
 	return ESP_OK;

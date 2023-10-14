@@ -295,7 +295,7 @@ esp_err_t appuser_notify_app_status(DATOS_APLICACION *datosApp, enum ESTADO_APP 
 void appuser_notify_schedule_events(DATOS_APLICACION *datosApp);
 
 
-void nemonicos_alarmas(DATOS_APLICACION *datosApp, int i);
+//void nemonicos_alarmas(DATOS_APLICACION *datosApp, int i);
 /**
  * @fn cJSON appuser_send_spontaneous_report*(DATOS_APLICACION*, enum TIPO_INFORME, cJSON*)
  * @brief Esta funcion envia de manera normalizada los reportes espontaneos de la aplicacion.

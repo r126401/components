@@ -698,7 +698,7 @@ void gestion_programas(void *arg) {
 
 	case CHECK_PROGRAMS:
 		ESP_LOGW(TAG, ""TRAZAR"CHECK_PROGRAMS", INFOTRAZA);
-		if (datosApp->alarmas[ALARMA_NTP].estado_alarma == ALARMA_ON) {
+		if (datosApp->alarmas[ALARM_NTP].estado_alarma == ALARM_ON) {
 			ESP_LOGW(TAG, ""TRAZAR"SIN CALCULO DE PROGRAMA ACTIVO POR FALLO NTP", INFOTRAZA);
 		} else {
 			if (datosApp->datosGenerales->nProgramacion == 0) {
@@ -951,10 +951,9 @@ esp_err_t parar_gestion_programacion(DATOS_APLICACION *datosApp) {
 
 void change_status_application(DATOS_APLICACION *datosApp, ESTADO_APP new_status) {
 
+
 	datosApp->datosGenerales->estadoApp = new_status;
-	ESP_LOGW(TAG, ""TRAZAR"ESTADO ANTERIOR %d, ESTADO POSTERIOR %d", INFOTRAZA, datosApp->datosGenerales->estadoApp, new_status);
-
-
+	ESP_LOGW(TAG, ""TRAZAR"ESTADO ANTERIOR %s, ESTADO POSTERIOR %s", INFOTRAZA, status2mnemonic(datosApp->datosGenerales->estadoApp), status2mnemonic(new_status));
 
 }
 

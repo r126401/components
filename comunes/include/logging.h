@@ -13,11 +13,13 @@
 #include "nvs_flash.h"
 #include "esp_app_format.h"
 #include "esp_app_desc.h"
+#include "common_data.h"
 
 
 #define TRAZAR "%s:%s:%d-->"
 #define INFOTRAZA pintar_fecha(), __func__, __LINE__
 
 char* pintar_fecha();
+char* status2mnemonic(ESTADO_APP status);
 
 #endif /* COMPONENTS_COMUNES_INCLUDE_LOGGING_H_ */

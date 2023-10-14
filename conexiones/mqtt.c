@@ -48,7 +48,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
         appuser_notify_broker_connected_ok(&datosApp);
         msg_id = esp_mqtt_client_subscribe(client, datosApp.datosGenerales->parametrosMqtt.subscribe,datosApp.datosGenerales->parametrosMqtt.qos);
         ESP_LOGI(TAG, ""TRAZAR"ACCION PARA SUBSCRIBIR AL TOPIC :%s msg_id=%d", INFOTRAZA, datosApp.datosGenerales->parametrosMqtt.subscribe, msg_id);
-        if (datosApp.alarmas[ALARMA_MQTT].estado_alarma == ALARMA_ON) {
+        if (datosApp.alarmas[ALARM_MQTT].estado_alarma == ALARM_ON) {
         	//registrar_alarma(&datosApp, NOTIFICACION_ALARMA_MQTT, ALARMA_MQTT, ALARMA_OFF, true);
         	send_event(EVENT_MQTT_OK);
         }

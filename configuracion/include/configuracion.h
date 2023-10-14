@@ -45,7 +45,7 @@ esp_err_t leer_configuracion(DATOS_APLICACION *datosApp, char* clave, char* valo
  * @param forzado
  * @return
  */
-esp_err_t inicializacion(DATOS_APLICACION *datosApp, bool forzado);
+esp_err_t init_application(DATOS_APLICACION *datosApp, bool forzado);
 /**
  * @fn esp_err_t cargar_configuracion_defecto(DATOS_APLICACION*)
  * @brief Realiza la carga de configuracion minima que necesita el dispositivo para funcionar.
@@ -123,7 +123,7 @@ esp_err_t json_a_ota(DATOS_APLICACION *datosApp);
 /**
  * Chequea si la configuracion del dispositivo es de fabrica.
  */
-esp_err_t configurado_de_fabrica();
+esp_err_t is_factory();
 
 
 #endif /* COMPONENTS_CONFIGURACION_INCLUDE_CONFIGURACION_H_ */

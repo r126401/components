@@ -212,7 +212,7 @@ esp_err_t leer_configuracion(DATOS_APLICACION *datosApp, char* clave, char* valo
  * @brief Rutina principal que trata la configuracion de arranque del dispositivo.
  *
  */
-esp_err_t inicializacion(DATOS_APLICACION *datosApp, bool forzado) {
+esp_err_t init_application(DATOS_APLICACION *datosApp, bool forzado) {
 
 
 	esp_err_t error;
@@ -443,21 +443,6 @@ esp_err_t cargar_programas(DATOS_APLICACION *datosApp, char *programas) {
 		}
 		appuser_load_schedule_extra_data(datosApp, &programa_actual, nodo);
 
-		/*
-		switch(datosApp->datosGenerales->tipoDispositivo) {
-
-		case INTERRUPTOR:
-			cargar_programas_interruptor(&programa_actual, nodo);
-			break;
-		case CRONOTERMOSTATO:
-			cargar_programas_cronotermostato(&programa_actual, nodo);
-			break;
-		case TERMOMETRO:
-			break;
-			default:
-			break;
-		}
-*/
 		visualizartiempo(programa_actual.programacion);
 		datosApp->datosGenerales->programacion = crearPrograma(&programa_actual, datosApp->datosGenerales->programacion, &datosApp->datosGenerales->nProgramacion);
 
@@ -554,7 +539,7 @@ esp_err_t json_a_ota(DATOS_APLICACION *datosApp) {
 	return error;
 }
 
-esp_err_t configurado_de_fabrica() {
+esp_err_t is_factory() {
 
 
 

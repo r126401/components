@@ -609,38 +609,23 @@ esp_err_t appuser_received_message_extra_subscription(DATOS_APLICACION *datosApp
 	notify_end_starting(datosApp);
 	return ESP_OK;
 }
-
+/*
 void nemonicos_alarmas(DATOS_APLICACION *datosApp, int i) {
 
 	ESP_LOGI(TAG, ""TRAZAR"nemonicos_alarmas", INFOTRAZA);
 	
-	switch(i) {
-	case 0:
-		strncpy(datosApp->alarmas[i].nemonico, "WiFi................", 50);
-		break;
-	case 1:
-		strncpy(datosApp->alarmas[i].nemonico, "Servidor Mqtt.......", 50);
-		break;
-	case 2:
-		strncpy(datosApp->alarmas[i].nemonico, "Reloj...............", 50);
-		break;
-	case 3:
-		strncpy(datosApp->alarmas[i].nemonico, "Nvs.................", 50);
-		break;
-	case 4:
-		strncpy(datosApp->alarmas[i].nemonico, "Sensor local........", 50);
-		break;
-	case 5:
-		strncpy(datosApp->alarmas[i].nemonico, "sensor remoto.......", 50);
-		break;
-	default:
-		strncpy(datosApp->alarmas[i].nemonico, "alarma no registrada", 50);
-		break;
+	strncpy(datosApp->alarmas[ALARM_DEVICE].nemonico, MNEMONIC_ALARM_DEVICE, 50);
+	strncpy(datosApp->alarmas[ALARM_APP].nemonico, MNEMONIC_ALARM_APP, 50);
+	strncpy(datosApp->alarmas[ALARM_NVS].nemonico, MNEMONIC_ALARM_NVS, 50);
+	strncpy(datosApp->alarmas[ALARM_WIFI].nemonico, MNEMONIC_ALARM_WIFI, 50);
+	strncpy(datosApp->alarmas[ALARM_NTP].nemonico, MNEMONIC_ALARM_NTP, 50);
+	strncpy(datosApp->alarmas[ALARM_MQTT].nemonico, MNEMONIC_ALARM_MQTT, 50);
 
-	}
+
 
 
 }
+*/
 
 esp_err_t appuser_notify_app_status(DATOS_APLICACION *datosApp, enum ESTADO_APP estado) {
 

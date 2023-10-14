@@ -20,6 +20,7 @@
 
 
 
+
 typedef enum EVENT_TYPE {
 
 	EVENT_WARNING_DEVICE,
@@ -121,7 +122,7 @@ typedef struct DATOS_APLICACION {
 	DATOS_GENERALES *datosGenerales;
     nvs_handle handle;
     esp_mqtt_event_handle_t handle_mqtt;
-    ALARMA alarmas[CONFIG_NUMERO_ALARMAS_PROVISIONADAS];
+    ALARMA alarmas[ALARM_END];
     DATOS_TERMOSTATO termostato;
 
 
