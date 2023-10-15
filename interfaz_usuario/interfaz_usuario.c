@@ -640,54 +640,64 @@ void nemonicos_alarmas(DATOS_APLICACION *datosApp, int i) {
 
 esp_err_t appuser_notify_app_status(DATOS_APLICACION *datosApp, enum ESTADO_APP estado) {
 
+	char status[50] = {0};
 
 	ESP_LOGI(TAG, ""TRAZAR"appuser_notify_app_status", INFOTRAZA);
 
 	switch(datosApp->datosGenerales->estadoApp) {
 
 	case NORMAL_AUTO:
+		strcpy(status, "AUTO");
 		break;
 	case NORMAL_AUTOMAN:
+		strcpy(status, "AUTO*");
 		break;
 	case NORMAL_MANUAL:
-		datosApp->termostato.tempUmbral = datosApp->termostato.tempUmbralDefecto;
-		lv_update_threshold(datosApp);
+		strcpy(status, "MANUAL");
+		break;
 	case STARTING:
+		strcpy(status, "STARTING");
 		break;
 	case NORMAL_SIN_PROGRAMACION:
-		ESP_LOGI(TAG, ""TRAZAR" PONEMOS EL UMBRAL A %lf", INFOTRAZA, datosApp->termostato.tempUmbralDefecto);
-		datosApp->termostato.tempUmbral = datosApp->termostato.tempUmbralDefecto;
-		lv_update_threshold(datosApp);
+		strcpy(status, "NO ACTIVO");
 		break;
 	case UPGRADE_EN_PROGRESO:
+		strcpy(status, "UPGRADE EN PROGRESO");
 		break;
 	case NORMAL_SINCRONIZANDO:
+		strcpy(status, "SINCRONIZANDO");
 		break;
 	case ESPERA_FIN_ARRANQUE:
+		strcpy(status, "----");
 		break;
 	case FACTORY:
+		strcpy(status, "FACTORY");
 		break;
 	case NORMAL_FIN_PROGRAMA_ACTIVO:
+		strcpy(status, "AUTO");
 		break;
 	case ERROR_APP:
+		strcpy(status, "ERROR_APP");
 		break;
 	case DEVICE_ALONE:
+		strcpy(status, "TERMOSTATO");
 		break;
 	case CHECK_PROGRAMS:
+		strcpy(status, "CHECK");
 		break;
 
 
 	}
 
 
-	lv_update_status_application(datosApp);
+	lv_update_status_application(status);
 	return ESP_OK;
 }
 
 
 void appuser_notify_schedule_events(DATOS_APLICACION *datosApp) {
 
-	ESP_LOGI(TAG, ""TRAZAR"appuser_notify_schedule_events", INFOTRAZA);
+	//ESP_LOGI(TAG, ""TRAZAR"appuser_notify_schedule_events", INFOTRAZA);
 	
 	static bool start = true;
 	char fecha_actual[10] = {0};

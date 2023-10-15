@@ -166,7 +166,7 @@ esp_err_t establecer_conexion_mqtt(DATOS_APLICACION *datosApp) {
     esp_mqtt_client_register_event(client, ESP_EVENT_ANY_ID, mqtt_event_handler, NULL);
 
     if (datosApp->datosGenerales->parametrosMqtt.tls == true) {
-    	ESP_LOGI(TAG, ""TRAZAR"Añadimos el certificado %s", INFOTRAZA, mqtt_jajica_pem_start);
+    	ESP_LOGD(TAG, ""TRAZAR"Añadimos el certificado %s", INFOTRAZA, mqtt_jajica_pem_start);
 
     	esp_tls_init();
     	error = esp_tls_init_global_ca_store ();

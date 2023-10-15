@@ -13,6 +13,7 @@
 #include "api_json.h"
 #include "interfaz_usuario.h"
 #include "alarm_data.h"
+#include "conexiones.h"
 
 
 xQueueHandle event_queue;
@@ -247,6 +248,7 @@ void process_event_wifi_ok(DATOS_APLICACION *datosApp) {
 
 	}
 
+	sync_app_by_ntp(datosApp);
 	appuser_notify_wifi_connected_ok(datosApp);
 
 }
@@ -259,8 +261,9 @@ void process_event_error_wifi(DATOS_APLICACION *datosApp) {
 
 	default:
 		registrar_alarma(datosApp, MNEMONIC_ALARM_WIFI, ALARM_WIFI, ALARM_ON, false);
-		registrar_alarma(datosApp, MNEMONIC_ALARM_NTP, ALARM_NTP, ALARM_ON, false);
-		registrar_alarma(datosApp, MNEMONIC_ALARM_MQTT, ALARM_MQTT, ALARM_ON, false);
+		send_event(EVENT_ERROR_NTP);
+		send_event(EVENT_ERROR_MQTT);
+
 		break;
 
 	}
@@ -270,8 +273,46 @@ void process_event_error_wifi(DATOS_APLICACION *datosApp) {
 
 }
 
+void process_event_ntp_ok(DATOS_APLICACION *datosApp) {
+
+	switch(datosApp->datosGenerales->estadoApp) {
 
 
+	default:
+		registrar_alarma(datosApp, MNEMONIC_ALARM_NTP, ALARM_NTP, ALARM_OFF, true);
+		actualizar_hora(&datosApp->datosGenerales->clock);
+		datosApp->datosGenerales->estadoProgramacion = VALID_PROG;
+		change_status_application(datosApp, CHECK_PROGRAMS);
+		break;
+
+
+	}
+	appuser_sntp_ok(datosApp);
+}
+
+void process_event_error_ntp(DATOS_APLICACION *datosApp) {
+
+
+	switch(datosApp->datosGenerales->estadoApp) {
+
+	case NORMAL_AUTO:
+	case NORMAL_AUTOMAN:
+		change_status_application(datosApp, DEVICE_ALONE);
+		registrar_alarma(datosApp, MNEMONIC_ALARM_NTP, ALARM_NTP, ALARM_ON, true);
+		datosApp->datosGenerales->estadoProgramacion = INVALID_PROG;
+		break;
+
+	default:
+		registrar_alarma(datosApp, MNEMONIC_ALARM_NTP, ALARM_NTP, ALARM_ON, true);
+		datosApp->datosGenerales->estadoProgramacion = INVALID_PROG;
+		break;
+
+
+	}
+
+	appuser_error_get_date_sntp(datosApp);
+
+}
 
 
 void receive_event(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
@@ -287,6 +328,7 @@ void receive_event(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 			registrar_alarma(datosApp, MNEMONIC_ALARM_DEVICE, ALARM_DEVICE, ALARM_ON, true);
 		}
 		appuser_notify_error_device(datosApp);
+		change_status_application(datosApp, ERROR_APP);
 		break;
 	case EVENT_ERROR_APP:
 		ESP_LOGE(TAG, ""TRAZAR"RECIBIDO ERROR APP", INFOTRAZA);
@@ -306,7 +348,7 @@ void receive_event(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 		registrar_alarma(datosApp, MNEMONIC_ALARM_LCD, ALARM_LCD, ALARM_ON, true);
 		break;
 	case EVENT_ERROR_NTP:
-		registrar_alarma(datosApp, MNEMONIC_ALARM_NTP, ALARM_NTP, ALARM_ON, true);
+		process_event_error_ntp(datosApp);
 		break;
 	case EVENT_ERROR_WIFI:
 		process_event_error_wifi(datosApp);
@@ -319,6 +361,12 @@ void receive_event(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 			registrar_alarma(datosApp, MNEMONIC_ALARM_DEVICE, ALARM_DEVICE, ALARM_OFF, true);
 		}
 		appuser_notify_device_ok(datosApp);
+		if (datosApp->alarmas[ALARM_NTP].estado_alarma == ALARM_OFF) {
+			change_status_application(datosApp, NORMAL_AUTO);
+		} else {
+			change_status_application(datosApp,NORMAL_MANUAL);
+		}
+
 		break;
 	case EVENT_APP_OK:
 		ESP_LOGE(TAG, ""TRAZAR"RECIBIDO APP OK", INFOTRAZA);
@@ -331,7 +379,7 @@ void receive_event(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 		ESP_LOGE(TAG, ""TRAZAR"RECIBIDO LCD OK", INFOTRAZA);
 		break;
 	case EVENT_NTP_OK:
-		registrar_alarma(datosApp, MNEMONIC_ALARM_NTP, ALARM_NTP, ALARM_OFF, true);
+		process_event_ntp_ok(datosApp);
 		break;
 	case EVENT_WIFI_OK:
 		process_event_wifi_ok(datosApp);

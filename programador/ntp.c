@@ -16,6 +16,7 @@
 #include "time.h"
 #include "esp_sntp.h"
 #include "logging.h"
+#include "alarmas.h"
 
 
 #define TIMEOUT_NTP CONFIG_TIMEOUT_NTP
@@ -43,7 +44,15 @@ void inicializar_parametros_ntp(NTP_CLOCK *clock) {
 
  void notificar_sincronizacion_ntp(struct timeval *tv)
  {
-     ESP_LOGI(TAG, ""TRAZAR"Evento de notificacion de sincronizacion ntp", INFOTRAZA);
+
+	 if (sntp_get_sync_status() == SNTP_SYNC_STATUS_COMPLETED) {
+		 send_event(EVENT_NTP_OK);
+		 ESP_LOGI(TAG, ""TRAZAR"Evento de notificacion de sincronizacion ntp", INFOTRAZA);
+	 } else {
+		 send_event(EVENT_ERROR_NTP);
+		 ESP_LOGE(TAG, ""TRAZAR"Evento de sincronizacion no completado", INFOTRAZA);
+	 }
+
  }
 
 

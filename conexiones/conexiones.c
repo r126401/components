@@ -425,7 +425,7 @@ void sync_app_by_ntp(DATOS_APLICACION *datosApp) {
 	ESP_LOGW(TAG, ""TRAZAR"(1)", INFOTRAZA);
 	error = obtener_fecha_hora(&datosApp->datosGenerales->clock);
 	ESP_LOGW(TAG, ""TRAZAR"(2)", INFOTRAZA);
-
+/*
 	if (error != ESP_OK) {
 		ESP_LOGW(TAG, ""TRAZAR"NO SE HA PODIDO OBTENER LA HORA DEL SERVIDOR NTP. NO HABRA PROGRAMACION. error: %d", INFOTRAZA, error);
 		datosApp->datosGenerales->estadoProgramacion = INVALID_PROG;
@@ -445,6 +445,7 @@ void sync_app_by_ntp(DATOS_APLICACION *datosApp) {
 
 
 	}
+	*/
 }
 
 esp_err_t get_scan_station_list() {
@@ -475,7 +476,7 @@ void wifi_task(void *arg) {
 	DATOS_APLICACION *datosApp = (DATOS_APLICACION*) arg;
 	while (1) {
 		conectar_dispositivo_wifi();
-		sync_app_by_ntp(datosApp);
+		//sync_app_by_ntp(datosApp);
 		crear_tarea_mqtt(datosApp);
 		iniciar_gestion_programacion(datosApp);
 	}

@@ -723,7 +723,6 @@ void gestion_programas(void *arg) {
 
 	case NORMAL_AUTO:
 	case NORMAL_AUTOMAN:
-		ESP_LOGW(TAG, ""TRAZAR"NORMAL_AUTO", INFOTRAZA);
 		if((hora.tm_hour == 0) && (hora.tm_min == 0) && (hora.tm_sec == 0)) {
 			calcular_programa_activo(datosApp, &t_siguiente_intervalo);
 		}
@@ -951,9 +950,11 @@ esp_err_t parar_gestion_programacion(DATOS_APLICACION *datosApp) {
 
 void change_status_application(DATOS_APLICACION *datosApp, ESTADO_APP new_status) {
 
-
+	ESP_LOGW(TAG, ""TRAZAR"ESTADO ANTERIOR %s", INFOTRAZA, status2mnemonic(datosApp->datosGenerales->estadoApp));
 	datosApp->datosGenerales->estadoApp = new_status;
-	ESP_LOGW(TAG, ""TRAZAR"ESTADO ANTERIOR %s, ESTADO POSTERIOR %s", INFOTRAZA, status2mnemonic(datosApp->datosGenerales->estadoApp), status2mnemonic(new_status));
+	ESP_LOGW(TAG, ""TRAZAR"ESTADO POSTERIOR %s", INFOTRAZA, status2mnemonic(new_status));
+	appuser_notify_app_status(datosApp, new_status);
+
 
 }
 
