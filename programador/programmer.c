@@ -15,6 +15,7 @@
 #include "esp_err.h"
 #include "interfaz_usuario.h"
 #include "esp_timer.h"
+#include "alarmas.h"
 
 //static ETSTimer timerDuracion;
 static const char *TAG = "PROGRAMADOR";
@@ -662,13 +663,14 @@ esp_err_t calcular_programa_activo(DATOS_APLICACION *datosApp, time_t *t_siguien
 		ESP_LOGI(TAG, ""TRAZAR"El elemento seleccionado es %d", INFOTRAZA, datosApp->datosGenerales->nProgramaCandidato);
 		visualizartiempo(datosApp->datosGenerales->programacion[datosApp->datosGenerales->nProgramaCandidato].programacion);
 		ESP_LOGI(TAG, ""TRAZAR"START_SCHEDULE", INFOTRAZA);
-		change_status_application(datosApp, NORMAL_AUTO);
-		activacion_programa(datosApp);
+		//change_status_application(datosApp, NORMAL_AUTO);
+		//send_event(EVENT_START_SCHEDULE);
+		//start_schedule(datosApp);
 
 	} else {
 		error = INTERVALO_SIN_PROGRAMACION;
 		ESP_LOGW(TAG, ""TRAZAR"No hay programacion o programa activo en este momento", INFOTRAZA);
-		appuser_set_action_without_schedule_active(datosApp);
+		//send_event(EVENT_NONE_SCHEDULE);
 	}
 
 	return error;
@@ -706,44 +708,53 @@ void gestion_programas(void *arg) {
 			} else {
 				if (calcular_programa_activo(datosApp, &t_siguiente_intervalo) == INTERVALO_SIN_PROGRAMACION) {
 					ESP_LOGI(TAG, ""TRAZAR"INTERVALO SIN PROGRAMACION ACTIVA", INFOTRAZA);
+					send_event(EVENT_NONE_SCHEDULE);
 				} else {
 					ESP_LOGI(TAG, ""TRAZAR"ENCONTRADA PROGRAMACION ACTIVA", INFOTRAZA);
+					start_schedule(datosApp);
+					change_status_application(datosApp, NORMAL_AUTO);
 				}
 			}
 
 		}
 
 		break;
-
+/*
 	case STARTING:
 		ESP_LOGW(TAG, ""TRAZAR"STARTING", INFOTRAZA);
 		calcular_programa_activo(datosApp, &t_siguiente_intervalo);
 		datosApp->datosGenerales->estadoApp = ESPERA_FIN_ARRANQUE;
 		break;
-
+*/
 	case NORMAL_AUTO:
 	case NORMAL_AUTOMAN:
 		if((hora.tm_hour == 0) && (hora.tm_min == 0) && (hora.tm_sec == 0)) {
-			calcular_programa_activo(datosApp, &t_siguiente_intervalo);
-		}
-		if (datosApp->datosGenerales->clock.time == t_siguiente_intervalo){
-			ESP_LOGI(TAG, ""TRAZAR"AQUI HABRIA CUMPLIDO EL TEMPORIZADOR", INFOTRAZA);
-			//appUser_temporizador_cumplido(datosApp);
-			if (calcular_programa_activo(datosApp, &t_siguiente_intervalo) != ESP_OK) {
-				ESP_LOGW(TAG, ""TRAZAR"NO HAY PROGRAMAS ALMACENADOS", INFOTRAZA);
-			} else {
-				ESP_LOGW(TAG, ""TRAZAR"otra opcion", INFOTRAZA);
+			if (calcular_programa_activo(datosApp, &t_siguiente_intervalo) == ESP_OK) {
+				start_schedule(datosApp);
 			}
-		} else {
-			//ESP_LOGI(TAG, ""TRAZAR"HORA: %ld. siguiente intervalo: %ld, diff: %ld", INFOTRAZA, datosApp->datosGenerales->clock.time, t_siguiente_intervalo, (t_siguiente_intervalo - datosApp->datosGenerales->clock.time ));
 
+		} else {
+			if (datosApp->datosGenerales->clock.time == t_siguiente_intervalo){
+				ESP_LOGI(TAG, ""TRAZAR"AQUI HABRIA CUMPLIDO EL TEMPORIZADOR", INFOTRAZA);
+				if (calcular_programa_activo(datosApp, &t_siguiente_intervalo) == INTERVALO_SIN_PROGRAMACION) {
+					ESP_LOGW(TAG, ""TRAZAR"NO HAY PROGRAMAS ALMACENADOS", INFOTRAZA);
+					send_event(EVENT_NONE_SCHEDULE);
+				} else {
+					ESP_LOGW(TAG, ""TRAZAR"start_schedule", INFOTRAZA);
+					start_schedule(datosApp);
+				}
+			} else {
+				//ESP_LOGI(TAG, ""TRAZAR"HORA: %ld. siguiente intervalo: %ld, diff: %ld", INFOTRAZA, datosApp->datosGenerales->clock.time, t_siguiente_intervalo, (t_siguiente_intervalo - datosApp->datosGenerales->clock.time ));
+
+			}
 		}
+
 
 		break;
 	case NORMAL_SIN_PROGRAMACION:
 		ESP_LOGW(TAG, ""TRAZAR"NORMAL_SIN_PROGRAMACION", INFOTRAZA);
-		//ESP_LOGI(TAG, ""TRAZAR"ESTAMOS SIN PROGRAMACION", INFOTRAZA);
 		break;
+		/*
 	case NORMAL_SINCRONIZANDO:
 		ESP_LOGW(TAG, ""TRAZAR"NORMAL_SINCRONIZANDO", INFOTRAZA);
 		if (calcular_programa_activo(datosApp, &t_siguiente_intervalo) == ESP_OK) {
@@ -775,7 +786,7 @@ void gestion_programas(void *arg) {
 			datosApp->datosGenerales->estadoApp = NORMAL_AUTO;
 		}
 		break;
-
+*/
 	case NORMAL_FIN_PROGRAMA_ACTIVO:
 		ESP_LOGW(TAG, ""TRAZAR"NORMAL_FIN_PROGRAMA_ACTIVO", INFOTRAZA);
 		if (calcular_programa_activo(datosApp, &t_siguiente_intervalo) == ESP_OK) {
@@ -834,6 +845,14 @@ void temporizacion_intermedia(void *arg) {
 }
 
 
+void end_schedule(void *arg) {
+
+	send_event(EVENT_END_SCHEDULE);
+
+
+}
+
+
 
 esp_err_t logica_temporizacion(DATOS_APLICACION *datosApp) {
 
@@ -858,7 +877,7 @@ esp_err_t logica_temporizacion(DATOS_APLICACION *datosApp) {
     };
 
     const esp_timer_create_args_t second_shot_timer_args = {
-            .callback = &appuser_end_schedule,
+            .callback = &end_schedule,
             /* name is optional, but may help identify the timer when debugging */
             .name = "end schedule",
 			.arg = (void*) datosApp
@@ -893,7 +912,8 @@ esp_err_t logica_temporizacion(DATOS_APLICACION *datosApp) {
 
 		if (tiempo_restante < 0 ) {
 			ESP_LOGW(TAG, ""TRAZAR"LA DURACION YA HA EXCEDIDO DE LA HORA Y NO SE ACTIVA", INFOTRAZA);
-			appuser_end_schedule(datosApp);
+			send_event(EVENT_END_SCHEDULE);
+			//appuser_end_schedule(datosApp);
 			return PROGRAMACION_DURACION_EXCEDIDA;
 		}
 	}
@@ -904,12 +924,16 @@ esp_err_t logica_temporizacion(DATOS_APLICACION *datosApp) {
 
 
 
-esp_err_t activacion_programa(DATOS_APLICACION *datosApp) {
+esp_err_t start_schedule(DATOS_APLICACION *datosApp) {
 
 
 
-	logica_temporizacion(datosApp);
-	appuser_start_schedule(datosApp);
+	ESP_LOGW(TAG, ""TRAZAR"start_schedule", INFOTRAZA);
+	if (logica_temporizacion(datosApp) == ESP_OK) {
+		ESP_LOGW(TAG, ""TRAZAR"COMIENZA EL PROGRAMA", INFOTRAZA);
+		send_event(EVENT_START_SCHEDULE);
+	}
+	//appuser_start_schedule(datosApp);
 
 
 

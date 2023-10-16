@@ -257,7 +257,7 @@ esp_err_t buscar_programa(TIME_PROGRAM *programas, int elementos, int *programa_
 void gestion_programas(void *arg);
 esp_err_t calcular_programa_activo(DATOS_APLICACION *datosApp, time_t *t_siguiente_intervalo);
 esp_err_t actualizar_programa_real(DATOS_APLICACION *datosApp);
-esp_err_t activacion_programa(DATOS_APLICACION *datosApp);
+esp_err_t start_schedule(DATOS_APLICACION *datosApp);
 esp_err_t iniciar_gestion_programacion(DATOS_APLICACION *datosApp);
 //int ajustarProgramacion(TIME_PROGRAM *programacion, uint8_t *nProgramacion, NTP_CLOCK *clock);
 esp_err_t parar_gestion_programacion(DATOS_APLICACION *datosApp);

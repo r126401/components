@@ -210,15 +210,7 @@ esp_err_t appuser_set_configuration_to_json(DATOS_APLICACION *datosApp, cJSON *c
 esp_err_t appuser_json_to_configuration(DATOS_APLICACION *datosApp, cJSON *datos);
 
 
-/**
- * @fn esp_err_t appUser_set_action_without_schedule_active(DATOS_APLICACION*)
- * @brief Es llamada desde el programador para que el usuario pueda gestionar el comportamiento de la aplicacion cuando no hay ningun programa activo
- * en ese momento.
- *
- * @param datosApp Son los datos de la aplicacion.
- * @return ESP_OK por defecto.
- */
-esp_err_t appuser_set_action_without_schedule_active(DATOS_APLICACION *datosApp);
+void appuser_notify_event_none_schedule(DATOS_APLICACION *datosApp);
 
 
 /**
@@ -327,6 +319,6 @@ esp_err_t appuser_notify_error_wifi_connection(DATOS_APLICACION *datosApp);
 
 void appuser_notify_scan_done(DATOS_APLICACION *datosApp, wifi_ap_record_t *ap_info, uint16_t *ap_count);
 esp_err_t notify_end_starting(DATOS_APLICACION *datosApp);
-void appuser_process_event(DATOS_APLICACION *datosApp, EVENT_TYPE event);
+void appuser_process_event_none_schedule(DATOS_APLICACION *datosApp);
 
 #endif /* COMPONENTS_INTERFAZ_USUARIO_INCLUDE_INTERFAZ_USUARIO_H_ */

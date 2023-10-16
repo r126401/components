@@ -315,6 +315,30 @@ void process_event_error_ntp(DATOS_APLICACION *datosApp) {
 }
 
 
+void process_event_none_schedule(DATOS_APLICACION *datosApp) {
+
+
+	appuser_notify_event_none_schedule(datosApp);
+
+
+
+
+}
+
+void process_event_end_schedule(DATOS_APLICACION *datosApp) {
+
+	appuser_end_schedule(datosApp);
+
+
+}
+
+void process_event_start_schedule(DATOS_APLICACION *datosApp) {
+
+	change_status_application(datosApp, NORMAL_AUTO);
+	appuser_start_schedule(datosApp);
+}
+
+
 void receive_event(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 
 	ESP_LOGE(TAG, ""TRAZAR"receive_event", INFOTRAZA);
@@ -394,10 +418,13 @@ void receive_event(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 	case EVENT_DELETE_SCEDULE:
 		break;
 	case EVENT_START_SCHEDULE:
+		process_event_start_schedule(datosApp);
 		break;
 	case EVENT_END_SCHEDULE:
+		process_event_end_schedule(datosApp);
 		break;
 	case EVENT_NONE_SCHEDULE:
+		process_event_none_schedule(datosApp);
 		break;
 	case EVENT_FACTORY:
 		change_status_application(datosApp, FACTORY);
@@ -409,6 +436,7 @@ void receive_event(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 
 
 }
+
 
 
 void init_alarms(DATOS_APLICACION *datosApp) {

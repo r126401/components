@@ -102,14 +102,6 @@ esp_err_t appuser_set_default_config(DATOS_APLICACION *datosApp) {
 
 
 
-esp_err_t appuser_set_action_without_schedule_active(DATOS_APLICACION *datosApp) {
-
-	ESP_LOGI(TAG, ""TRAZAR"appuser_set_action_without_schedule_active", INFOTRAZA);
-
-    return ESP_OK;
-}
-
-
 esp_err_t appuser_notify_smartconfig(DATOS_APLICACION *datosApp) {
 
 	ESP_LOGI(TAG, ""TRAZAR"appuser_notify_smartconfig", INFOTRAZA);
@@ -174,8 +166,18 @@ esp_err_t appuser_error_get_date_sntp(DATOS_APLICACION *datosApp) {
 
 esp_err_t appuser_sntp_ok(DATOS_APLICACION *datosApp) {
 
+	char fecha_actual[10] = {0};
+	time_t now;
+	struct tm fecha;
 	ESP_LOGI(TAG, ""TRAZAR"appuser_sntp_ok", INFOTRAZA);
 	lv_update_alarm_device(datosApp);
+
+    time(&now);
+    localtime_r(&now, &fecha);
+    sprintf(fecha_actual, "%02d:%02d", fecha.tm_hour, fecha.tm_min);
+    ESP_LOGI(TAG, ""TRAZAR"hora actualizada: %s", INFOTRAZA, fecha_actual);
+    lv_update_hour(fecha_actual);
+
 
 	return ESP_OK;
 
@@ -279,7 +281,8 @@ void appuser_end_schedule(DATOS_APLICACION *datosApp) {
     cJSON * respuesta = NULL;
     ESP_LOGI(TAG, ""TRAZAR"appuser_end_schedule", INFOTRAZA);
     datosApp->termostato.tempUmbral = datosApp->termostato.tempUmbralDefecto;
-    lv_update_temperature(datosApp);
+    lv_update_threshold(datosApp);
+    lv_update_bar_schedule(datosApp, false);
     respuesta = appuser_send_spontaneous_report(datosApp, RELE_TEMPORIZADO, NULL);
     if (respuesta != NULL) {
     	publicar_mensaje_json(datosApp, respuesta, NULL);
@@ -307,7 +310,7 @@ esp_err_t appuser_start_schedule(DATOS_APLICACION *datosApp) {
 	}
 	lv_update_threshold(datosApp);
 	// actualizar los intervalos del lcd
-	lv_update_bar_schedule(datosApp);
+	lv_update_bar_schedule(datosApp, true);
 
 
 
@@ -697,9 +700,8 @@ esp_err_t appuser_notify_app_status(DATOS_APLICACION *datosApp, enum ESTADO_APP 
 
 void appuser_notify_schedule_events(DATOS_APLICACION *datosApp) {
 
-	//ESP_LOGI(TAG, ""TRAZAR"appuser_notify_schedule_events", INFOTRAZA);
-	
-	static bool start = true;
+	ESP_LOGI(TAG, ""TRAZAR"appuser_notify_schedule_events", INFOTRAZA);
+
 	char fecha_actual[10] = {0};
 	time_t now;
 	struct tm fecha;
@@ -707,12 +709,12 @@ void appuser_notify_schedule_events(DATOS_APLICACION *datosApp) {
 
     time(&now);
     localtime_r(&now, &fecha);
-    if ((start == true) || (fecha.tm_sec == 0)) {
+    if (fecha.tm_sec == 0) {
+
     	sprintf(fecha_actual, "%02d:%02d", fecha.tm_hour, fecha.tm_min);
     	ESP_LOGI(TAG, ""TRAZAR"hora actualizada: %s", INFOTRAZA, fecha_actual);
     	lv_update_hour(fecha_actual);
-    	start = false;
-    	lv_update_bar_schedule(datosApp);
+
     }
 
 
@@ -891,43 +893,27 @@ void appuser_notify_scan_done(DATOS_APLICACION *datosApp, wifi_ap_record_t *ap_i
 
 }
 
-void appuser_process_event(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
+void appuser_notify_event_none_schedule(DATOS_APLICACION *datosApp) {
+
+
+	ESP_LOGI(TAG, ""TRAZAR"appuser_notify_event_none_schedule", INFOTRAZA);
 
 	switch (datosApp->datosGenerales->estadoApp) {
 
-	case ERROR_APP:
+	case NORMAL_AUTO:
+	case NORMAL_AUTOMAN:
+		datosApp->termostato.tempUmbral = datosApp->termostato.tempUmbralDefecto;
 		break;
 
-	case DEVICE_ALONE:
-		break;
-	case NORMAL_AUTO:
-		break;
-	case NORMAL_AUTOMAN:
-		break;
-	case NORMAL_MANUAL:
-		break;
-	case STARTING:
-		break;
-	case NORMAL_SIN_PROGRAMACION:
-		break;
-	case UPGRADE_EN_PROGRESO:
-		break;
-	case NORMAL_SINCRONIZANDO:
-		break;
-	case ESPERA_FIN_ARRANQUE:
-		break;
-	case FACTORY:
-		break;
-	case NORMAL_FIN_PROGRAMA_ACTIVO:
-		break;
 	case CHECK_PROGRAMS:
+		datosApp->termostato.tempUmbral = datosApp->termostato.tempUmbralDefecto;
+		change_status_application(datosApp, NORMAL_AUTO);
 		break;
+
 	default:
 		break;
-
-
-
 	}
+
 
 
 
