@@ -397,7 +397,7 @@ esp_err_t cargar_programas(DATOS_APLICACION *datosApp, char *programas) {
 
 	if (array == NULL) {
 		ESP_LOGE(TAG, ""TRAZAR"El fichero de programacion nvs no es valido", INFOTRAZA);
-		return PROGRAMACION_NO_EXISTE;
+		return NO_SCHEDULE;
 	}
 
 

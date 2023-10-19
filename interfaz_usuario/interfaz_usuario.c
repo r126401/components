@@ -40,6 +40,42 @@
 static const char *TAG = "INTERFAZ_USUARIO";
 
 
+
+char* local_event_2_mnemonic(EVENT_DEVICE event) {
+
+
+	static char mnemonic[50] = {0};
+
+	switch (event) {
+
+	case EVENT_NONE:
+		strcpy(mnemonic, "EVENT_NONE");
+		break;
+	case EVENT_UP_THRESHOLD:
+		strcpy(mnemonic, "EVENT_UP_THRESHOLD");
+		break;
+	case EVENT_DOWN_THRESHOLD:
+		strcpy(mnemonic, "EVENT_DOWN_THRESHOLD");
+		break;
+	case EVENT_RELAY_ON:
+		strcpy(mnemonic, "EVENT_RELAY_ON");
+		break;
+	case EVENT_RELAY_OFF:
+		strcpy(mnemonic, "EVENT_RELAY_OFF");
+		break;
+
+
+	}
+
+	ESP_LOGI(TAG, ""TRAZAR"TRADUCCION NEMONICO %d - %s",INFOTRAZA, event, mnemonic);
+
+
+
+	return mnemonic;
+
+}
+
+
 /*
 enum ESTADO_APP change_status_application(DATOS_APLICACION *datosApp) {
 
@@ -90,9 +126,9 @@ esp_err_t appuser_set_default_config(DATOS_APLICACION *datosApp) {
     datosApp->termostato.intervaloLectura = 10;
     datosApp->termostato.tempUmbral = -1000;
     datosApp->termostato.tempUmbralDefecto = 21.5;
-    datosApp->termostato.calibrado = -3.5;
+    datosApp->termostato.calibrado = -2.0;
     datosApp->termostato.master = true;
-    datosApp->termostato.incdec = 0.1;
+    datosApp->termostato.incdec = 0.5;
     memset(datosApp->termostato.sensor_remoto, 0, sizeof(datosApp->termostato.sensor_remoto));
 
 
@@ -281,7 +317,7 @@ void appuser_end_schedule(DATOS_APLICACION *datosApp) {
     cJSON * respuesta = NULL;
     ESP_LOGI(TAG, ""TRAZAR"appuser_end_schedule", INFOTRAZA);
     datosApp->termostato.tempUmbral = datosApp->termostato.tempUmbralDefecto;
-    lv_update_threshold(datosApp);
+    lv_update_threshold(datosApp, true);
     lv_update_bar_schedule(datosApp, false);
     respuesta = appuser_send_spontaneous_report(datosApp, RELE_TEMPORIZADO, NULL);
     if (respuesta != NULL) {
@@ -308,7 +344,7 @@ esp_err_t appuser_start_schedule(DATOS_APLICACION *datosApp) {
 	if (respuesta != NULL) {
 		publicar_mensaje_json(datosApp, respuesta, NULL);
 	}
-	lv_update_threshold(datosApp);
+	lv_update_threshold(datosApp, true);
 	// actualizar los intervalos del lcd
 	lv_update_bar_schedule(datosApp, true);
 
@@ -352,6 +388,7 @@ cJSON* appuser_send_spontaneous_report(DATOS_APLICACION *datosApp, enum TIPO_INF
         case CAMBIO_DE_PROGRAMA:
         case RELE_TEMPORIZADO:
         case CAMBIO_TEMPERATURA:
+        case CAMBIO_UMBRAL_TEMPERATURA:
             cJSON_AddNumberToObject(respuesta, APP_COMAND_ESTADO_RELE, gpio_get_level(CONFIG_GPIO_PIN_RELE));
             cJSON_AddNumberToObject(respuesta, PROGRAMMER_STATE, datosApp->datosGenerales->estadoProgramacion);
             cJSON_AddNumberToObject(respuesta, DEVICE_STATE, datosApp->datosGenerales->estadoApp);
@@ -412,7 +449,7 @@ esp_err_t appuser_load_schedule_extra_data(DATOS_APLICACION *datosApp, TIME_PROG
 	extraer_dato_double(nodo, UMBRAL_TEMPERATURA, &programa_actual->temperatura);
 	datosApp->termostato.tempUmbral = programa_actual->temperatura;
 	ESP_LOGI(TAG, ""TRAZAR" UMBRAL :%lf", INFOTRAZA, programa_actual->temperatura);
-	lv_update_threshold(datosApp);
+	lv_update_threshold(datosApp, true);
 
 
 	return ESP_OK;
@@ -465,7 +502,7 @@ esp_err_t appuser_load_default_schedules(DATOS_APLICACION *datosApp, cJSON *arra
 	cJSON_AddItemToArray(array, item = cJSON_CreateObject());
 	cJSON_AddStringToObject(item, PROGRAM_ID, "001200007f11");
 	cJSON_AddNumberToObject(item, UMBRAL_TEMPERATURA, 22.5);
-	cJSON_AddNumberToObject(item, DURATION_PROGRAM, 3600);
+	cJSON_AddNumberToObject(item, DURATION_PROGRAM, 18000);
 	cJSON_AddItemToArray(array, item = cJSON_CreateObject());
 	cJSON_AddStringToObject(item, PROGRAM_ID, "001900007f11");
 	cJSON_AddNumberToObject(item, UMBRAL_TEMPERATURA, 23.5);
@@ -700,11 +737,12 @@ esp_err_t appuser_notify_app_status(DATOS_APLICACION *datosApp, enum ESTADO_APP 
 
 void appuser_notify_schedule_events(DATOS_APLICACION *datosApp) {
 
-	ESP_LOGI(TAG, ""TRAZAR"appuser_notify_schedule_events", INFOTRAZA);
+	//ESP_LOGI(TAG, ""TRAZAR"appuser_notify_schedule_events", INFOTRAZA);
 
 	char fecha_actual[10] = {0};
 	time_t now;
 	struct tm fecha;
+	time_t t_siguiente_intervalo;
 
 
     time(&now);
@@ -714,6 +752,12 @@ void appuser_notify_schedule_events(DATOS_APLICACION *datosApp) {
     	sprintf(fecha_actual, "%02d:%02d", fecha.tm_hour, fecha.tm_min);
     	ESP_LOGI(TAG, ""TRAZAR"hora actualizada: %s", INFOTRAZA, fecha_actual);
     	lv_update_hour(fecha_actual);
+
+    	if (calcular_programa_activo(datosApp, &t_siguiente_intervalo) == ACTIVE_SCHEDULE) {
+
+    		ESP_LOGE(TAG, ""TRAZAR"ACTUALIZAMOS EL BAR SCHEDULE", INFOTRAZA);
+    		lv_update_bar_schedule(datosApp, true);
+    	}
 
     }
 
@@ -900,14 +944,16 @@ void appuser_notify_event_none_schedule(DATOS_APLICACION *datosApp) {
 
 	switch (datosApp->datosGenerales->estadoApp) {
 
+	case NORMAL_SIN_PROGRAMACION:
 	case NORMAL_AUTO:
 	case NORMAL_AUTOMAN:
 		datosApp->termostato.tempUmbral = datosApp->termostato.tempUmbralDefecto;
+		lv_update_threshold(datosApp, true);
 		break;
 
 	case CHECK_PROGRAMS:
 		datosApp->termostato.tempUmbral = datosApp->termostato.tempUmbralDefecto;
-		change_status_application(datosApp, NORMAL_AUTO);
+		//change_status_application(datosApp, NORMAL_AUTO);
 		break;
 
 	default:
@@ -920,6 +966,81 @@ void appuser_notify_event_none_schedule(DATOS_APLICACION *datosApp) {
 }
 
 
+
+void change_threshold(void *arg) {
+
+	cJSON* informe = NULL;
+	DATOS_APLICACION *datosApp;
+	datosApp = (DATOS_APLICACION*) arg;
+	accionar_termostato(datosApp);
+	lv_update_threshold(datosApp, true);
+	informe = appuser_send_spontaneous_report(datosApp, CAMBIO_UMBRAL_TEMPERATURA, NULL);
+    if (informe != NULL) {
+    	publicar_mensaje_json(datosApp, informe, NULL);
+    } else {
+    	ESP_LOGI(TAG, "El informe iba vacio");
+    }
+
+
+}
+
+
+
+
+void appuser_received_local_event(DATOS_APLICACION *datosApp, EVENT_DEVICE event) {
+
+
+
+	ESP_LOGI(TAG, ""TRAZAR"appuser_received_local_event: recibido :%s", INFOTRAZA, local_event_2_mnemonic(event));
+	static esp_timer_handle_t temporizador_duracion;
+
+    const esp_timer_create_args_t change_threshold_timer_args = {
+            .callback = &change_threshold,
+            /* name is optional, but may help identify the timer when debugging */
+            .name = "up threshold",
+			.arg = (void*) datosApp
+    };
+
+
+	switch (event) {
+
+	case EVENT_UP_THRESHOLD:
+
+
+
+
+		datosApp->termostato.tempUmbral += datosApp->termostato.incdec;
+		lv_update_threshold(datosApp, false);
+		if (esp_timer_is_active(temporizador_duracion)) {
+			esp_timer_stop(temporizador_duracion);
+			esp_timer_delete(temporizador_duracion);
+			ESP_LOGI(TAG, ""TRAZAR"timer cancelado", INFOTRAZA);
+		}
+	    ESP_ERROR_CHECK(esp_timer_create(&change_threshold_timer_args, &temporizador_duracion));
+	    ESP_ERROR_CHECK(esp_timer_start_once(temporizador_duracion, (3000000)));
+
+		break;
+	case EVENT_DOWN_THRESHOLD:
+		datosApp->termostato.tempUmbral -= datosApp->termostato.incdec;
+		lv_update_threshold(datosApp, false);
+		if (esp_timer_is_active(temporizador_duracion)) {
+			esp_timer_stop(temporizador_duracion);
+			esp_timer_delete(temporizador_duracion);
+			ESP_LOGI(TAG, ""TRAZAR"timer cancelado", INFOTRAZA);
+		}
+	    ESP_ERROR_CHECK(esp_timer_create(&change_threshold_timer_args, &temporizador_duracion));
+	    ESP_ERROR_CHECK(esp_timer_start_once(temporizador_duracion, (3000000)));
+		break;
+
+	default:
+		break;
+
+
+	}
+
+
+
+}
 
 
 

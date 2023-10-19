@@ -73,6 +73,9 @@ char* event2mnemonic(EVENT_TYPE event) {
 	case EVENT_MQTT_OK:
 		strcpy(mnemonic, "EVENT_MQTT_OK");
 		break;
+	case EVENT_CHECK_PROGRAMS:
+		strcpy(mnemonic, "EVENT_CHECK_PROGRAMS");
+		break;
 	case EVENT_INSERT_SCHEDULE:
 		strcpy(mnemonic, "EVENT_INSERT_SCHEDULE");
 		break;
@@ -97,6 +100,10 @@ char* event2mnemonic(EVENT_TYPE event) {
 	case EVENT_UPGRADE_FIRMWARE:
 		strcpy(mnemonic, "EVENT_UPGRADE_FIRMWARE");
 		break;
+	case EVENT_LOCAL_DEVICE:
+		strcpy(mnemonic, "EVENT_LOCAL_DEVICE");
+		break;
+
 
 
 
@@ -318,6 +325,14 @@ void process_event_error_ntp(DATOS_APLICACION *datosApp) {
 void process_event_none_schedule(DATOS_APLICACION *datosApp) {
 
 
+	if (datosApp->datosGenerales->nProgramacion == 0) {
+		change_status_application(datosApp, NORMAL_AUTO);
+	} else {
+		change_status_application(datosApp, NORMAL_AUTO);
+	}
+
+
+
 	appuser_notify_event_none_schedule(datosApp);
 
 
@@ -338,101 +353,130 @@ void process_event_start_schedule(DATOS_APLICACION *datosApp) {
 	appuser_start_schedule(datosApp);
 }
 
+void process_event_check_programs(DATOS_APLICACION *datosApp) {
+	change_status_application(datosApp, CHECK_PROGRAMS);
+}
 
-void receive_event(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
+
+
+void received_local_event(DATOS_APLICACION *datosApp, EVENT_DEVICE event) {
+
+
+
+	appuser_received_local_event(datosApp, event);
+
+}
+
+
+void receive_event(DATOS_APLICACION *datosApp, EVENT_APP event) {
 
 	ESP_LOGE(TAG, ""TRAZAR"receive_event", INFOTRAZA);
 
-	switch (event) {
+	if (event.event_app == EVENT_LOCAL_DEVICE) {
+		received_local_event(datosApp, event.event_device);
 
-	case EVENT_WARNING_DEVICE:
-		break;
-	case EVENT_ERROR_DEVICE:
-		if (datosApp->alarmas[ALARM_DEVICE].estado_alarma == ALARM_OFF) {
-			registrar_alarma(datosApp, MNEMONIC_ALARM_DEVICE, ALARM_DEVICE, ALARM_ON, true);
+	} else {
+		switch (event.event_app) {
+
+		case EVENT_WARNING_DEVICE:
+			break;
+		case EVENT_ERROR_DEVICE:
+			if (datosApp->alarmas[ALARM_DEVICE].estado_alarma == ALARM_OFF) {
+				registrar_alarma(datosApp, MNEMONIC_ALARM_DEVICE, ALARM_DEVICE, ALARM_ON, true);
+			}
+			appuser_notify_error_device(datosApp);
+			change_status_application(datosApp, ERROR_APP);
+			break;
+		case EVENT_ERROR_APP:
+			ESP_LOGE(TAG, ""TRAZAR"RECIBIDO ERROR APP", INFOTRAZA);
+			break;
+		case EVENT_ERROR_NVS:
+
+			if (datosApp->datosGenerales->estadoApp == STARTING) {
+				datosApp->alarmas[ALARM_NVS].estado_alarma = ALARM_ON;
+
+			} else {
+				registrar_alarma(datosApp, MNEMONIC_ALARM_NVS, ALARM_NVS, ALARM_ON, true);
+			}
+
+			break;
+		case EVENT_ERROR_LCD:
+			ESP_LOGE(TAG, ""TRAZAR"RECIBIDO ERROR LCD", INFOTRAZA);
+			registrar_alarma(datosApp, MNEMONIC_ALARM_LCD, ALARM_LCD, ALARM_ON, true);
+			break;
+		case EVENT_ERROR_NTP:
+			process_event_error_ntp(datosApp);
+			break;
+		case EVENT_ERROR_WIFI:
+			process_event_error_wifi(datosApp);
+			break;
+		case EVENT_ERROR_MQTT:
+			registrar_alarma(datosApp, MNEMONIC_ALARM_MQTT, ALARM_MQTT, ALARM_ON, false);
+			break;
+		case EVENT_DEVICE_OK:
+			if (datosApp->alarmas[ALARM_DEVICE].estado_alarma == ALARM_ON) {
+				registrar_alarma(datosApp, MNEMONIC_ALARM_DEVICE, ALARM_DEVICE, ALARM_OFF, true);
+			}
+			appuser_notify_device_ok(datosApp);
+			if (datosApp->alarmas[ALARM_NTP].estado_alarma == ALARM_OFF) {
+				change_status_application(datosApp, NORMAL_AUTO);
+			} else {
+				change_status_application(datosApp,NORMAL_MANUAL);
+			}
+
+			break;
+		case EVENT_APP_OK:
+			ESP_LOGE(TAG, ""TRAZAR"RECIBIDO APP OK", INFOTRAZA);
+			break;
+		case EVENT_NVS_OK:
+			process_event_nvs_ok(datosApp);
+
+			break;
+		case EVENT_LCD_OK:
+			ESP_LOGE(TAG, ""TRAZAR"RECIBIDO LCD OK", INFOTRAZA);
+			break;
+		case EVENT_NTP_OK:
+			process_event_ntp_ok(datosApp);
+			break;
+		case EVENT_WIFI_OK:
+			process_event_wifi_ok(datosApp);
+			break;
+		case EVENT_MQTT_OK:
+			registrar_alarma(datosApp, MNEMONIC_ALARM_MQTT, ALARM_MQTT, ALARM_OFF, true);
+			break;
+		case EVENT_CHECK_PROGRAMS:
+
+			break;
+		case EVENT_INSERT_SCHEDULE:
+			break;
+		case EVENT_MODIFY_SCHEDULE:
+			break;
+		case EVENT_DELETE_SCEDULE:
+			break;
+		case EVENT_START_SCHEDULE:
+			process_event_start_schedule(datosApp);
+			break;
+		case EVENT_END_SCHEDULE:
+			process_event_end_schedule(datosApp);
+			break;
+		case EVENT_NONE_SCHEDULE:
+			process_event_none_schedule(datosApp);
+			break;
+		case EVENT_FACTORY:
+			change_status_application(datosApp, FACTORY);
+			break;
+		case EVENT_UPGRADE_FIRMWARE:
+			break;
+
+		default:
+			ESP_LOGE(TAG, ""TRAZAR"ERROR EN LA RECEPCION DEL EVENTO", INFOTRAZA);
+			break;
+
 		}
-		appuser_notify_error_device(datosApp);
-		change_status_application(datosApp, ERROR_APP);
-		break;
-	case EVENT_ERROR_APP:
-		ESP_LOGE(TAG, ""TRAZAR"RECIBIDO ERROR APP", INFOTRAZA);
-		break;
-	case EVENT_ERROR_NVS:
-
-		if (datosApp->datosGenerales->estadoApp == STARTING) {
-			datosApp->alarmas[ALARM_NVS].estado_alarma = ALARM_ON;
-
-		} else {
-			registrar_alarma(datosApp, MNEMONIC_ALARM_NVS, ALARM_NVS, ALARM_ON, true);
-		}
-
-		break;
-	case EVENT_ERROR_LCD:
-		ESP_LOGE(TAG, ""TRAZAR"RECIBIDO ERROR LCD", INFOTRAZA);
-		registrar_alarma(datosApp, MNEMONIC_ALARM_LCD, ALARM_LCD, ALARM_ON, true);
-		break;
-	case EVENT_ERROR_NTP:
-		process_event_error_ntp(datosApp);
-		break;
-	case EVENT_ERROR_WIFI:
-		process_event_error_wifi(datosApp);
-		break;
-	case EVENT_ERROR_MQTT:
-		registrar_alarma(datosApp, MNEMONIC_ALARM_MQTT, ALARM_MQTT, ALARM_ON, false);
-		break;
-	case EVENT_DEVICE_OK:
-		if (datosApp->alarmas[ALARM_DEVICE].estado_alarma == ALARM_ON) {
-			registrar_alarma(datosApp, MNEMONIC_ALARM_DEVICE, ALARM_DEVICE, ALARM_OFF, true);
-		}
-		appuser_notify_device_ok(datosApp);
-		if (datosApp->alarmas[ALARM_NTP].estado_alarma == ALARM_OFF) {
-			change_status_application(datosApp, NORMAL_AUTO);
-		} else {
-			change_status_application(datosApp,NORMAL_MANUAL);
-		}
-
-		break;
-	case EVENT_APP_OK:
-		ESP_LOGE(TAG, ""TRAZAR"RECIBIDO APP OK", INFOTRAZA);
-		break;
-	case EVENT_NVS_OK:
-		process_event_nvs_ok(datosApp);
-
-		break;
-	case EVENT_LCD_OK:
-		ESP_LOGE(TAG, ""TRAZAR"RECIBIDO LCD OK", INFOTRAZA);
-		break;
-	case EVENT_NTP_OK:
-		process_event_ntp_ok(datosApp);
-		break;
-	case EVENT_WIFI_OK:
-		process_event_wifi_ok(datosApp);
-		break;
-	case EVENT_MQTT_OK:
-		registrar_alarma(datosApp, MNEMONIC_ALARM_MQTT, ALARM_MQTT, ALARM_OFF, true);
-		break;
-	case EVENT_INSERT_SCHEDULE:
-		break;
-	case EVENT_MODIFY_SCHEDULE:
-		break;
-	case EVENT_DELETE_SCEDULE:
-		break;
-	case EVENT_START_SCHEDULE:
-		process_event_start_schedule(datosApp);
-		break;
-	case EVENT_END_SCHEDULE:
-		process_event_end_schedule(datosApp);
-		break;
-	case EVENT_NONE_SCHEDULE:
-		process_event_none_schedule(datosApp);
-		break;
-	case EVENT_FACTORY:
-		change_status_application(datosApp, FACTORY);
-		break;
-	case EVENT_UPGRADE_FIRMWARE:
-		break;
-
 	}
+
+
+
 
 
 }
@@ -468,14 +512,15 @@ void init_alarms(DATOS_APLICACION *datosApp) {
 
 void event_task(void *arg) {
 
-	EVENT_TYPE event;
+	EVENT_APP event;
+
 	DATOS_APLICACION *datosApp = (DATOS_APLICACION* ) arg;
-	event_queue = xQueueCreate(10, sizeof(EVENT_TYPE));
+	event_queue = xQueueCreate(10, sizeof(EVENT_APP));
 
 	for(;;) {
 		 ESP_LOGI(TAG, ""TRAZAR"ESPERANDO EVENTO...Memoria libre: %ld\n", INFOTRAZA, esp_get_free_heap_size());
 		if (xQueueReceive(event_queue, &event, portMAX_DELAY) == pdTRUE) {
-			ESP_LOGE(TAG, ""TRAZAR"Recibido evento %s", INFOTRAZA, event2mnemonic(event));
+			ESP_LOGE(TAG, ""TRAZAR"event_task:Recibido evento app %s, evento device:%s", INFOTRAZA, event2mnemonic(event.event_app), local_event_2_mnemonic(event.event_device));
 			receive_event(datosApp, event);
 
 
@@ -501,7 +546,13 @@ void create_event_task(DATOS_APLICACION *datosApp) {
 
 void send_event(EVENT_TYPE event) {
 
-	xQueueSend(event_queue, &event,0);
+	EVENT_APP event_received;
+
+	event_received.event_app = event;
+	event_received.event_device = EVENT_NONE;
+
+
+	xQueueSend(event_queue, &event_received,0);
 
 }
 
@@ -509,10 +560,19 @@ void send_event(EVENT_TYPE event) {
 ESTADO_APP current_status_application(DATOS_APLICACION *datosApp) {
 
 	return datosApp->datosGenerales->estadoApp;
-
-
 }
 
+
+void send_event_device(EVENT_DEVICE event) {
+
+	EVENT_APP event_received;
+	event_received.event_app = EVENT_LOCAL_DEVICE;
+	event_received.event_device = event;
+
+
+	xQueueSend(event_queue, &event_received,0);
+
+}
 
 
 

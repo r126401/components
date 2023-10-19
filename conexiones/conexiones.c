@@ -262,13 +262,10 @@ static void on_got_ip(void *arg, esp_event_base_t event_base,
 
 inline static void conectar_wifi() {
 
-	ESP_LOGW(TAG, ""TRAZAR"Wi-Fi vamos a conectar", INFOTRAZA);
+
 	ESP_ERROR_CHECK(esp_wifi_start());
-	ESP_LOGW(TAG, ""TRAZAR"Wi-Fi vamos 2.A a conectar", INFOTRAZA);
 	esp_wifi_connect();
-	ESP_LOGW(TAG, ""TRAZAR"Wi-Fi vamos 2 a conectar", INFOTRAZA);
 	xEventGroupWaitBits(grupo_eventos, CONNECTED_BIT, true, true, portMAX_DELAY);
-	ESP_LOGW(TAG, ""TRAZAR"Wi-Fi fin de vamos a conectar", INFOTRAZA);
 
 }
 
@@ -390,13 +387,8 @@ esp_err_t conectar_dispositivo_wifi() {
     esp_wifi_get_config(WIFI_IF_STA, &conf_wifi);
     conf_wifi.sta.pmf_cfg.capable = true;
     conf_wifi.sta.pmf_cfg.required = false;
-    ESP_LOGW(TAG, ""TRAZAR"(1)", INFOTRAZA);
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
-    ESP_LOGW(TAG, ""TRAZAR"(2)", INFOTRAZA);
     ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &conf_wifi) );
-    ESP_LOGW(TAG, ""TRAZAR"(3)", INFOTRAZA);
-
-    ESP_LOGW(TAG, ""TRAZAR"(4)", INFOTRAZA);
 
 	for (i=0;i<32;i++) {
 		if (conf_wifi.sta.ssid[i] != 0) {
@@ -418,12 +410,12 @@ esp_err_t conectar_dispositivo_wifi() {
 
 void sync_app_by_ntp(DATOS_APLICACION *datosApp) {
 
-	esp_err_t error;
+
 
 	inicializar_parametros_ntp(&datosApp->datosGenerales->clock);
 	appuser_get_date_sntp(datosApp);
 	ESP_LOGW(TAG, ""TRAZAR"(1)", INFOTRAZA);
-	error = obtener_fecha_hora(&datosApp->datosGenerales->clock);
+	obtener_fecha_hora(&datosApp->datosGenerales->clock);
 	ESP_LOGW(TAG, ""TRAZAR"(2)", INFOTRAZA);
 /*
 	if (error != ESP_OK) {

@@ -124,6 +124,16 @@ typedef struct TIME_PROGRAM {
 
 #endif
 
+typedef enum SCHEDULE_SEARCH {
+
+	NO_SCHEDULE,
+	ACTIVE_SCHEDULE,
+	NO_ACTIVE_SCHEDULE
+
+}SCHEDULE_SEARCH;
+
+
+
 // Prototipo para la funcion de ordenacion de la lista de programacion.
 typedef int (*compfn)(const void*, const void*);
 
@@ -253,9 +263,9 @@ bool buscarprogramaActivo(uint8_t nProgramacion, uint8_t *nProgramaCandidato, NT
 
 void chequear_ejecucion_programa(NTP_CLOCK *clock, TIME_PROGRAM *programs);
 
-esp_err_t buscar_programa(TIME_PROGRAM *programas, int elementos, int *programa_actual, time_t *t_tiempo_siguiente);
+SCHEDULE_SEARCH buscar_programa(TIME_PROGRAM *programas, int elementos, int *programa_actual, time_t *t_tiempo_siguiente);
 void gestion_programas(void *arg);
-esp_err_t calcular_programa_activo(DATOS_APLICACION *datosApp, time_t *t_siguiente_intervalo);
+SCHEDULE_SEARCH calcular_programa_activo(DATOS_APLICACION *datosApp, time_t *t_siguiente_intervalo);
 esp_err_t actualizar_programa_real(DATOS_APLICACION *datosApp);
 esp_err_t start_schedule(DATOS_APLICACION *datosApp);
 esp_err_t iniciar_gestion_programacion(DATOS_APLICACION *datosApp);
