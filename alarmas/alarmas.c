@@ -349,8 +349,27 @@ void process_event_end_schedule(DATOS_APLICACION *datosApp) {
 
 void process_event_start_schedule(DATOS_APLICACION *datosApp) {
 
-	change_status_application(datosApp, NORMAL_AUTO);
-	appuser_start_schedule(datosApp);
+
+	switch(datosApp->datosGenerales->estadoApp) {
+
+	case NORMAL_AUTO:
+	case NORMAL_AUTOMAN:
+		appuser_start_schedule(datosApp);
+
+	break;
+
+	case CHECK_PROGRAMS:
+		change_status_application(datosApp, NORMAL_AUTO);
+		start_schedule(datosApp);
+		break;
+
+
+	default:
+		break;
+
+	}
+
+
 }
 
 void process_event_check_programs(DATOS_APLICACION *datosApp) {
@@ -402,6 +421,23 @@ void process_event_mqtt_ok(DATOS_APLICACION *datosApp) {
 }
 
 
+void process_event_modify_schedule(DATOS_APLICACION *datosApp) {
+
+
+	change_status_application(datosApp, CHECK_PROGRAMS);
+
+}
+
+void process_event_delete_schedule(DATOS_APLICACION *datosApp) {
+
+	change_status_application(datosApp, CHECK_PROGRAMS);
+}
+
+
+void process_event_insert_schedule(DATOS_APLICACION *datosApp) {
+
+	change_status_application(datosApp, CHECK_PROGRAMS);
+}
 
 void receive_event(DATOS_APLICACION *datosApp, EVENT_APP event) {
 
@@ -485,10 +521,13 @@ void receive_event(DATOS_APLICACION *datosApp, EVENT_APP event) {
 
 			break;
 		case EVENT_INSERT_SCHEDULE:
+			process_event_insert_schedule(datosApp);
 			break;
 		case EVENT_MODIFY_SCHEDULE:
+			process_event_modify_schedule(datosApp);
 			break;
 		case EVENT_DELETE_SCEDULE:
+			process_event_delete_schedule(datosApp);
 			break;
 		case EVENT_START_SCHEDULE:
 			process_event_start_schedule(datosApp);

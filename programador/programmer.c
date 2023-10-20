@@ -751,7 +751,7 @@ void gestion_programas(void *arg) {
 				send_event(EVENT_NONE_SCHEDULE);
 				//change_status_application(datosApp, NORMAL_SIN_PROGRAMACION);
 			} else {
-
+				ESP_LOGI(TAG, ""TRAZAR"CALCULAMOS EL PROGRAMA ACTIVO EN CHECK_PROGRAMS", INFOTRAZA);
 				switch((calcular_programa_activo(datosApp, &t_siguiente_intervalo))) {
 
 				case NO_ACTIVE_SCHEDULE:
@@ -761,7 +761,7 @@ void gestion_programas(void *arg) {
 					break;
 				case ACTIVE_SCHEDULE:
 					ESP_LOGI(TAG, ""TRAZAR"ENCONTRADA PROGRAMACION ACTIVA", INFOTRAZA);
-					start_schedule(datosApp);
+					send_event(EVENT_START_SCHEDULE);
 					//change_status_application(datosApp, NORMAL_AUTO);
 					break;
 
@@ -773,7 +773,7 @@ void gestion_programas(void *arg) {
 					send_event(EVENT_NONE_SCHEDULE);
 				} else {
 					ESP_LOGI(TAG, ""TRAZAR"ENCONTRADA PROGRAMACION ACTIVA", INFOTRAZA);
-					start_schedule(datosApp);
+					(datosApp);
 					change_status_application(datosApp, NORMAL_AUTO);
 				}*/
 			}
@@ -791,6 +791,7 @@ void gestion_programas(void *arg) {
 	case NORMAL_AUTOMAN:
 		if(((hora.tm_hour == 0) && (hora.tm_min == 0) && (hora.tm_sec == 0)) || (datosApp->datosGenerales->clock.time == t_siguiente_intervalo)) {
 
+			ESP_LOGI(TAG, ""TRAZAR"EVALUACION PROXIMO PROGRAMA", INFOTRAZA);
 			switch((calcular_programa_activo(datosApp, &t_siguiente_intervalo))) {
 
 			case NO_ACTIVE_SCHEDULE:
@@ -801,16 +802,22 @@ void gestion_programas(void *arg) {
 			case ACTIVE_SCHEDULE:
 				ESP_LOGI(TAG, ""TRAZAR"ENCONTRADA PROGRAMACION ACTIVA", INFOTRAZA);
 				start_schedule(datosApp);
+				send_event(EVENT_START_SCHEDULE);
 				//change_status_application(datosApp, NORMAL_AUTO);
 				break;
 
 			}
+		} else {
+			ESP_LOGI(TAG, ""TRAZAR"HORA: %lld. siguiente intervalo: %lld, diff: %lld", INFOTRAZA,
+					datosApp->datosGenerales->clock.time,
+					t_siguiente_intervalo,
+					(t_siguiente_intervalo - datosApp->datosGenerales->clock.time ));
 		}
 
 
 /*
 			if (calcular_programa_activo(datosApp, &t_siguiente_intervalo) == ACTIVE_SCHEDULE) {
-				start_schedule(datosApp);
+				(datosApp);
 			}
 
 		} else {
@@ -820,8 +827,8 @@ void gestion_programas(void *arg) {
 					ESP_LOGW(TAG, ""TRAZAR"NO HAY PROGRAMAS ALMACENADOS", INFOTRAZA);
 					send_event(EVENT_NONE_SCHEDULE);
 				} else {
-					ESP_LOGW(TAG, ""TRAZAR"start_schedule", INFOTRAZA);
-					start_schedule(datosApp);
+					ESP_LOGW(TAG, ""TRAZAR"", INFOTRAZA);
+					(datosApp);
 				}
 			} else {
 				//ESP_LOGI(TAG, ""TRAZAR"HORA: %ld. siguiente intervalo: %ld, diff: %ld", INFOTRAZA, datosApp->datosGenerales->clock.time, t_siguiente_intervalo, (t_siguiente_intervalo - datosApp->datosGenerales->clock.time ));
