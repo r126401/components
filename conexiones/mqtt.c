@@ -57,14 +57,15 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
     case MQTT_EVENT_DISCONNECTED:
         ESP_LOGW(TAG, ""TRAZAR"MQTT_EVENT_DISCONNECTED: Desconectado del broker :%s msg_id=%d", INFOTRAZA, datosApp.datosGenerales->parametrosMqtt.broker, msg_id);
         //registrar_alarma(&datosApp, NOTIFICACION_ALARMA_MQTT, ALARMA_MQTT, ALARMA_ON, false);
-        send_event(EVENT_MQTT_OK);
+        send_event(EVENT_ERROR_MQTT);
         appuser_notify_broker_disconnected(&datosApp);
         break;
 
     case MQTT_EVENT_SUBSCRIBED:
         ESP_LOGI(TAG, ""TRAZAR"MQTT_EVENT_SUBSCRIBED: SUBSCRITOS CON EXITO AL TOPIC :%s msg_id=%d", INFOTRAZA, datosApp.datosGenerales->parametrosMqtt.subscribe, msg_id);
         if (arranque == false ){
-        	appuser_notify_application_started(&datosApp);
+        	send_event(EVENT_MQTT_OK);
+        	//appuser_notify_application_started(&datosApp);
         	//datosApp.datosGenerales->estadoApp = ESPERA_FIN_ARRANQUE;
         	arranque = true;
         }

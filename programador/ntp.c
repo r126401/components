@@ -45,13 +45,25 @@ void inicializar_parametros_ntp(NTP_CLOCK *clock) {
  void notificar_sincronizacion_ntp(struct timeval *tv)
  {
 
-	 if (sntp_get_sync_status() == SNTP_SYNC_STATUS_COMPLETED) {
+	 switch (sntp_get_sync_status()) {
+
+	 case SNTP_SYNC_STATUS_COMPLETED:
 		 send_event(EVENT_NTP_OK);
-		 ESP_LOGI(TAG, ""TRAZAR"Evento de notificacion de sincronizacion ntp", INFOTRAZA);
-	 } else {
+		 ESP_LOGI(TAG, ""TRAZAR"Evento de sincronizacion completado", INFOTRAZA);
+		 break;
+	 case SNTP_SYNC_STATUS_RESET:
+		 ESP_LOGE(TAG, ""TRAZAR"Error: Evento de sincronizacion completado", INFOTRAZA);
 		 send_event(EVENT_ERROR_NTP);
-		 ESP_LOGE(TAG, ""TRAZAR"Evento de sincronizacion no completado", INFOTRAZA);
+		 break;
+	 case SNTP_SYNC_STATUS_IN_PROGRESS:
+		 ESP_LOGW(TAG, ""TRAZAR"Evento de sincronizacion no completado", INFOTRAZA);
+		 break;
+
+
+
 	 }
+
+
 
  }
 

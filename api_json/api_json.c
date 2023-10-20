@@ -739,6 +739,7 @@ cJSON*   cabecera_espontaneo(DATOS_APLICACION *datosApp, enum TIPO_INFORME tipo_
     cJSON *respuesta;
     respuesta = cabeceraGeneral(datosApp);
     if (respuesta == NULL) {
+    	ESP_LOGE(TAG, ""TRAZAR"CABECERA NULA", INFOTRAZA);
     	return NULL;
     } else {
     	cJSON_AddNumberToObject(respuesta, TIPO_REPORT, tipo_report);

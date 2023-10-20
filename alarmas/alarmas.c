@@ -368,6 +368,41 @@ void received_local_event(DATOS_APLICACION *datosApp, EVENT_DEVICE event) {
 }
 
 
+void process_event_app_ok(DATOS_APLICACION *datosApp) {
+
+
+
+
+
+}
+
+void process_event_mqtt_ok(DATOS_APLICACION *datosApp) {
+
+
+	registrar_alarma(datosApp, MNEMONIC_ALARM_MQTT, ALARM_MQTT, ALARM_OFF, true);
+
+
+
+	switch(datosApp->datosGenerales->estadoApp) {
+
+	case STARTING:
+		change_status_application(datosApp, CHECK_PROGRAMS);
+		appuser_notify_application_started(datosApp);
+		break;
+
+	default:
+		break;
+
+
+
+	}
+
+
+
+}
+
+
+
 void receive_event(DATOS_APLICACION *datosApp, EVENT_APP event) {
 
 	ESP_LOGE(TAG, ""TRAZAR"receive_event", INFOTRAZA);
@@ -427,6 +462,7 @@ void receive_event(DATOS_APLICACION *datosApp, EVENT_APP event) {
 			break;
 		case EVENT_APP_OK:
 			ESP_LOGE(TAG, ""TRAZAR"RECIBIDO APP OK", INFOTRAZA);
+			process_event_app_ok(datosApp);
 			break;
 		case EVENT_NVS_OK:
 			process_event_nvs_ok(datosApp);
@@ -442,7 +478,8 @@ void receive_event(DATOS_APLICACION *datosApp, EVENT_APP event) {
 			process_event_wifi_ok(datosApp);
 			break;
 		case EVENT_MQTT_OK:
-			registrar_alarma(datosApp, MNEMONIC_ALARM_MQTT, ALARM_MQTT, ALARM_OFF, true);
+			process_event_mqtt_ok(datosApp);
+
 			break;
 		case EVENT_CHECK_PROGRAMS:
 
@@ -520,7 +557,9 @@ void event_task(void *arg) {
 	for(;;) {
 		 ESP_LOGI(TAG, ""TRAZAR"ESPERANDO EVENTO...Memoria libre: %ld\n", INFOTRAZA, esp_get_free_heap_size());
 		if (xQueueReceive(event_queue, &event, portMAX_DELAY) == pdTRUE) {
-			ESP_LOGE(TAG, ""TRAZAR"event_task:Recibido evento app %s, evento device:%s", INFOTRAZA, event2mnemonic(event.event_app), local_event_2_mnemonic(event.event_device));
+			ESP_LOGE(TAG, ""TRAZAR"event_task:Recibido evento app %s, evento device:%s. Estado App: %s", INFOTRAZA,
+					event2mnemonic(event.event_app), local_event_2_mnemonic(event.event_device),
+							status2mnemonic(datosApp->datosGenerales->estadoApp));
 			receive_event(datosApp, event);
 
 

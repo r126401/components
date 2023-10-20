@@ -29,6 +29,7 @@
 #include "lv_rgb_main.h"
 #include "lvgl.h"
 
+
 #define CADENCIA_WIFI 250
 #define CADENCIA_BROKER 300
 #define CADENCIA_SMARTCONFIG 80
@@ -153,7 +154,7 @@ esp_err_t appuser_notify_smartconfig(DATOS_APLICACION *datosApp) {
 esp_err_t appuser_notify_application_started(DATOS_APLICACION *datosApp) {
 
 	cJSON *informe;
-	ESP_LOGI(TAG, ""TRAZAR"appuser_notify_application_started. Estado Aplicacion: %d", INFOTRAZA, datosApp->datosGenerales->estadoApp);
+	ESP_LOGI(TAG, ""TRAZAR"appuser_notify_application_started. Estado Aplicacion: %s", INFOTRAZA, status2mnemonic(datosApp->datosGenerales->estadoApp));
 	//datosApp->datosGenerales->estadoApp = change_status_application(datosApp);
 	//ESP_LOGI(TAG, ""TRAZAR"appuser_notify_application_started. Estado final Aplicacion: %d", INFOTRAZA, datosApp->datosGenerales->estadoApp);
 
@@ -348,10 +349,6 @@ esp_err_t appuser_start_schedule(DATOS_APLICACION *datosApp) {
 	// actualizar los intervalos del lcd
 	lv_update_bar_schedule(datosApp, true);
 
-
-
-	return ESP_OK;
-
 	return ESP_OK;
 }
 
@@ -382,6 +379,10 @@ cJSON* appuser_send_spontaneous_report(DATOS_APLICACION *datosApp, enum TIPO_INF
 
     ESP_LOGI(TAG, ""TRAZAR"appuser_send_spontaneous_report", INFOTRAZA);
     respuesta = cabecera_espontaneo(datosApp, tipoInforme);
+    if (respuesta == NULL) {
+    	ESP_LOGE(TAG, ""TRAZAR"appuser_send_spontaneous_report:Cabecera nula", INFOTRAZA);
+    	return NULL;
+    }
     switch(tipoInforme) {
         case ARRANQUE_APLICACION:
         case ACTUACION_RELE_LOCAL:
@@ -511,10 +512,7 @@ esp_err_t appuser_load_default_schedules(DATOS_APLICACION *datosApp, cJSON *arra
 	cJSON_AddStringToObject(item, PROGRAM_ID, "001038007f11");
 	cJSON_AddNumberToObject(item, UMBRAL_TEMPERATURA, 24.5);
 	cJSON_AddNumberToObject(item, DURATION_PROGRAM, 3600);
-	cJSON_AddItemToArray(array, item = cJSON_CreateObject());
-	cJSON_AddStringToObject(item, PROGRAM_ID, "021715000120081611");
-	cJSON_AddNumberToObject(item, UMBRAL_TEMPERATURA, 25.5);
-	cJSON_AddNumberToObject(item, DURATION_PROGRAM, 3600);
+
 
 	return ESP_OK;
 }
@@ -831,14 +829,8 @@ bool modify_threshold_temperature(cJSON *peticion, DATOS_APLICACION *datosApp, c
        if((campo != NULL) && (campo->type == cJSON_Number)) {
            printf("modificando umbral\n");
            datosApp->termostato.tempUmbral = campo->valuedouble;
-           /*
-           if (datosApp->datosGenerales->estadoApp == NORMAL_AUTO) {
-        	   appuser_cambiar_modo_aplicacion(datosApp, NORMAL_AUTOMAN);
-           }
-           */
-           lv_update_device(datosApp);
-           //datosApp->datosGenerales->estadoApp = NORMAL_AUTOMAN;
-           //guardarConfiguracion(datosApp, 0);
+
+           lv_update_threshold(datosApp, true);
            accionar_termostato(datosApp);
            cJSON_AddNumberToObject(respuesta, UMBRAL_TEMPERATURA, datosApp->termostato.tempUmbral);
            cJSON_AddNumberToObject(respuesta, APP_COMAND_ESTADO_RELE, gpio_get_level(CONFIG_GPIO_PIN_RELE));
