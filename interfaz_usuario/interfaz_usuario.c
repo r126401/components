@@ -723,6 +723,9 @@ esp_err_t appuser_notify_app_status(DATOS_APLICACION *datosApp, enum ESTADO_APP 
 	case CHECK_PROGRAMS:
 		strcpy(status, "CHECK");
 		break;
+	case SCHEDULING:
+		strcpy(status, "SCHEDULING");
+		break;
 
 
 	}
@@ -933,6 +936,8 @@ void appuser_notify_event_none_schedule(DATOS_APLICACION *datosApp) {
 
 
 	ESP_LOGI(TAG, ""TRAZAR"appuser_notify_event_none_schedule", INFOTRAZA);
+
+	lv_update_bar_schedule(datosApp, false);
 
 	switch (datosApp->datosGenerales->estadoApp) {
 

@@ -627,7 +627,7 @@ SCHEDULE_SEARCH buscar_programa(TIME_PROGRAM *programas, int elementos, int *pro
 					programas[*programa_actual].programa,
 					*t_tiempo_siguiente);
 
-			if (hora.time >= programas[*programa_actual].programa + programas[*programa_actual].duracion) {
+			if (hora.time > programas[*programa_actual].programa + programas[*programa_actual].duracion) {
 				ESP_LOGW(TAG, "NO_ACTIVE_SCHEDULE: HORA: %lld, programa actual: %lld, duracion: %ld ",
 						hora.time,
 						programas[*programa_actual].programa,
@@ -789,6 +789,7 @@ void gestion_programas(void *arg) {
 */
 	case NORMAL_AUTO:
 	case NORMAL_AUTOMAN:
+	case SCHEDULING:
 		if(((hora.tm_hour == 0) && (hora.tm_min == 0) && (hora.tm_sec == 0)) || (datosApp->datosGenerales->clock.time == t_siguiente_intervalo)) {
 
 			ESP_LOGI(TAG, ""TRAZAR"EVALUACION PROXIMO PROGRAMA", INFOTRAZA);

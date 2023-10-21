@@ -214,6 +214,8 @@ void process_event_error_nvs(DATOS_APLICACION *datosApp) {
 		break;
 	case CHECK_PROGRAMS:
 		break;
+	case SCHEDULING:
+		break;
 
 
 	}
@@ -342,6 +344,7 @@ void process_event_none_schedule(DATOS_APLICACION *datosApp) {
 
 void process_event_end_schedule(DATOS_APLICACION *datosApp) {
 
+	change_status_application(datosApp, CHECK_PROGRAMS);
 	appuser_end_schedule(datosApp);
 
 
@@ -354,12 +357,14 @@ void process_event_start_schedule(DATOS_APLICACION *datosApp) {
 
 	case NORMAL_AUTO:
 	case NORMAL_AUTOMAN:
+	case SCHEDULING:
+		change_status_application(datosApp, SCHEDULING);
 		appuser_start_schedule(datosApp);
 
 	break;
 
 	case CHECK_PROGRAMS:
-		change_status_application(datosApp, NORMAL_AUTO);
+		change_status_application(datosApp, SCHEDULING);
 		start_schedule(datosApp);
 		break;
 
@@ -487,13 +492,18 @@ void receive_event(DATOS_APLICACION *datosApp, EVENT_APP event) {
 		case EVENT_DEVICE_OK:
 			if (datosApp->alarmas[ALARM_DEVICE].estado_alarma == ALARM_ON) {
 				registrar_alarma(datosApp, MNEMONIC_ALARM_DEVICE, ALARM_DEVICE, ALARM_OFF, true);
-			}
-			appuser_notify_device_ok(datosApp);
-			if (datosApp->alarmas[ALARM_NTP].estado_alarma == ALARM_OFF) {
-				change_status_application(datosApp, NORMAL_AUTO);
+				if (datosApp->alarmas[ALARM_NTP].estado_alarma == ALARM_OFF) {
+					change_status_application(datosApp, CHECK_PROGRAMS);
+				} else {
+					change_status_application(datosApp,NORMAL_MANUAL);
+				}
+				appuser_notify_device_ok(datosApp);
+
+
 			} else {
-				change_status_application(datosApp,NORMAL_MANUAL);
+				ESP_LOGI(TAG, ""TRAZAR"EL DISPOSITIVO YA ESTABA OK", INFOTRAZA);
 			}
+
 
 			break;
 		case EVENT_APP_OK:
@@ -635,7 +645,7 @@ void send_event(EVENT_TYPE event) {
 }
 
 
-ESTADO_APP current_status_application(DATOS_APLICACION *datosApp) {
+ESTADO_APP get_current_status_application(DATOS_APLICACION *datosApp) {
 
 	return datosApp->datosGenerales->estadoApp;
 }

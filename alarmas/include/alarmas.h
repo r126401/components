@@ -30,7 +30,7 @@
 void send_event(EVENT_TYPE event);
 void send_event_device(EVENT_DEVICE event);
 void create_event_task(DATOS_APLICACION *datosApp);
-ESTADO_APP current_status_application(DATOS_APLICACION *datosApp);
+ESTADO_APP get_current_status_application(DATOS_APLICACION *datosApp);
 char* event2mnemonic(EVENT_TYPE event);
 
 

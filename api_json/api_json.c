@@ -448,6 +448,16 @@ esp_err_t   escribir_programa_actual(DATOS_APLICACION *datosApp, cJSON *respuest
 	int indice;
 
 
+	if (get_current_status_application(datosApp) == SCHEDULING) {
+		cJSON_AddStringToObject(respuesta, CURRENT_PROGRAM_ID, datosApp->datosGenerales->programacion[datosApp->datosGenerales->nProgramaCandidato].idPrograma);
+		ESP_LOGW(TAG, ""TRAZAR" programa candidato vale ok %d", INFOTRAZA, datosApp->datosGenerales->nProgramaCandidato);
+
+	} else {
+		ESP_LOGW(TAG, ""TRAZAR"NO HAY PROGRAMA ACTIVO", INFOTRAZA);
+	}
+
+	return ESP_OK;
+	/*
 	schedule = datosApp->datosGenerales->programacion;
 	indice = datosApp->datosGenerales->nProgramaCandidato;
 	if (datosApp->datosGenerales->nProgramacion > 0){
@@ -468,6 +478,7 @@ esp_err_t   escribir_programa_actual(DATOS_APLICACION *datosApp, cJSON *respuest
 	}
 
     return ESP_OK;
+    */
 }
 
 esp_err_t   visualizar_configuracion_mqtt(DATOS_APLICACION *datosApp, cJSON *respuesta) {
