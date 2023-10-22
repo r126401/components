@@ -629,29 +629,6 @@ esp_err_t appuser_modify_local_configuration_application(cJSON *root, DATOS_APLI
 }
 
 
-esp_err_t notify_end_starting(DATOS_APLICACION *datosApp) {
-
-	cJSON *informe;
-
-	ESP_LOGI(TAG, ""TRAZAR"notify_end_starting", INFOTRAZA);
-	if (datosApp->datosGenerales->estadoApp == ESPERA_FIN_ARRANQUE) {
-
-		//lv_cargar_pantalla_principal();
-		//calcular_estado_aplicacion(datosApp);
-		//appuser_cambiar_modo_aplicacion(datosApp, estado_app);
-		informe = appuser_send_spontaneous_report(datosApp, ARRANQUE_APLICACION, NULL);
-
-		if (informe != NULL) {
-			publicar_mensaje_json(datosApp, informe, NULL);
-		}
-
-	}
-
-
-
-	return ESP_OK;
-
-}
 
 esp_err_t appuser_received_message_extra_subscription(DATOS_APLICACION *datosApp) {
 
@@ -680,7 +657,7 @@ esp_err_t appuser_received_message_extra_subscription(DATOS_APLICACION *datosApp
 	//registrar_alarma(datosApp, NOTIFICACION_ALARMA_SENSOR_REMOTO, ALARMA_SENSOR_REMOTO, ALARMA_OFF, flag_envio);
 	send_event(EVENT_DEVICE_OK);
 
-	notify_end_starting(datosApp);
+
 	return ESP_OK;
 }
 /*

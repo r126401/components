@@ -318,7 +318,6 @@ esp_err_t appuser_load_schedule_extra_data(DATOS_APLICACION *datosApp, TIME_PROG
 esp_err_t appuser_notify_error_wifi_connection(DATOS_APLICACION *datosApp);
 
 void appuser_notify_scan_done(DATOS_APLICACION *datosApp, wifi_ap_record_t *ap_info, uint16_t *ap_count);
-esp_err_t notify_end_starting(DATOS_APLICACION *datosApp);
 void appuser_process_event_none_schedule(DATOS_APLICACION *datosApp);
 void appuser_received_local_event(DATOS_APLICACION *datosApp, EVENT_DEVICE event);
 char* local_event_2_mnemonic(EVENT_DEVICE event);
