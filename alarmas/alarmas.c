@@ -444,6 +444,14 @@ void process_event_insert_schedule(DATOS_APLICACION *datosApp) {
 	change_status_application(datosApp, CHECK_PROGRAMS);
 }
 
+
+void process_event_upgrade_firmware(DATOS_APLICACION *datosApp) {
+
+	change_status_application(datosApp, UPGRADE_EN_PROGRESO);
+}
+
+
+
 void receive_event(DATOS_APLICACION *datosApp, EVENT_APP event) {
 
 	ESP_LOGE(TAG, ""TRAZAR"receive_event", INFOTRAZA);
@@ -552,6 +560,7 @@ void receive_event(DATOS_APLICACION *datosApp, EVENT_APP event) {
 			change_status_application(datosApp, FACTORY);
 			break;
 		case EVENT_UPGRADE_FIRMWARE:
+			process_event_upgrade_firmware(datosApp);
 			break;
 
 		default:

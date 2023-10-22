@@ -376,6 +376,7 @@ cJSON* appuser_send_spontaneous_report(DATOS_APLICACION *datosApp, enum TIPO_INF
 
 
     cJSON *respuesta = NULL;
+    char valor[20];
 
     ESP_LOGI(TAG, ""TRAZAR"appuser_send_spontaneous_report", INFOTRAZA);
     respuesta = cabecera_espontaneo(datosApp, tipoInforme);
@@ -385,6 +386,30 @@ cJSON* appuser_send_spontaneous_report(DATOS_APLICACION *datosApp, enum TIPO_INF
     }
     switch(tipoInforme) {
         case ARRANQUE_APLICACION:
+            cJSON_AddNumberToObject(respuesta, APP_COMAND_ESTADO_RELE, gpio_get_level(CONFIG_GPIO_PIN_RELE));
+            cJSON_AddNumberToObject(respuesta, PROGRAMMER_STATE, datosApp->datosGenerales->estadoProgramacion);
+            cJSON_AddNumberToObject(respuesta, DEVICE_STATE, datosApp->datosGenerales->estadoApp);
+            cJSON_AddNumberToObject(respuesta, TEMPERATURA, datosApp->termostato.tempActual);
+#ifdef CONFIG_DHT22
+            cJSON_AddNumberToObject(respuesta, HUMEDAD, datosApp->termostato.humedad);
+#endif
+            cJSON_AddNumberToObject(respuesta, UMBRAL_TEMPERATURA, datosApp->termostato.tempUmbral);
+            cJSON_AddBoolToObject(respuesta, MASTER, datosApp->termostato.master);
+            cJSON_AddStringToObject(respuesta, SENSOR_REMOTO, datosApp->termostato.sensor_remoto);
+
+
+            if (leer_configuracion(datosApp, FIN_UPGRADE, valor) == ESP_OK) {
+            	cJSON *upgrade;
+            	int dato;
+            	upgrade = cJSON_Parse(valor);
+            	extraer_dato_int(upgrade, FIN_UPGRADE, &dato);
+            	ESP_LOGI(TAG, ""TRAZAR" ESCRIBIMOS EL FIN DE UPGRADE", INFOTRAZA);
+            	cJSON_AddNumberToObject(respuesta, FIN_UPGRADE, dato);
+            	borrar_clave(&datosApp->handle, FIN_UPGRADE);
+            }
+                escribir_programa_actual(datosApp, respuesta);
+                codigoRespuesta(respuesta,RESP_OK);
+                break;
         case ACTUACION_RELE_LOCAL:
         case CAMBIO_DE_PROGRAMA:
         case RELE_TEMPORIZADO:

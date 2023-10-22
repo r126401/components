@@ -22,7 +22,7 @@
 #include "conexiones_mqtt.h"
 #include "configuracion.h"
 #include "dialogos_json.h"
-
+#include "alarmas.h"
 
 
 
@@ -117,6 +117,8 @@ void otaesp_task(void *pvParameter)
 	char url[120];
 	const esp_app_desc_t *aplicacion;
 	cJSON *upgrade;
+
+	send_event(EVENT_UPGRADE_FIRMWARE);
 	aplicacion = esp_app_get_description();
 	ESP_LOGW(TAG, ""TRAZAR"Comienzo upgrade firmware", INFOTRAZA);
     ip = name_to_ip(datosApp->datosGenerales->ota.server);
@@ -149,7 +151,7 @@ void otaesp_task(void *pvParameter)
     if (datosApp->datosGenerales->parametrosMqtt.tls == true) {
 
     	//Eliminamos la tarea mqtt para poder lanzar la peticion https sobre el servidor ftp
-    	eliminar_tarea_mqtt();
+    	//eliminar_tarea_mqtt();
     	config.use_global_ca_store = true;
     	ESP_LOGI(TAG, ""TRAZAR"Usamos el almacen global", INFOTRAZA);
 
