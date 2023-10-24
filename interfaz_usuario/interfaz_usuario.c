@@ -64,6 +64,19 @@ char* local_event_2_mnemonic(EVENT_DEVICE event) {
 	case EVENT_RELAY_OFF:
 		strcpy(mnemonic, "EVENT_RELAY_OFF");
 		break;
+	case EVENT_ANSWER_TEMPERATURE:
+		strcpy(mnemonic, "EVENT_ANSWER_TEMPERATURE");
+		break;
+	case EVENT_REQUEST_TEMPERATURE:
+		strcpy(mnemonic, "EVENT_REQUEST_TEMPERATURE");
+		break;
+	case EVENT_TIMEOUT_REMOTE_TEMPERATURE:
+		strcpy(mnemonic, "EVENT_ERROR_REMOTE_TEMPERATURE");
+		break;
+
+	case EVENT_DEVICE_REMOTE_ERROR:
+		strcpy(mnemonic, "EVENT_DEVICE_REMOTE_ERROR");
+		break;
 
 
 	}
@@ -158,6 +171,11 @@ esp_err_t appuser_notify_application_started(DATOS_APLICACION *datosApp) {
 	//datosApp->datosGenerales->estadoApp = change_status_application(datosApp);
 	//ESP_LOGI(TAG, ""TRAZAR"appuser_notify_application_started. Estado final Aplicacion: %d", INFOTRAZA, datosApp->datosGenerales->estadoApp);
 
+    if (datosApp->termostato.master == false) {
+    	ESP_LOGI(TAG, ""TRAZAR"sensor remoto. Nos subscribimos a %s", INFOTRAZA, datosApp->datosGenerales->parametrosMqtt.topics[CONFIG_INDEX_REMOTE_TOPIC_TEMPERATURE].subscribe);
+    	subscribe_topic(datosApp, datosApp->datosGenerales->parametrosMqtt.topics[CONFIG_INDEX_REMOTE_TOPIC_TEMPERATURE].subscribe);
+    }
+
 	datosApp->termostato.tempActual = -1000;
 	lv_update_temperature(datosApp);
 
@@ -169,6 +187,7 @@ esp_err_t appuser_notify_application_started(DATOS_APLICACION *datosApp) {
 		publicar_mensaje_json(datosApp, informe, NULL);
 		ESP_LOGI(TAG, ""TRAZAR" PUBLICADO", INFOTRAZA);
 	}
+
 
 	return ESP_OK;
 }
@@ -337,7 +356,7 @@ esp_err_t appuser_start_schedule(DATOS_APLICACION *datosApp) {
 	datosApp->termostato.tempUmbral = datosApp->datosGenerales->programacion[datosApp->datosGenerales->nProgramaCandidato].temperatura;
 
     if (calcular_accion_termostato(datosApp, &accion) == ACCIONAR_TERMOSTATO) {
-    	operacion_rele(datosApp, TEMPORIZADA, accion);
+    	relay_operation(datosApp, TEMPORIZADA, accion);
 
     }
 
@@ -580,6 +599,22 @@ esp_err_t appuser_reporting_schedule_extra_data(TIME_PROGRAM *programa_actual, c
 	return ESP_OK;
 }
 
+
+esp_err_t set_topic_remote_sensor(DATOS_APLICACION *datosApp, char *id_remote_sensor) {
+
+	strcpy(datosApp->datosGenerales->parametrosMqtt.topics[CONFIG_INDEX_REMOTE_TOPIC_TEMPERATURE].publish, CONFIG_PREFIX_TOPIC_PUBLISH_REMOTE_TEMPERATURE);
+	strcpy(datosApp->datosGenerales->parametrosMqtt.topics[CONFIG_INDEX_REMOTE_TOPIC_TEMPERATURE].subscribe, CONFIG_PREFIX_TOPIC_SUBSCRIBE_REMOTE_TEMPERATURE);
+
+	strcat(datosApp->datosGenerales->parametrosMqtt.topics[CONFIG_INDEX_REMOTE_TOPIC_TEMPERATURE].publish, id_remote_sensor);
+	strcat(datosApp->datosGenerales->parametrosMqtt.topics[CONFIG_INDEX_REMOTE_TOPIC_TEMPERATURE].subscribe, id_remote_sensor);
+	datosApp->datosGenerales->parametrosMqtt.topics[CONFIG_INDEX_REMOTE_TOPIC_TEMPERATURE].status = true;
+
+
+	return ESP_OK;
+
+}
+
+
 esp_err_t appuser_modify_local_configuration_application(cJSON *root, DATOS_APLICACION *datosApp, cJSON *respuesta) {
 
 	   cJSON *nodo;
@@ -608,6 +643,23 @@ esp_err_t appuser_modify_local_configuration_application(cJSON *root, DATOS_APLI
 	   extraer_dato_float(nodo, INCDEC, &datosApp->termostato.incdec);
 	   if ((extraer_dato_uint8(nodo,  MASTER, (uint8_t*) &datosApp->termostato.master)) == ESP_OK) {
 
+
+		   if (datosApp->termostato.master) {
+			   ESP_LOGI(TAG, ""TRAZAR" Se modifica el sensor para que el master sea el dispositivo", INFOTRAZA);
+			   memset(datosApp->termostato.sensor_remoto, 0,sizeof(datosApp->termostato.sensor_remoto));
+			   unsubscribe_topic(datosApp, CONFIG_INDEX_REMOTE_TOPIC_TEMPERATURE);
+		   } else {
+			   ESP_LOGE(TAG, ""TRAZAR"Se configura sensor remoto: %ld\n", INFOTRAZA, esp_get_free_heap_size());
+			   //strcpy(datosApp->termostato.sensor_remoto, cJSON_GetObjectItem(nodo, SENSOR_REMOTO)->valuestring);
+			   extraer_dato_string(nodo, SENSOR_REMOTO, datosApp->termostato.sensor_remoto);
+			   ESP_LOGE(TAG, ""TRAZAR"despues: %ld\n", INFOTRAZA, esp_get_free_heap_size());
+			   ESP_LOGW(TAG, ""TRAZAR" Se selecciona el sensor remoto a :%s", INFOTRAZA, datosApp->termostato.sensor_remoto);
+			   set_topic_remote_sensor(datosApp, datosApp->termostato.sensor_remoto);
+			   subscribe_topic(datosApp, datosApp->datosGenerales->parametrosMqtt.topics[CONFIG_INDEX_REMOTE_TOPIC_TEMPERATURE].subscribe);
+			   cJSON_AddStringToObject(respuesta, SENSOR_REMOTO, datosApp->termostato.sensor_remoto);
+
+		   }
+/*
 		   if (datosApp->termostato.master == false) {
 
 			   extraer_dato_string(nodo,  SENSOR_REMOTO, &datosApp->termostato.sensor_remoto);
@@ -615,6 +667,7 @@ esp_err_t appuser_modify_local_configuration_application(cJSON *root, DATOS_APLI
 		   } else {
 			   strcpy(datosApp->termostato.sensor_remoto, "");
 		   }
+		   */
 		   cJSON_AddBoolToObject(respuesta, MASTER, datosApp->termostato.master);
 
 
@@ -629,8 +682,38 @@ esp_err_t appuser_modify_local_configuration_application(cJSON *root, DATOS_APLI
 }
 
 
+esp_err_t appuser_received_application_device_message(DATOS_APLICACION *datosApp, char *message, int index) {
 
-esp_err_t appuser_received_message_extra_subscription(DATOS_APLICACION *datosApp) {
+	cJSON *respuesta;
+	double dato;
+	float temperatura_a_redondear;
+
+	ESP_LOGI(TAG, ""TRAZAR"appuser_received_application_device_message", INFOTRAZA);
+	respuesta = cJSON_Parse(message);
+	if (respuesta != NULL) {
+		extraer_dato_double(respuesta, TEMPERATURA, &dato);
+		datosApp->termostato.tempActual = (float) dato;
+		extraer_dato_double(respuesta, HUMEDAD, &dato);
+		temperatura_a_redondear = datosApp->termostato.tempActual;
+      	datosApp->termostato.tempActual = redondear_temperatura(temperatura_a_redondear);
+
+		datosApp->termostato.humedad = (float) dato;
+		ESP_LOGI(TAG, ""TRAZAR" temperatura remota :%lf, humedad remota:%lf", INFOTRAZA, datosApp->termostato.tempActual,datosApp->termostato.humedad);
+		cJSON_Delete(respuesta);
+		send_event_device(EVENT_ANSWER_TEMPERATURE);
+		return ESP_OK;
+
+	} else {
+		return ESP_FAIL;
+		send_event_device(EVENT_DEVICE_REMOTE_ERROR);
+	}
+
+
+	return ESP_OK;
+}
+
+
+esp_err_t appuser_reding_remote_temperature(DATOS_APLICACION *datosApp) {
 
 	ESP_LOGI(TAG, ""TRAZAR"appuser_received_message_extra_subscription", INFOTRAZA);
 	ESP_LOGI(TAG, ""TRAZAR" mensaje del topic: %s", INFOTRAZA, datosApp->handle_mqtt->topic);
@@ -649,13 +732,15 @@ esp_err_t appuser_received_message_extra_subscription(DATOS_APLICACION *datosApp
 		extraer_dato_double(respuesta, HUMEDAD, &dato);
 		datosApp->termostato.humedad = (float) dato;
 		free(texto_respuesta);
+		ESP_LOGI(TAG, ""TRAZAR" temperatura remota :%lf, humedad remota:%lf", INFOTRAZA, datosApp->termostato.tempActual,datosApp->termostato.humedad);
+		cJSON_Delete(respuesta);
+		send_event_device(EVENT_ANSWER_TEMPERATURE);
+		return ESP_OK;
 
+	} else {
+		return ESP_FAIL;
+		send_event_device(EVENT_DEVICE_REMOTE_ERROR);
 	}
-	ESP_LOGI(TAG, ""TRAZAR" temperatura remota :%lf, humedad remota:%lf", INFOTRAZA, datosApp->termostato.tempActual,datosApp->termostato.humedad);
-	cJSON_Delete(respuesta);
-
-	//registrar_alarma(datosApp, NOTIFICACION_ALARMA_SENSOR_REMOTO, ALARMA_SENSOR_REMOTO, ALARMA_OFF, flag_envio);
-	send_event(EVENT_DEVICE_OK);
 
 
 	return ESP_OK;
@@ -836,7 +921,7 @@ bool modify_threshold_temperature(cJSON *peticion, DATOS_APLICACION *datosApp, c
            datosApp->termostato.tempUmbral = campo->valuedouble;
 
            lv_update_threshold(datosApp, true);
-           accionar_termostato(datosApp);
+           thermostat_action(datosApp);
            cJSON_AddNumberToObject(respuesta, UMBRAL_TEMPERATURA, datosApp->termostato.tempUmbral);
            cJSON_AddNumberToObject(respuesta, APP_COMAND_ESTADO_RELE, gpio_get_level(CONFIG_GPIO_PIN_RELE));
            codigoRespuesta(respuesta, RESP_OK);
@@ -845,6 +930,9 @@ bool modify_threshold_temperature(cJSON *peticion, DATOS_APLICACION *datosApp, c
        }
     return true;
 }
+
+
+
 
 
 esp_err_t select_temperature_sensor(cJSON *peticion, DATOS_APLICACION *datosApp, cJSON *respuesta) {
@@ -871,12 +959,16 @@ esp_err_t select_temperature_sensor(cJSON *peticion, DATOS_APLICACION *datosApp,
    if (master) {
 	   ESP_LOGI(TAG, ""TRAZAR" Se modifica el sensor para que el master sea el dispositivo", INFOTRAZA);
 	   memset(datosApp->termostato.sensor_remoto, 0,sizeof(datosApp->termostato.sensor_remoto));
+	   unsubscribe_topic(datosApp, CONFIG_INDEX_REMOTE_TOPIC_TEMPERATURE);
    } else {
 	   ESP_LOGE(TAG, ""TRAZAR"ante: %ld\n", INFOTRAZA, esp_get_free_heap_size());
 	   //strcpy(datosApp->termostato.sensor_remoto, cJSON_GetObjectItem(nodo, SENSOR_REMOTO)->valuestring);
 	   extraer_dato_string(nodo, SENSOR_REMOTO, datosApp->termostato.sensor_remoto);
 	   ESP_LOGE(TAG, ""TRAZAR"despues: %ld\n", INFOTRAZA, esp_get_free_heap_size());
 	   ESP_LOGW(TAG, ""TRAZAR" Se selecciona el sensor remoto a :%s", INFOTRAZA, datosApp->termostato.sensor_remoto);
+	   set_topic_remote_sensor(datosApp, datosApp->termostato.sensor_remoto);
+	   subscribe_topic(datosApp, datosApp->datosGenerales->parametrosMqtt.topics[CONFIG_INDEX_REMOTE_TOPIC_TEMPERATURE].subscribe);
+
    }
    datosApp->termostato.master = master;
    salvar_configuracion_general(datosApp);
@@ -891,7 +983,7 @@ esp_err_t appuser_set_command_application(cJSON *peticion, int nComando, DATOS_A
 	ESP_LOGI(TAG, ""TRAZAR"appuser_set_command_application", INFOTRAZA);
     switch(nComando) {
         case OPERAR_RELE:
-            operacion_rele(datosApp, MANUAL, INDETERMINADO);
+            relay_operation(datosApp, MANUAL, INDETERMINADO);
             display_act_remote_relay(datosApp, respuesta);
             break;
 
@@ -971,7 +1063,7 @@ void change_threshold(void *arg) {
 	cJSON* informe = NULL;
 	DATOS_APLICACION *datosApp;
 	datosApp = (DATOS_APLICACION*) arg;
-	accionar_termostato(datosApp);
+	thermostat_action(datosApp);
 	lv_update_threshold(datosApp, true);
 	informe = appuser_send_spontaneous_report(datosApp, CAMBIO_UMBRAL_TEMPERATURA, NULL);
     if (informe != NULL) {

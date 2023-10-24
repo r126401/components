@@ -58,6 +58,9 @@ esp_err_t crear_programas_defecto(DATOS_APLICACION *datosApp) {
 esp_err_t configuracion_a_json(DATOS_APLICACION *datosApp, cJSON *conf) {
 
 
+	int i;
+	cJSON *array_topics = NULL;
+	cJSON *item;
 
 
 	ESP_LOGI(TAG, ""TRAZAR"(COMENZAMOS)", INFOTRAZA);
@@ -68,6 +71,17 @@ esp_err_t configuracion_a_json(DATOS_APLICACION *datosApp, cJSON *conf) {
 	cJSON_AddStringToObject(conf, MQTT_PASS, datosApp->datosGenerales->parametrosMqtt.password);
 	cJSON_AddStringToObject(conf, MQTT_SUBSCRIBE, datosApp->datosGenerales->parametrosMqtt.subscribe);
 	cJSON_AddStringToObject(conf, MQTT_PUBLISH, datosApp->datosGenerales->parametrosMqtt.publish);
+	for (i=0;i<CONFIG_NUM_TOPICS;i++) {
+		if (i == 0) {
+			array_topics = cJSON_CreateArray();
+		}
+		cJSON_AddItemToArray(array_topics, item = cJSON_CreateObject());
+		cJSON_AddStringToObject(item, MQTT_PUBLISH, datosApp->datosGenerales->parametrosMqtt.topics[i].publish);
+		cJSON_AddStringToObject(item, MQTT_SUBSCRIBE, datosApp->datosGenerales->parametrosMqtt.topics[i].subscribe);
+		cJSON_AddBoolToObject(item, MQTT_STATUS_TOPIC, datosApp->datosGenerales->parametrosMqtt.topics[i].status);
+
+	}
+	cJSON_AddItemToObject(conf, MQTT_TOPICS , array_topics);
 	cJSON_AddNumberToObject(conf, MQTT_QOS , datosApp->datosGenerales->parametrosMqtt.qos);
 	cJSON_AddNumberToObject(conf, PROGRAM_STATE, datosApp->datosGenerales->estadoProgramacion);
 	cJSON_AddStringToObject(conf, OTA_SW_VERSION, datosApp->datosGenerales->ota.swVersion->version);
@@ -98,6 +112,52 @@ esp_err_t guardar_configuracion(DATOS_APLICACION *datosApp, char * clave, char* 
 	return error;
 }
 
+
+esp_err_t get_default_topics_config(DATOS_APLICACION *datosApp) {
+
+	int i;
+	char *mac;
+
+	mac = get_my_id();
+
+    strcpy(datosApp->datosGenerales->parametrosMqtt.publish, "/pub_");
+    strcat(datosApp->datosGenerales->parametrosMqtt.publish, mac);
+    strcpy(datosApp->datosGenerales->parametrosMqtt.subscribe, "/sub_");
+    strcat(datosApp->datosGenerales->parametrosMqtt.subscribe, mac);
+
+
+	strcpy(datosApp->datosGenerales->parametrosMqtt.topics[0].publish, "/pub_");
+	strcat(datosApp->datosGenerales->parametrosMqtt.topics[0].publish, mac);
+	strcpy(datosApp->datosGenerales->parametrosMqtt.topics[0].subscribe, "/sub_");
+	strcat(datosApp->datosGenerales->parametrosMqtt.topics[0].subscribe, mac);
+	datosApp->datosGenerales->parametrosMqtt.topics[0].status = true;
+
+
+	strcpy(datosApp->datosGenerales->parametrosMqtt.topics[1].publish, "/pub_debug_");
+	strcat(datosApp->datosGenerales->parametrosMqtt.topics[1].publish, mac);
+	strcpy(datosApp->datosGenerales->parametrosMqtt.topics[1].subscribe, "/sub_debug_");
+	strcat(datosApp->datosGenerales->parametrosMqtt.topics[1].subscribe, mac);
+	datosApp->datosGenerales->parametrosMqtt.topics[1].status = false;
+
+	for (i=2;i<CONFIG_NUM_TOPICS;i++) {
+		strcpy(datosApp->datosGenerales->parametrosMqtt.topics[i].publish, "/sub_");
+		strcpy(datosApp->datosGenerales->parametrosMqtt.topics[i].subscribe, "/pub_");
+		datosApp->datosGenerales->parametrosMqtt.topics[i].status = false;
+	}
+
+
+
+
+
+
+
+
+	return ESP_OK;
+
+}
+
+
+
 /**
  * Esta funcion cargara valores de fabrica en la aplicacion.
  */
@@ -113,10 +173,13 @@ esp_err_t cargar_configuracion_defecto(DATOS_APLICACION *datosApp) {
     datosApp->datosGenerales->parametrosMqtt.port = CONFIG_PUERTO_DEFECTO;
     strcpy(datosApp->datosGenerales->parametrosMqtt.user, CONFIG_USUARIO_BROKER_DEFECTO);
     strcpy(datosApp->datosGenerales->parametrosMqtt.password, CONFIG_PASSWORD_BROKER_DEFECTO);
+    get_default_topics_config(datosApp);
+    /*
     strcpy(datosApp->datosGenerales->parametrosMqtt.publish, "/pub_");
     strcat(datosApp->datosGenerales->parametrosMqtt.publish, get_my_id());
     strcpy(datosApp->datosGenerales->parametrosMqtt.subscribe, "/sub_");
     strcat(datosApp->datosGenerales->parametrosMqtt.subscribe, get_my_id());
+    */
     datosApp->datosGenerales->parametrosMqtt.qos = 0;
     datosApp->datosGenerales->parametrosMqtt.tls = CONFIG_MQTT_TLS;
     //strcpy(datosApp->datosGenerales->parametrosMqtt.cert, (const char *) mqtt_jajica_pem_start);
@@ -148,6 +211,10 @@ esp_err_t cargar_configuracion_defecto(DATOS_APLICACION *datosApp) {
 esp_err_t json_a_datos_aplicacion(DATOS_APLICACION *datosApp, char *datos) {
 
 	cJSON *nodo;
+	cJSON *array_topics;
+	cJSON *object;
+	int i;
+	int size;
 
 	nodo = cJSON_Parse(datos);
 	if (nodo != NULL) {
@@ -163,17 +230,23 @@ esp_err_t json_a_datos_aplicacion(DATOS_APLICACION *datosApp, char *datos) {
 		extraer_dato_int(nodo, PROGRAM_STATE, (int*) &datosApp->datosGenerales->estadoProgramacion);
 		extraer_dato_int(nodo, DEVICE, &datosApp->datosGenerales->tipoDispositivo );
 		extraer_dato_uint8(nodo, MQTT_TLS, (uint8_t*) &datosApp->datosGenerales->parametrosMqtt.tls);
-		//extraer_dato_string(nodo, MQTT_CERT_TLS, datosApp->datosGenerales->parametrosMqtt.cert);
-		/*
-		extraer_dato_int(nodo, OTA_SW_VERSION, &version);
-		if (version <= datosApp->datosGenerales->ota.swVersion) {
-			datosApp->datosGenerales->ota.swVersion = datosApp->datosGenerales->ota.swVersion;
-			ESP_LOGI(TAG, ""TRAZAR"Se indica version de compilacion %d", INFOTRAZA, datosApp->datosGenerales->ota.swVersion);
-		} else {
-			datosApp->datosGenerales->ota.swVersion = version;
-			ESP_LOGI(TAG, ""TRAZAR"Se indica version OTA %d", INFOTRAZA, datosApp->datosGenerales->ota.swVersion);
+		array_topics = cJSON_GetObjectItem(nodo, MQTT_TOPICS);
 
-		}*/
+		size = cJSON_GetArraySize(array_topics);
+		if (array_topics != NULL) {
+			for (i=0;i<size;i++) {
+				object = cJSON_GetArrayItem(array_topics, i);
+				extraer_dato_string(object, MQTT_PUBLISH, datosApp->datosGenerales->parametrosMqtt.topics[i].publish);
+				extraer_dato_string(object, MQTT_SUBSCRIBE, datosApp->datosGenerales->parametrosMqtt.topics[i].subscribe);
+				extraer_dato_bool(object, MQTT_STATUS_TOPIC, (bool*) &datosApp->datosGenerales->parametrosMqtt.topics[i].status);
+				ESP_LOGE(TAG, ""TRAZAR"publish: %s, subscribe: %s, estado: %d", INFOTRAZA,
+						datosApp->datosGenerales->parametrosMqtt.topics[i].publish,
+						datosApp->datosGenerales->parametrosMqtt.topics[i].subscribe,
+						datosApp->datosGenerales->parametrosMqtt.topics[i].status);
+
+			}
+		}
+
 		appuser_json_to_configuration(datosApp, nodo);
 	} else {
 		ESP_LOGE(TAG, ""TRAZAR"Error al extraer los datos del json", INFOTRAZA);

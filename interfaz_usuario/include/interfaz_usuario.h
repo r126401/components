@@ -270,7 +270,19 @@ esp_err_t appuser_modify_local_configuration_application(cJSON *root, DATOS_APLI
  * @param datosApp
  * @return
  */
-esp_err_t appuser_received_message_extra_subscription(DATOS_APLICACION *datosApp);
+
+/**
+ * @fn esp_err_t appuser_received_application_device_message(DATOS_APLICACION*, char*, int)
+ * @brief
+ *
+ * @param datosApp
+ * @param message
+ * @param index
+ * @return
+ */
+esp_err_t appuser_received_application_device_message(DATOS_APLICACION *datosApp, char *message, int index);
+
+esp_err_t appuser_reding_remote_temperature(DATOS_APLICACION *datosApp);
 
 /**
  * @fn esp_err_t appuser_notify_app_status(DATOS_APLICACION*, enum ESTADO_APP)

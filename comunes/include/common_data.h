@@ -17,7 +17,7 @@
 #include "ntp.h"
 #include "nvs.h"
 #include "thermostat.h"
-
+#include "local_events_device.h"
 
 
 
@@ -90,7 +90,20 @@ typedef enum TIPO_DISPOSITIVO {
 	TERMOMETRO = 2
 }TIPO_DISPOSITIVO;
 
+typedef enum STATUS_DEBUG {
+	TOPIC_NO_ACTIVE,
+	TOPIC_ACTIVE
+}STATUS_DEBUG;
 
+
+typedef struct TOPICS_LIST {
+
+	char publish[50];
+	char subscribe[50];
+	STATUS_DEBUG status;
+
+
+}TOPICS_LIST;
 
 typedef struct MQTT_PARAM {
     char broker[100];
@@ -102,6 +115,7 @@ typedef struct MQTT_PARAM {
     int qos;
     bool tls;
     char* cert;
+    TOPICS_LIST topics[CONFIG_NUM_TOPICS];
 
 } MQTT_PARAM;
 

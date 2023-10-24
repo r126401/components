@@ -14,11 +14,14 @@
 #include "interfaz_usuario.h"
 #include "alarm_data.h"
 #include "conexiones.h"
+#include "esp_timer.h"
+#include "local_events_device.h"
 
 
 xQueueHandle event_queue;
 static const char *TAG = "ALARMAS";
 
+#define TIMEOUT_REQUEST_REMOTE_TEMPERATURE 5
 
 char* event2mnemonic(EVENT_TYPE event) {
 
@@ -383,13 +386,9 @@ void process_event_check_programs(DATOS_APLICACION *datosApp) {
 
 
 
-void received_local_event(DATOS_APLICACION *datosApp, EVENT_DEVICE event) {
 
 
 
-	appuser_received_local_event(datosApp, event);
-
-}
 
 
 void process_event_app_ok(DATOS_APLICACION *datosApp) {

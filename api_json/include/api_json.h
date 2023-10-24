@@ -28,6 +28,14 @@
 #include "logging.h"
 
 
+typedef enum MESSAGE_TYPE {
+
+	UNKNOWN_MESSAGE = -1,
+	APPLICATION_MESSAGE,
+	DEBUG_MESSAGE,
+	APPLICATION_DEVICE_MESSAGE
+}MESSAGE_TYPE;
+
 typedef enum TIPO_INFORME {
     ARRANQUE_APLICACION,
     ACTUACION_RELE_LOCAL,
@@ -99,7 +107,7 @@ typedef enum CODIGO_RESPUESTA {
  * la funcion llamara a analizar_comando para procesar la peticion desde la aplicacion de usuarios.
  * @param datosApp es la estructura de la aplicacion.
  */
- void mensaje_recibido(DATOS_APLICACION *datosApp);
+ void message_application_received(DATOS_APLICACION *datosApp, char *topic);
 
 
  /**
@@ -260,6 +268,18 @@ typedef enum CODIGO_RESPUESTA {
  * @param respuesta
  * @return Devuelve ESP_FAIL en caso de error
  */
+
+ /**
+   * @fn esp_err_t extraer_dato_bool(cJSON*, char*, bool*)
+  * @brief
+  *
+  * @param nodo
+  * @param nombre_campo
+  * @param dato
+  * @return
+  */
+ esp_err_t extraer_dato_bool(cJSON *nodo, char *nombre_campo, bool *dato);
+
  esp_err_t visualizar_datos_aplicacion(struct DATOS_APLICACION *datosApp, cJSON *respuesta);
  /**
    * @fn esp_err_t visualizar_datos_wifi(DATOS_APLICACION*, cJSON*)

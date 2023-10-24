@@ -24,6 +24,7 @@
 
 
 
+
 #define DELAY_TIME_RESET 3000 //ms o 3s
 
 static const char *TAG = "API_JSON";
@@ -150,13 +151,100 @@ cJSON*  analizar_comando(DATOS_APLICACION *datosApp, char* info) {
 }
 
 
- void  mensaje_recibido(DATOS_APLICACION *datosApp) {
+MESSAGE_TYPE select_topic_client(DATOS_APLICACION *datosApp, char* topic, int *index) {
 
 
-	 char* peticion = NULL;
+	int i;
+
+	ESP_LOGI(TAG, ""TRAZAR"topic: %s, topic: %s", INFOTRAZA, datosApp->datosGenerales->parametrosMqtt.topics[0].subscribe, topic);
+
+	if (strcmp(datosApp->datosGenerales->parametrosMqtt.topics[0].subscribe, topic) == 0) {
+
+		return APPLICATION_MESSAGE;
+
+	}
+
+
+	if (strcmp(datosApp->datosGenerales->parametrosMqtt.topics[1].subscribe, topic) == 0) {
+
+		return DEBUG_MESSAGE;
+
+	}
+
+
+	for (i=0;i < CONFIG_NUM_TOPICS; i++) {
+
+		if (strcmp(datosApp->datosGenerales->parametrosMqtt.topics[i].subscribe, topic) == 0) {
+			return APPLICATION_DEVICE_MESSAGE;
+		}
+	}
+
+
+	return UNKNOWN_MESSAGE;
+
+}
+
+
+void process_application_message(DATOS_APLICACION *datosApp, char* peticion) {
+
+
 	 cJSON *root = NULL;
 	 char *respuesta = NULL;
 	 COLA_MQTT cola;
+
+	 ESP_LOGE(TAG, ""TRAZAR"process_application_message: Memoria libre(1): %ld\n", INFOTRAZA, esp_get_free_heap_size());
+
+	 root = analizar_comando(datosApp, peticion);
+    if (root != NULL) {
+        // 3.- Una vez ejecutado enviamos la respuesta y liberamos recursos.
+
+   	 //publicar_mensaje_json(datosApp, root, NULL);
+        // obtenemos el json de la respuesta para escribir
+        respuesta = cJSON_Print(root);
+        if (respuesta != NULL) {
+       	 strcpy(cola.topic, datosApp->datosGenerales->parametrosMqtt.publish);
+       	 strcpy(cola.buffer, respuesta);
+            // preparamos los datos para el envio
+             //publicar_mensaje(datosApp, respuesta);
+             xQueueSend(cola_mqtt, &cola,0);
+        }
+    }
+    free(respuesta);
+	 free(peticion);
+	 cJSON_Delete(root);
+	 ESP_LOGE(TAG, ""TRAZAR"Memoria despues: %ld\n", INFOTRAZA, esp_get_free_heap_size());
+
+
+}
+
+void process_debug_message(DATOS_APLICACION *datosApp, char *message) {
+
+
+	free(message);
+}
+
+void process_application_device_message(DATOS_APLICACION *datosApp, char *message, int index) {
+
+	appuser_received_application_device_message(datosApp, message, index);
+	free(message);
+
+}
+
+
+void process_unknown_message(DATOS_APLICACION *datosApp, char *message) {
+
+
+	free(message);
+}
+
+
+ void  message_application_received(DATOS_APLICACION *datosApp, char *topic) {
+
+
+	 char* message = NULL;
+
+	 MESSAGE_TYPE message_type = UNKNOWN_MESSAGE;
+	 int index;
 
 	 ESP_LOGE(TAG, ""TRAZAR"Memoria libre(1): %ld\n", INFOTRAZA, esp_get_free_heap_size());
 
@@ -164,10 +252,32 @@ cJSON*  analizar_comando(DATOS_APLICACION *datosApp, char* info) {
 		 ESP_LOGW(TAG, ""TRAZAR"MENSAJE VACIO", INFOTRAZA);
 		 return;
 	 }
-	 peticion = (char*) calloc((datosApp->handle_mqtt->data_len + 1), sizeof(char));
-	 strncpy(peticion,datosApp->handle_mqtt->data, datosApp->handle_mqtt->data_len);
-	 ESP_LOGI(TAG, ""TRAZAR"Recibido %s, longitud %d", INFOTRAZA, peticion, datosApp->handle_mqtt->data_len);
+	 message = (char*) calloc((datosApp->handle_mqtt->data_len + 1), sizeof(char));
+	 strncpy(message,datosApp->handle_mqtt->data, datosApp->handle_mqtt->data_len);
+	 ESP_LOGI(TAG, ""TRAZAR"Recibido %s, longitud %d", INFOTRAZA, message, datosApp->handle_mqtt->data_len);
 
+	 message_type = select_topic_client(datosApp, topic, &index);
+	 ESP_LOGI(TAG, ""TRAZAR"TIPO DE MENSAJE :%d", INFOTRAZA, message_type);
+
+	 switch (message_type) {
+
+	 case APPLICATION_MESSAGE:
+		 process_application_message(datosApp, message);
+		 break;
+	 case DEBUG_MESSAGE:
+		 process_debug_message(datosApp, message);
+		 break;
+	 case APPLICATION_DEVICE_MESSAGE:
+		 process_application_device_message(datosApp, message, index);
+		 break;
+	 case UNKNOWN_MESSAGE:
+		 process_unknown_message(datosApp, message);
+		 break;
+
+	 }
+
+
+/*
 	 root = analizar_comando(datosApp, peticion);
      if (root != NULL) {
          // 3.- Una vez ejecutado enviamos la respuesta y liberamos recursos.
@@ -181,16 +291,13 @@ cJSON*  analizar_comando(DATOS_APLICACION *datosApp, char* info) {
              // preparamos los datos para el envio
               //publicar_mensaje(datosApp, respuesta);
               xQueueSend(cola_mqtt, &cola,0);
-
          }
-
-
-
      }
      free(respuesta);
 	 free(peticion);
 	 cJSON_Delete(root);
 	 ESP_LOGE(TAG, ""TRAZAR"Memoria despues: %ld\n", INFOTRAZA, esp_get_free_heap_size());
+	 */
  }
 
 
@@ -258,6 +365,38 @@ cJSON*  analizar_comando(DATOS_APLICACION *datosApp, char* info) {
  	dato = atoi(dato_temporal);
  	ESP_LOGI(TAG, ""TRAZAR"El dato con desplazamiento %d es %d", INFOTRAZA, desplazamiento, dato);
  	return dato;
+ }
+
+
+ esp_err_t extraer_dato_bool(cJSON *nodo, char *nombre_campo, bool *dato) {
+
+     cJSON *campo = NULL;
+     campo =cJSON_GetObjectItem(nodo, nombre_campo);
+     if (campo == NULL) {
+    	 ESP_LOGI(TAG, ""TRAZAR"extraer_dato_bool--> campo %s invalido", INFOTRAZA, nombre_campo);
+    	 return ESP_FAIL;
+     }
+
+     if (cJSON_IsBool(campo)) {
+    	 if (cJSON_IsFalse(campo)) {
+        	 *dato = false;
+        	 ESP_LOGI(TAG, ""TRAZAR"extraer_dato_bool--> campo %s es false %d", INFOTRAZA, nombre_campo, campo->valueint);
+    	 } else {
+        	 *dato = true;
+        	 ESP_LOGI(TAG, ""TRAZAR"extraer_dato_bool--> campo %s es true %d", INFOTRAZA, nombre_campo, campo->valueint);
+         }
+
+     }  else {
+    	 ESP_LOGI(TAG, ""TRAZAR"extraer_dato_bool--> El campo %s no es booleaneo %d", INFOTRAZA, nombre_campo, campo->valueint);
+     }
+
+     return ESP_OK;
+
+
+
+
+
+
  }
 
 
@@ -443,9 +582,7 @@ esp_err_t   escribir_programa_actual(DATOS_APLICACION *datosApp, cJSON *respuest
 
 	NTP_CLOCK hora;
 	actualizar_hora(&hora);
-	time_t hora_actual = hora.time;
-	TIME_PROGRAM *schedule;
-	int indice;
+
 
 
 	if (get_current_status_application(datosApp) == SCHEDULING) {

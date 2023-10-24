@@ -5,11 +5,7 @@
  *      Author: t126401
  */
 
-#include "stdint.h"
-#include "sys/types.h"
-#include "esp_err.h"
-#include "esp_log.h"
-#include "configuracion_usuario.h"
+
 
 
 
@@ -19,7 +15,12 @@
 #define COMPONENTS_ALARMAS_INCLUDE_ALARMAS_H_
 
 
-
+#include "stdint.h"
+#include "sys/types.h"
+#include "esp_err.h"
+#include "esp_log.h"
+#include "configuracion_usuario.h"
+#include "local_events_device.h"
 
 
 
@@ -32,7 +33,7 @@ void send_event_device(EVENT_DEVICE event);
 void create_event_task(DATOS_APLICACION *datosApp);
 ESTADO_APP get_current_status_application(DATOS_APLICACION *datosApp);
 char* event2mnemonic(EVENT_TYPE event);
-
+void received_local_event(DATOS_APLICACION *datosApp, EVENT_DEVICE event);
 
 
 void process_event_warning_device(DATOS_APLICACION *datosApp);

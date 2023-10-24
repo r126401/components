@@ -37,17 +37,17 @@ typedef enum TIPO_ACCION_TERMOSTATO {
 #define MODIFICAR_SENSOR_TEMPERATURA	"sensorTemperatura"
 #define INCDEC "incdecTemperatura"
 
-enum ESTADO_RELE operacion_rele(DATOS_APLICACION *datosApp, enum TIPO_ACTUACION_RELE tipo, enum ESTADO_RELE operacion);
+enum ESTADO_RELE relay_operation(DATOS_APLICACION *datosApp, enum TIPO_ACTUACION_RELE tipo, enum ESTADO_RELE operacion);
 
 
 void programacion_task(void *parametro);
 void ejecutar_lectura_termometro(DATOS_APLICACION *datosApp);
 esp_err_t lectura_temperatura(DATOS_APLICACION *datosApp);
 //esp_err_t tomar_lectura_dht(struct DATOS_APLICACION *datosApp);
-esp_err_t leer_temperatura_local(DATOS_APLICACION *datosApp);
-esp_err_t leer_temperatura(DATOS_APLICACION *datosApp);
-void tarea_lectura_temperatura(void *parametros);
-esp_err_t leer_temperatura_remota(DATOS_APLICACION *datosApp);
+esp_err_t reading_local_temperature(DATOS_APLICACION *datosApp);
+esp_err_t reading_temperature(DATOS_APLICACION *datosApp);
+void task_iotThermostat(void *parametros);
+esp_err_t reading_remote_temperature(DATOS_APLICACION *datosApp);
 enum TIPO_ACCION_TERMOSTATO calcular_accion_termostato(DATOS_APLICACION *datosApp, enum ESTADO_RELE *accion);
 esp_err_t select_temperature_sensor(cJSON *peticion, DATOS_APLICACION *datosApp, cJSON *respuesta);
 esp_err_t notificar_fin_arranque(DATOS_APLICACION *datosApp);

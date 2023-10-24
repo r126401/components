@@ -33,6 +33,53 @@ esp_mqtt_client_handle_t client;
 extern TaskHandle_t handle;
 
 
+esp_err_t subscribe_topic(DATOS_APLICACION *datosApp, char* topic) {
+
+
+	int id;
+
+
+
+
+
+	id = esp_mqtt_client_subscribe(client, topic, datosApp->datosGenerales->parametrosMqtt.qos);
+
+	if (id > 0) {
+		ESP_LOGI(TAG, ""TRAZAR"subscribe_topic: suscrito. id = %d", INFOTRAZA, id);
+		datosApp->datosGenerales->parametrosMqtt.topics[CONFIG_INDEX_REMOTE_TOPIC_TEMPERATURE].status = true;
+		return ESP_OK;
+	} else {
+		ESP_LOGI(TAG, ""TRAZAR"subscribe_topic: no suscrito. id = %d", INFOTRAZA, id);
+		datosApp->datosGenerales->parametrosMqtt.topics[CONFIG_INDEX_REMOTE_TOPIC_TEMPERATURE].status = false;
+		return ESP_FAIL;
+	}
+
+}
+
+
+
+esp_err_t unsubscribe_topic(DATOS_APLICACION *datosApp, int index_topic) {
+
+	int id = esp_mqtt_client_unsubscribe(client, datosApp->datosGenerales->parametrosMqtt.topics[index_topic].subscribe);
+
+	if (id > 0) {
+		ESP_LOGI(TAG, ""TRAZAR"unsubscribe_topic: no suscrito. id = %d", INFOTRAZA, id);
+		datosApp->datosGenerales->parametrosMqtt.topics[index_topic].status = false;
+		memset(datosApp->termostato.sensor_remoto, 0,sizeof(datosApp->datosGenerales->parametrosMqtt.topics[index_topic].publish));
+		memset(datosApp->termostato.sensor_remoto, 0,sizeof(datosApp->datosGenerales->parametrosMqtt.topics[index_topic].subscribe));
+		return ESP_OK;
+	} else {
+		ESP_LOGE(TAG, ""TRAZAR"unsubscribe_topic: no estaba suscrito. id = %d", INFOTRAZA, id);
+		return ESP_FAIL;
+	}
+
+
+
+
+
+}
+
+
 
 static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data)
 {
@@ -46,7 +93,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
     case MQTT_EVENT_CONNECTED:
         ESP_LOGI(TAG, ""TRAZAR"MQTT_EVENT_CONNECTED: CONECTADO AL BROKER", INFOTRAZA);
         appuser_notify_broker_connected_ok(&datosApp);
-        msg_id = esp_mqtt_client_subscribe(client, datosApp.datosGenerales->parametrosMqtt.subscribe,datosApp.datosGenerales->parametrosMqtt.qos);
+        msg_id = esp_mqtt_client_subscribe(client, datosApp.datosGenerales->parametrosMqtt.topics[0].subscribe,datosApp.datosGenerales->parametrosMqtt.qos);
         ESP_LOGI(TAG, ""TRAZAR"ACCION PARA SUBSCRIBIR AL TOPIC :%s msg_id=%d", INFOTRAZA, datosApp.datosGenerales->parametrosMqtt.subscribe, msg_id);
         if (datosApp.alarmas[ALARM_MQTT].estado_alarma == ALARM_ON) {
         	//registrar_alarma(&datosApp, NOTIFICACION_ALARMA_MQTT, ALARMA_MQTT, ALARMA_OFF, true);
@@ -85,12 +132,14 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
         char topic[55] = {0};
         strncpy(topic, event->topic, event->topic_len);
 
+        message_application_received(&datosApp, topic);
+/*
         if (strcmp(datosApp.datosGenerales->parametrosMqtt.subscribe, topic) == 0) {
-        	mensaje_recibido(&datosApp);
+        	message_application_received(&datosApp, topic);
         } else {
-        	appuser_received_message_extra_subscription(&datosApp);
+        	appuser_reding_remote_temperature(&datosApp);
         }
-
+*/
         break;
     case MQTT_EVENT_ERROR:
         ESP_LOGI(TAG, "MQTT_EVENT_ERROR");
