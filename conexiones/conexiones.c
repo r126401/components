@@ -11,7 +11,7 @@
 #include "esp_wifi.h"
 #include "freertos/event_groups.h"
 #include "configuracion.h"
-#include "alarmas.h"
+#include "events_device.h"
 #include "interfaz_usuario.h"
 #include "smartconfig_ack.h"
 #include "esp_smartconfig.h"

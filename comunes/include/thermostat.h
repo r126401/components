@@ -9,10 +9,11 @@
 #define COMPONENTS_COMUNES_INCLUDE_THERMOSTAT_H_
 
 #include "relay.h"
+/*
 #define NUM_TIPOS_ALARMAS 6
 #define ALARMA_SENSOR_DHT 4
 #define ALARMA_SENSOR_REMOTO 5
-
+*/
 #define NOTIFICACION_ALARMA_SENSOR_REMOTO "alarmaDhtRemoto"
 #define NOTIFICACION_ALARMA_SENSOR_DHT "alarmaDht"
 

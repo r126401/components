@@ -17,7 +17,7 @@
 #include "programmer.h"
 #include "conexiones.h"
 #include "nvslib.h"
-#include "alarmas.h"
+#include "events_device.h"
 #include "funciones_usuario.h"
 #include "esp_timer.h"
 
@@ -74,9 +74,6 @@ char* local_event_2_mnemonic(EVENT_DEVICE event) {
 		strcpy(mnemonic, "EVENT_ERROR_REMOTE_TEMPERATURE");
 		break;
 
-	case EVENT_DEVICE_REMOTE_ERROR:
-		strcpy(mnemonic, "EVENT_DEVICE_REMOTE_ERROR");
-		break;
 
 
 	}
@@ -173,8 +170,13 @@ esp_err_t appuser_notify_application_started(DATOS_APLICACION *datosApp) {
 
     if (datosApp->termostato.master == false) {
     	ESP_LOGI(TAG, ""TRAZAR"sensor remoto. Nos subscribimos a %s", INFOTRAZA, datosApp->datosGenerales->parametrosMqtt.topics[CONFIG_INDEX_REMOTE_TOPIC_TEMPERATURE].subscribe);
-    	subscribe_topic(datosApp, datosApp->datosGenerales->parametrosMqtt.topics[CONFIG_INDEX_REMOTE_TOPIC_TEMPERATURE].subscribe);
+    	if (subscribe_topic(datosApp, datosApp->datosGenerales->parametrosMqtt.topics[CONFIG_INDEX_REMOTE_TOPIC_TEMPERATURE].subscribe) == ESP_OK) {
+    		send_event(EVENT_REMOTE_DEVICE_OK);
+    	} else {
+    		send_event(EVENT_ERROR_REMOTE_DEVICE);
+    	}
     }
+
 
 	datosApp->termostato.tempActual = -1000;
 	lv_update_temperature(datosApp);
@@ -405,6 +407,7 @@ cJSON* appuser_send_spontaneous_report(DATOS_APLICACION *datosApp, enum TIPO_INF
     }
     switch(tipoInforme) {
         case ARRANQUE_APLICACION:
+        	cJSON_AddStringToObject(respuesta, MNEMONIC_REPORT, report_2_mnmonic(tipoInforme));
             cJSON_AddNumberToObject(respuesta, APP_COMAND_ESTADO_RELE, gpio_get_level(CONFIG_GPIO_PIN_RELE));
             cJSON_AddNumberToObject(respuesta, PROGRAMMER_STATE, datosApp->datosGenerales->estadoProgramacion);
             cJSON_AddNumberToObject(respuesta, DEVICE_STATE, datosApp->datosGenerales->estadoApp);
@@ -434,6 +437,7 @@ cJSON* appuser_send_spontaneous_report(DATOS_APLICACION *datosApp, enum TIPO_INF
         case RELE_TEMPORIZADO:
         case CAMBIO_TEMPERATURA:
         case CAMBIO_UMBRAL_TEMPERATURA:
+        	cJSON_AddStringToObject(respuesta, MNEMONIC_REPORT, report_2_mnmonic(tipoInforme));
             cJSON_AddNumberToObject(respuesta, APP_COMAND_ESTADO_RELE, gpio_get_level(CONFIG_GPIO_PIN_RELE));
             cJSON_AddNumberToObject(respuesta, PROGRAMMER_STATE, datosApp->datosGenerales->estadoProgramacion);
             cJSON_AddNumberToObject(respuesta, DEVICE_STATE, datosApp->datosGenerales->estadoApp);
@@ -444,11 +448,13 @@ cJSON* appuser_send_spontaneous_report(DATOS_APLICACION *datosApp, enum TIPO_INF
             cJSON_AddNumberToObject(respuesta, UMBRAL_TEMPERATURA, datosApp->termostato.tempUmbral);
             cJSON_AddBoolToObject(respuesta, MASTER, datosApp->termostato.master);
             cJSON_AddStringToObject(respuesta, SENSOR_REMOTO, datosApp->termostato.sensor_remoto);
+            cJSON_AddStringToObject(respuesta, MNEMONIC_REPORT, report_2_mnmonic(tipoInforme));
             escribir_programa_actual(datosApp, respuesta);
             codigoRespuesta(respuesta,RESP_OK);
             break;
 
         default:
+        	cJSON_AddStringToObject(respuesta, MNEMONIC_REPORT, report_2_mnmonic(tipoInforme));
             codigoRespuesta(respuesta, RESP_NOK);
             printf("enviarReporte--> Salida no prevista\n");
             break;
@@ -682,7 +688,20 @@ esp_err_t appuser_modify_local_configuration_application(cJSON *root, DATOS_APLI
 }
 
 
-esp_err_t appuser_received_application_device_message(DATOS_APLICACION *datosApp, char *message, int index) {
+esp_err_t appuser_received_application_device_message(DATOS_APLICACION *datosApp, char *message) {
+
+
+
+		appuser_reading_remote_temperature(datosApp, message);
+
+
+
+	return ESP_OK;
+}
+
+
+esp_err_t appuser_reading_remote_temperature(DATOS_APLICACION *datosApp, char *message) {
+
 
 	cJSON *respuesta;
 	double dato;
@@ -705,46 +724,14 @@ esp_err_t appuser_received_application_device_message(DATOS_APLICACION *datosApp
 
 	} else {
 		return ESP_FAIL;
-		send_event_device(EVENT_DEVICE_REMOTE_ERROR);
+		send_event(EVENT_ERROR_REMOTE_DEVICE);
 	}
+
 
 
 	return ESP_OK;
 }
 
-
-esp_err_t appuser_reding_remote_temperature(DATOS_APLICACION *datosApp) {
-
-	ESP_LOGI(TAG, ""TRAZAR"appuser_received_message_extra_subscription", INFOTRAZA);
-	ESP_LOGI(TAG, ""TRAZAR" mensaje del topic: %s", INFOTRAZA, datosApp->handle_mqtt->topic);
-	cJSON *respuesta;
-	char* texto_respuesta;
-	double dato;
-	char topic[55] = {0};
-	//ets_timer_disarm(&temporizador_lectura_remota);
-	strncpy(topic, datosApp->handle_mqtt->topic, datosApp->handle_mqtt->topic_len);
-	texto_respuesta = (char*) calloc((datosApp->handle_mqtt->data_len + 1), sizeof(char));
-	strncpy(texto_respuesta,datosApp->handle_mqtt->data, datosApp->handle_mqtt->data_len);
-	respuesta = cJSON_Parse(texto_respuesta);
-	if (respuesta != NULL) {
-		extraer_dato_double(respuesta, TEMPERATURA, &dato);
-		datosApp->termostato.tempActual = (float) dato;
-		extraer_dato_double(respuesta, HUMEDAD, &dato);
-		datosApp->termostato.humedad = (float) dato;
-		free(texto_respuesta);
-		ESP_LOGI(TAG, ""TRAZAR" temperatura remota :%lf, humedad remota:%lf", INFOTRAZA, datosApp->termostato.tempActual,datosApp->termostato.humedad);
-		cJSON_Delete(respuesta);
-		send_event_device(EVENT_ANSWER_TEMPERATURE);
-		return ESP_OK;
-
-	} else {
-		return ESP_FAIL;
-		send_event_device(EVENT_DEVICE_REMOTE_ERROR);
-	}
-
-
-	return ESP_OK;
-}
 /*
 void nemonicos_alarmas(DATOS_APLICACION *datosApp, int i) {
 

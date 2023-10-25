@@ -14,7 +14,7 @@
 #include "esp_partition.h"
 #include "logging.h"
 #include "common_data.h"
-#include "alarmas.h"
+#include "events_device.h"
 
 
 static const char *TAG = "NVS";

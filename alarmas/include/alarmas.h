@@ -28,19 +28,11 @@
 //esp_err_t inicializacion_registros_alarmas(DATOS_APLICACION *datosApp);
 //static esp_err_t registrar_alarma(DATOS_APLICACION *datosApp, char* mnemonico_alarma, ALARM_TYPE tipo_alarma, enum ESTADO_ALARMA estado_alarma, bool flag_envio);
 //void send_event_application(DATOS_APLICACION *datosApp, char* mnemonico_alarma, EVENT_TYPE event);
-void send_event(EVENT_TYPE event);
-void send_event_device(EVENT_DEVICE event);
-void create_event_task(DATOS_APLICACION *datosApp);
-ESTADO_APP get_current_status_application(DATOS_APLICACION *datosApp);
-char* event2mnemonic(EVENT_TYPE event);
-void received_local_event(DATOS_APLICACION *datosApp, EVENT_DEVICE event);
 
 
-void process_event_warning_device(DATOS_APLICACION *datosApp);
-void process_event_error_device(DATOS_APLICACION *datosApp);
-void process_event_error_app(DATOS_APLICACION *datosApp);
-void process_event_error_nvs(DATOS_APLICACION *datosApp);
-void process_event_nvs_ok(DATOS_APLICACION *datosApp);
+void init_alarms(DATOS_APLICACION *datosApp);
+esp_err_t send_alarm(DATOS_APLICACION *datosApp, ALARM_TYPE tipo_alarma, enum ALARM_STATUS estado_alarma, bool flag_envio);
+ALARM_STATUS get_status_alarm(DATOS_APLICACION *datosApp, ALARM_TYPE alarm);
 
 
 #endif /* COMPONENTS_ALARMAS_INCLUDE_ALARMAS_H_ */

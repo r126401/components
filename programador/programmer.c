@@ -15,7 +15,7 @@
 #include "esp_err.h"
 #include "interfaz_usuario.h"
 #include "esp_timer.h"
-#include "alarmas.h"
+#include "events_device.h"
 
 //static ETSTimer timerDuracion;
 static const char *TAG = "PROGRAMADOR";

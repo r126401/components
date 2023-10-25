@@ -424,5 +424,6 @@ typedef enum CODIGO_RESPUESTA {
  esp_err_t notificar_evento_alarma(DATOS_APLICACION *datosApp, int tipo_alarma, char* mnemonico_alarma);
  esp_err_t visualizar_alarmas_activas(DATOS_APLICACION *datosApp, cJSON *respuesta);
  void tarea_upgrade_firmware(DATOS_APLICACION *datosApp);
+ char* report_2_mnmonic(TIPO_INFORME report);
 
 #endif /* COMPONENTS_API_JSON_INCLUDE_API_JSON_H_ */

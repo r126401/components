@@ -16,14 +16,7 @@
 
 
 
-#define MNEMONIC_ALARM_DEVICE	"alarmDevice"
-#define MNEMONIC_ALARM_DEVICE_WARNING	"alarmDevice"
-#define MNEMONIC_ALARM_APP		"alarmApp"
-#define MNEMONIC_ALARM_LCD		"alarmLcd"
-#define MNEMONIC_ALARM_WIFI		"alarmaWifi"
-#define MNEMONIC_ALARM_NVS		"alarmaNvs"
-#define MNEMONIC_ALARM_NTP		"alarmaNtp"
-#define MNEMONIC_ALARM_MQTT		"alarmaMqtt"
+
 
 
 typedef enum TIPO_NOTIFICACION {
@@ -43,7 +36,7 @@ typedef enum ALARM_STATUS {
 
 typedef enum ALARM_TYPE {
 	ALARM_DEVICE,
-	ALARM_DEVICE_WARNING,
+	ALARM_REMOTE_DEVICE,
 	ALARM_APP,
 	ALARM_LCD,
 	ALARM_NVS,

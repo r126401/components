@@ -18,9 +18,10 @@
 #include "conexiones_mqtt.h"
 #include "esp_system.h"
 #include "interfaz_usuario.h"
-#include "alarmas.h"
 #include "esp_timer.h"
 #include "espota.h"
+#include "events_device.h"
+#include "alarmas.h"
 
 
 
@@ -29,6 +30,64 @@
 
 static const char *TAG = "API_JSON";
 extern xQueueHandle cola_mqtt;
+
+
+char* report_2_mnmonic(TIPO_INFORME report) {
+
+	static char mnemonic[50] = {0};
+
+
+	switch (report) {
+
+	case ARRANQUE_APLICACION:
+		strcpy(mnemonic, "START APPLICATION");
+	break;
+	case ACTUACION_RELE_LOCAL:
+		strcpy(mnemonic, "ACTION LOCAL RELAY");
+	break;
+	case ACTUACION_RELE_REMOTO:
+		strcpy(mnemonic, "ACTION REMOTE RELAY");
+	break;
+	case UPGRADE_FIRMWARE_FOTA:
+		strcpy(mnemonic, "UPGRADE FIRMWARE");
+	break;
+	case CAMBIO_DE_PROGRAMA:
+		strcpy(mnemonic, "CHANGE SCHEDULE");
+	break;
+	case COMANDO_APLICACION:
+		strcpy(mnemonic, "APPLICATION COMMAND");
+	break;
+	case CAMBIO_TEMPERATURA:
+		strcpy(mnemonic, "CHANGE TEMPERATURE");
+	break;
+	case ESTADO:
+		strcpy(mnemonic, "STATUS");
+	break;
+	case RELE_TEMPORIZADO:
+		strcpy(mnemonic, "TIMER RELAY");
+	break;
+	case INFORME_ALARMA:
+		strcpy(mnemonic, "ALARM REPORT");
+	break;
+	case CAMBIO_UMBRAL_TEMPERATURA:
+		strcpy(mnemonic, "CHANGE THRESHOLD TEMPERATURE");
+	break;
+	case CAMBIO_ESTADO_APLICACION:
+		strcpy(mnemonic, "CHANGE STATUS APPLICATION");
+	break;
+	case ERROR:
+		strcpy(mnemonic, "ERROR");
+	break;
+
+
+	}
+
+	return mnemonic;
+
+
+}
+
+
 esp_err_t   comandoDesconocido(DATOS_APLICACION *datosApp, cJSON *respuesta) {
 
 
@@ -223,9 +282,9 @@ void process_debug_message(DATOS_APLICACION *datosApp, char *message) {
 	free(message);
 }
 
-void process_application_device_message(DATOS_APLICACION *datosApp, char *message, int index) {
+void process_application_device_message(DATOS_APLICACION *datosApp, char *message) {
 
-	appuser_received_application_device_message(datosApp, message, index);
+	appuser_received_application_device_message(datosApp, message);
 	free(message);
 
 }
@@ -268,7 +327,7 @@ void process_unknown_message(DATOS_APLICACION *datosApp, char *message) {
 		 process_debug_message(datosApp, message);
 		 break;
 	 case APPLICATION_DEVICE_MESSAGE:
-		 process_application_device_message(datosApp, message, index);
+		 process_application_device_message(datosApp, message);
 		 break;
 	 case UNKNOWN_MESSAGE:
 		 process_unknown_message(datosApp, message);

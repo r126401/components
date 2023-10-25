@@ -16,7 +16,7 @@
 #include "time.h"
 #include "esp_sntp.h"
 #include "logging.h"
-#include "alarmas.h"
+#include "events_device.h"
 
 
 #define TIMEOUT_NTP CONFIG_TIMEOUT_NTP

@@ -121,9 +121,18 @@ Proyecto realizado por Emilio Jimenez Prieto
 #define CONF_WIFI_PASS      "passwordWifi"
 
 
+#define MNEMONIC_ALARM_DEVICE	"alarmDevice"
+#define MNEMONIC_ALARM_REMOTE_DEVICE	"alarmRemoteDevice"
+#define MNEMONIC_ALARM_APP		"alarmApp"
+#define MNEMONIC_ALARM_LCD		"alarmLcd"
+#define MNEMONIC_ALARM_WIFI		"alarmaWifi"
+#define MNEMONIC_ALARM_NVS		"alarmaNvs"
+#define MNEMONIC_ALARM_NTP		"alarmaNtp"
+#define MNEMONIC_ALARM_MQTT		"alarmaMqtt"
 //#define ESTADO_ALARMA				"estadoAlarma"
 #define FECHA_ALARMA				"fechaAlarma"
 
 #define TIPO_REPORT                 "tipoReport"
+#define MNEMONIC_REPORT				"mnemonicReport"
 
 #endif /* COMPONENTS_COMUNES_INCLUDE_DIALOGOS_JSON_H_ */
