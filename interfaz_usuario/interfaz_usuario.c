@@ -1089,10 +1089,7 @@ void appuser_received_local_event(DATOS_APLICACION *datosApp, EVENT_DEVICE event
 	switch (event) {
 
 	case EVENT_UP_THRESHOLD:
-
-
-
-
+		ESP_LOGE(TAG,""TRAZAR"PROCESAMOS EVENT_UP_THRESHOLD", INFOTRAZA);
 		datosApp->termostato.tempUmbral += datosApp->termostato.incdec;
 		lv_update_threshold(datosApp, false);
 		if (esp_timer_is_active(temporizador_duracion)) {
