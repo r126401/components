@@ -69,12 +69,14 @@ void process_local_event_timeout_reading_temperature(DATOS_APLICACION *datosApp,
 	static int error_counter = 0;
 
 
-	if ((reset_counter) && (error_counter > 0)) {
+	ESP_LOGW(TAG, ""TRAZAR"Reiniciamos el contador de fallos reset es %d y error_counter: %d", INFOTRAZA, reset_counter, error_counter);
+	if (reset_counter) {
 		error_counter = 0;
 		ESP_LOGW(TAG, ""TRAZAR"Sensor %d se ha recuperado antes de llegar al umbral de fallo ", INFOTRAZA, datosApp->termostato.master);
 		send_event_device(EVENT_REMOTE_DEVICE_OK);
 		return;
 	} else {
+		ESP_LOGW(TAG,""TRAZAR" CONTADOR DE FALLOS %d", INFOTRAZA, error_counter);
 		if (error_counter >= NUM_FAILS) {
 			if (datosApp->termostato.master) {
 				send_event(EVENT_ERROR_DEVICE);
@@ -82,15 +84,12 @@ void process_local_event_timeout_reading_temperature(DATOS_APLICACION *datosApp,
 				send_event_device(EVENT_ERROR_REMOTE_DEVICE);
 			}
 
-			ESP_LOGW(TAG, ""TRAZAR"Sensor %d en fallo entramos en politica de reintentos ", INFOTRAZA, datosApp->termostato.master);
+			ESP_LOGW(TAG, ""TRAZAR"Sensor escalvo/master (0/1) %d en fallo entramos en politica de reintentos ", INFOTRAZA, datosApp->termostato.master);
 
 
-		} else {
-			error_counter++;
 		}
+		error_counter++;
 	}
-
-
 }
 
 
@@ -105,23 +104,11 @@ void process_local_event_answer_temperature(DATOS_APLICACION *datosApp) {
 		if (esp_timer_is_active(timer_request_remote_temperature)) {
 			ESP_LOGI(TAG, ""TRAZAR"se cancela temporizador", INFOTRAZA);
 			esp_timer_delete(timer_request_remote_temperature);
-		} else {
-			ESP_LOGW(TAG, ""TRAZAR"No se cancela temporizador de lectura remota", INFOTRAZA);
 		}
-
-		if (datosApp->termostato.master) {
-			if (get_status_alarm(datosApp, ALARM_DEVICE) == ALARM_OFF) {
-				process_local_event_timeout_reading_temperature(datosApp, true);
-			}
-
-		} else {
-			if (get_status_alarm(datosApp, ALARM_REMOTE_DEVICE) == ALARM_OFF) {
-				process_local_event_timeout_reading_temperature(datosApp, true);
-			}
-		}
-
 	}
-
+	ESP_LOGW(TAG, ""TRAZAR"Reiniciamos el contador de fallos", INFOTRAZA);
+	process_local_event_timeout_reading_temperature(datosApp, true);
+	send_event(EVENT_DEVICE_OK);
 	appuser_received_local_event(datosApp, EVENT_ANSWER_TEMPERATURE);
 
 
