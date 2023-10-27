@@ -68,6 +68,12 @@ esp_err_t send_alarm(DATOS_APLICACION *datosApp, ALARM_TYPE tipo_alarma, enum AL
 	ESP_LOGE(TAG, ""TRAZAR" ALARMA  %s ESTADO %s REGISTRADA", INFOTRAZA, datosApp->alarmas[tipo_alarma].nemonico, status_alarm_to_mnemonic(estado_alarma));
 
 
+	if (datosApp->alarmas[tipo_alarma].estado_alarma == ALARM_ON) {
+
+		appuser_notify_alarm_on_device(datosApp, datosApp->alarmas[tipo_alarma].estado_alarma);
+	} else {
+		appuser_notify_alarm_off_device(datosApp, datosApp->alarmas[tipo_alarma].estado_alarma);
+	}
 
 
 	//appuser_notify_error_device(datosApp, tipo_alarma);

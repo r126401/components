@@ -44,8 +44,8 @@ void programacion_task(void *parametro);
 void ejecutar_lectura_termometro(DATOS_APLICACION *datosApp);
 esp_err_t lectura_temperatura(DATOS_APLICACION *datosApp);
 //esp_err_t tomar_lectura_dht(struct DATOS_APLICACION *datosApp);
-esp_err_t reading_local_temperature(DATOS_APLICACION *datosApp);
-esp_err_t reading_temperature(DATOS_APLICACION *datosApp);
+EVENT_DEVICE reading_local_temperature(DATOS_APLICACION *datosApp);
+EVENT_DEVICE reading_temperature(DATOS_APLICACION *datosApp);
 void task_iotThermostat(void *parametros);
 esp_err_t reading_remote_temperature(DATOS_APLICACION *datosApp);
 enum TIPO_ACCION_TERMOSTATO calcular_accion_termostato(DATOS_APLICACION *datosApp, enum ESTADO_RELE *accion);
@@ -54,6 +54,7 @@ esp_err_t notificar_fin_arranque(DATOS_APLICACION *datosApp);
 void gpio_rele_in();
 void gpio_rele_out();
 void pulsacion_modo_app(DATOS_APLICACION *datosApp);
+void update_thermostat_device(DATOS_APLICACION *datosApp);
 
 
 

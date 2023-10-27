@@ -73,6 +73,12 @@ char* local_event_2_mnemonic(EVENT_DEVICE event) {
 	case EVENT_TIMEOUT_REMOTE_TEMPERATURE:
 		strcpy(mnemonic, "EVENT_ERROR_REMOTE_TEMPERATURE");
 		break;
+	case EVENT_ERROR_READ_LOCAL_TEMPERATURE:
+		strcpy(mnemonic, "EVENT_ERROR_READ_LOCAL_TEMPERATURE");
+		break;
+	case EVENT_WAITING_RESPONSE_TEMPERATURE:
+		strcpy(mnemonic, "EVENT_WAITING_RESPONSE_TEMPERATURE");
+
 
 
 
@@ -132,9 +138,9 @@ esp_err_t appuser_set_default_config(DATOS_APLICACION *datosApp) {
 	// Aqui puedes establecer los valores por defecto para tu aplicacion.
 
     datosApp->termostato.reintentosLectura = 5;
-    datosApp->termostato.intervaloReintentos = 3;
+    datosApp->termostato.retry_interval = 3;
     datosApp->termostato.margenTemperatura = 0.5;
-    datosApp->termostato.intervaloLectura = 10;
+    datosApp->termostato.read_interval = 10;
     datosApp->termostato.tempUmbral = -1000;
     datosApp->termostato.tempUmbralDefecto = 21.5;
     datosApp->termostato.calibrado = -2.0;
@@ -513,8 +519,8 @@ esp_err_t appuser_set_configuration_to_json(DATOS_APLICACION *datosApp, cJSON *c
 	ESP_LOGI(TAG, ""TRAZAR"appuser_set_configuration_to_json", INFOTRAZA);
 
     cJSON_AddNumberToObject(conf, MARGEN_TEMPERATURA, datosApp->termostato.margenTemperatura);
-    cJSON_AddNumberToObject(conf, INTERVALO_LECTURA, datosApp->termostato.intervaloLectura);
-    cJSON_AddNumberToObject(conf, INTERVALO_REINTENTOS, datosApp->termostato.intervaloReintentos);
+    cJSON_AddNumberToObject(conf, INTERVALO_LECTURA, datosApp->termostato.read_interval);
+    cJSON_AddNumberToObject(conf, INTERVALO_REINTENTOS, datosApp->termostato.retry_interval);
     cJSON_AddNumberToObject(conf, REINTENTOS_LECTURA, datosApp->termostato.reintentosLectura);
     cJSON_AddNumberToObject(conf, CALIBRADO, datosApp->termostato.calibrado);
     cJSON_AddBoolToObject(conf, MASTER, datosApp->termostato.master);
@@ -528,8 +534,8 @@ esp_err_t appuser_json_to_configuration(DATOS_APLICACION *datosApp, cJSON *datos
 
 	ESP_LOGI(TAG, ""TRAZAR"appuser_json_to_configuration", INFOTRAZA);
 	extraer_dato_double(datos, MARGEN_TEMPERATURA, &datosApp->termostato.margenTemperatura);
-	extraer_dato_uint8(datos, INTERVALO_LECTURA, &datosApp->termostato.intervaloLectura);
-	extraer_dato_uint8(datos, INTERVALO_REINTENTOS, &datosApp->termostato.intervaloReintentos);
+	extraer_dato_uint8(datos, INTERVALO_LECTURA, &datosApp->termostato.read_interval);
+	extraer_dato_uint8(datos, INTERVALO_REINTENTOS, &datosApp->termostato.retry_interval);
 	extraer_dato_uint8(datos, REINTENTOS_LECTURA, &datosApp->termostato.reintentosLectura);
 	extraer_dato_double(datos, CALIBRADO, &datosApp->termostato.calibrado);
 	extraer_dato_uint8(datos,  MASTER, (uint8_t*) &datosApp->termostato.master);
@@ -641,8 +647,8 @@ esp_err_t appuser_modify_local_configuration_application(cJSON *root, DATOS_APLI
 		  	   strcpy(datosApp->datosGenerales->parametrosMqtt.broker, (const char*) "mqtts://jajicaiot.ddns.net");
 	   }
 	   extraer_dato_double(nodo, MARGEN_TEMPERATURA, &datosApp->termostato.margenTemperatura);
-	   extraer_dato_uint8(nodo, INTERVALO_LECTURA, &datosApp->termostato.intervaloLectura);
-	   extraer_dato_uint8(nodo, INTERVALO_REINTENTOS, &datosApp->termostato.intervaloReintentos);
+	   extraer_dato_uint8(nodo, INTERVALO_LECTURA, &datosApp->termostato.read_interval);
+	   extraer_dato_uint8(nodo, INTERVALO_REINTENTOS, &datosApp->termostato.retry_interval);
 	   extraer_dato_uint8(nodo, REINTENTOS_LECTURA, &datosApp->termostato.reintentosLectura);
 	   extraer_dato_double(nodo, CALIBRADO, &datosApp->termostato.calibrado);
 	   extraer_dato_float(nodo, UMBRAL_DEFECTO, &datosApp->termostato.tempUmbralDefecto);
@@ -717,7 +723,7 @@ esp_err_t appuser_reading_remote_temperature(DATOS_APLICACION *datosApp, char *m
       	datosApp->termostato.tempActual = redondear_temperatura(temperatura_a_redondear);
 
 		datosApp->termostato.humedad = (float) dato;
-		ESP_LOGI(TAG, ""TRAZAR" temperatura remota :%lf, humedad remota:%lf", INFOTRAZA, datosApp->termostato.tempActual,datosApp->termostato.humedad);
+		ESP_LOGI(TAG, ""TRAZAR" temperatura remota :%lf, humedad remota:%lf, %s", INFOTRAZA, datosApp->termostato.tempActual,datosApp->termostato.humedad, __func__);
 		cJSON_Delete(respuesta);
 		send_event_device(EVENT_ANSWER_TEMPERATURE);
 		return ESP_OK;
@@ -854,8 +860,8 @@ void display_status_application(DATOS_APLICACION *datosApp, cJSON *respuesta) {
     cJSON_AddNumberToObject(respuesta, HUMEDAD, datosApp->termostato.humedad);
     cJSON_AddNumberToObject(respuesta, UMBRAL_TEMPERATURA, datosApp->termostato.tempUmbral);
     cJSON_AddNumberToObject(respuesta, MARGEN_TEMPERATURA, datosApp->termostato.margenTemperatura);
-    cJSON_AddNumberToObject(respuesta, INTERVALO_LECTURA, datosApp->termostato.intervaloLectura);
-    cJSON_AddNumberToObject(respuesta, INTERVALO_REINTENTOS, datosApp->termostato.intervaloReintentos);
+    cJSON_AddNumberToObject(respuesta, INTERVALO_LECTURA, datosApp->termostato.read_interval);
+    cJSON_AddNumberToObject(respuesta, INTERVALO_REINTENTOS, datosApp->termostato.retry_interval);
     cJSON_AddNumberToObject(respuesta, REINTENTOS_LECTURA, datosApp->termostato.reintentosLectura);
     cJSON_AddNumberToObject(respuesta, CALIBRADO, datosApp->termostato.calibrado);
     cJSON_AddBoolToObject(respuesta, MASTER, datosApp->termostato.master);
@@ -1111,14 +1117,51 @@ void appuser_received_local_event(DATOS_APLICACION *datosApp, EVENT_DEVICE event
 		break;
 
 	default:
+	case EVENT_ANSWER_TEMPERATURE:
+		update_thermostat_device(datosApp);
 		break;
 
 
 	}
+
+}
+
+
+
+
+void appuser_notify_alarm_on_device(DATOS_APLICACION *datosApp, ALARM_TYPE alarm) {
+
+
+	ESP_LOGE(TAG, ""TRAZAR"ALARMA %s en estado ON", INFOTRAZA, datosApp->alarmas[alarm].nemonico);
+	switch (alarm) {
+
+	case ALARM_REMOTE_DEVICE:
+		lv_update_alarm_device(datosApp);
+		break;
+	default:
+		break;
+	}
+
+
+
+
 
 
 
 }
 
 
+void appuser_notify_alarm_off_device(DATOS_APLICACION *datosApp, ALARM_TYPE alarm) {
 
+
+	ESP_LOGE(TAG, ""TRAZAR"ALARMA %s en estado OFF", INFOTRAZA, datosApp->alarmas[alarm].nemonico);
+	switch (alarm) {
+
+	case ALARM_REMOTE_DEVICE:
+		lv_update_alarm_device(datosApp);
+		break;
+	default:
+		break;
+	}
+
+}

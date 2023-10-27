@@ -51,6 +51,7 @@ void process_local_event_request_temperature(DATOS_APLICACION *datosApp) {
 		//Creamos el temporizador
 	    ESP_ERROR_CHECK(esp_timer_create(&timer_remote_read_args, &timer_request_remote_temperature));
 	    ESP_ERROR_CHECK(esp_timer_start_once(timer_request_remote_temperature, TIMEOUT_REQUEST_REMOTE_TEMPERATURE * 1000000));
+
 		break;
 
 	}
@@ -63,17 +64,27 @@ void process_local_event_request_temperature(DATOS_APLICACION *datosApp) {
 
 
 
-void process_local_event_timeout_remote_temperature(DATOS_APLICACION *datosApp, bool reset_counter) {
+void process_local_event_timeout_reading_temperature(DATOS_APLICACION *datosApp, bool reset_counter) {
 
 	static int error_counter = 0;
 
+
 	if ((reset_counter) && (error_counter > 0)) {
 		error_counter = 0;
+		ESP_LOGW(TAG, ""TRAZAR"Sensor %d se ha recuperado antes de llegar al umbral de fallo ", INFOTRAZA, datosApp->termostato.master);
 		send_event_device(EVENT_REMOTE_DEVICE_OK);
 		return;
 	} else {
 		if (error_counter >= NUM_FAILS) {
-			send_event_device(EVENT_ERROR_REMOTE_DEVICE);
+			if (datosApp->termostato.master) {
+				send_event(EVENT_ERROR_DEVICE);
+			}else {
+				send_event_device(EVENT_ERROR_REMOTE_DEVICE);
+			}
+
+			ESP_LOGW(TAG, ""TRAZAR"Sensor %d en fallo entramos en politica de reintentos ", INFOTRAZA, datosApp->termostato.master);
+
+
 		} else {
 			error_counter++;
 		}
@@ -82,27 +93,46 @@ void process_local_event_timeout_remote_temperature(DATOS_APLICACION *datosApp, 
 
 }
 
+
+
+
 void process_local_event_answer_temperature(DATOS_APLICACION *datosApp) {
 
 
 	ESP_LOGI(TAG, ""TRAZAR"process_local_event_answer_temperature", INFOTRAZA);
 
+	if (!datosApp->termostato.master) {
+		if (esp_timer_is_active(timer_request_remote_temperature)) {
+			ESP_LOGI(TAG, ""TRAZAR"se cancela temporizador", INFOTRAZA);
+			esp_timer_delete(timer_request_remote_temperature);
+		} else {
+			ESP_LOGW(TAG, ""TRAZAR"No se cancela temporizador de lectura remota", INFOTRAZA);
+		}
 
-	if (esp_timer_is_active(timer_request_remote_temperature)) {
-		ESP_LOGI(TAG, ""TRAZAR"se cancela temporizador", INFOTRAZA);
-		esp_timer_delete(timer_request_remote_temperature);
-	} else {
-		ESP_LOGW(TAG, ""TRAZAR"No se cancela temporizador de lectura remota", INFOTRAZA);
+		if (datosApp->termostato.master) {
+			if (get_status_alarm(datosApp, ALARM_DEVICE) == ALARM_OFF) {
+				process_local_event_timeout_reading_temperature(datosApp, true);
+			}
+
+		} else {
+			if (get_status_alarm(datosApp, ALARM_REMOTE_DEVICE) == ALARM_OFF) {
+				process_local_event_timeout_reading_temperature(datosApp, true);
+			}
+		}
+
 	}
 
-	if (get_status_alarm(datosApp, EVENT_REMOTE_DEVICE_OK)) {
-		process_local_event_timeout_remote_temperature(datosApp, true);
-	}
+	appuser_received_local_event(datosApp, EVENT_ANSWER_TEMPERATURE);
 
 
 
 
+}
 
+void process_local_event_waiting_response_temperature(DATOS_APLICACION *datosApp) {
+
+	//process_local_event_answer_temperature(datosApp);
+	ESP_LOGI(TAG, ""TRAZAR"ESPERANDO RESPUESTA DEL DISPOSITIVO REMOTO", INFOTRAZA);
 }
 
 
@@ -118,7 +148,7 @@ void received_local_event(DATOS_APLICACION *datosApp, EVENT_DEVICE event) {
 		process_local_event_answer_temperature(datosApp);
 		break;
 	case EVENT_TIMEOUT_REMOTE_TEMPERATURE:
-		process_local_event_timeout_remote_temperature(datosApp, false);
+		process_local_event_timeout_reading_temperature(datosApp, false);
 		break;
 
 	case EVENT_UP_THRESHOLD:
@@ -128,6 +158,13 @@ void received_local_event(DATOS_APLICACION *datosApp, EVENT_DEVICE event) {
 		appuser_received_local_event(datosApp, event);
 		break;
 
+	case EVENT_ERROR_READ_LOCAL_TEMPERATURE:
+		process_local_event_timeout_reading_temperature(datosApp, false);
+		break;
+
+	case EVENT_WAITING_RESPONSE_TEMPERATURE:
+		process_local_event_waiting_response_temperature(datosApp);
+		break;
 	default:
 		break;
 

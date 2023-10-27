@@ -333,5 +333,7 @@ void appuser_notify_scan_done(DATOS_APLICACION *datosApp, wifi_ap_record_t *ap_i
 void appuser_process_event_none_schedule(DATOS_APLICACION *datosApp);
 void appuser_received_local_event(DATOS_APLICACION *datosApp, EVENT_DEVICE event);
 char* local_event_2_mnemonic(EVENT_DEVICE event);
+void appuser_notify_alarm_on_device(DATOS_APLICACION *datosApp, ALARM_TYPE alarm);
+void appuser_notify_alarm_off_device(DATOS_APLICACION *datosApp, ALARM_TYPE alarm);
 
 #endif /* COMPONENTS_INTERFAZ_USUARIO_INCLUDE_INTERFAZ_USUARIO_H_ */
