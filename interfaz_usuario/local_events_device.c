@@ -18,6 +18,7 @@
 
 
 
+
 static const char *TAG = "LOCAL_EVENTS_DEVICE";
 
 #define TIMEOUT_REQUEST_REMOTE_TEMPERATURE 5
@@ -36,25 +37,6 @@ void event_handler_request_remote_temperature(void *arg) {
 
 
 void process_local_event_request_temperature(DATOS_APLICACION *datosApp) {
-
-
-    const esp_timer_create_args_t timer_remote_read_args = {
-    		.callback = &event_handler_request_remote_temperature,
-			.name = "timer remote read",
-			.arg = (void*) datosApp
-    };
-
-
-	switch (get_current_status_application(datosApp)) {
-
-	default:
-		//Creamos el temporizador
-	    ESP_ERROR_CHECK(esp_timer_create(&timer_remote_read_args, &timer_request_remote_temperature));
-	    ESP_ERROR_CHECK(esp_timer_start_once(timer_request_remote_temperature, TIMEOUT_REQUEST_REMOTE_TEMPERATURE * 1000000));
-
-		break;
-
-	}
 
 
 }
@@ -81,7 +63,7 @@ void process_local_event_timeout_reading_temperature(DATOS_APLICACION *datosApp,
 			if (datosApp->termostato.master) {
 				send_event(EVENT_ERROR_DEVICE);
 			}else {
-				send_event_device(EVENT_ERROR_REMOTE_DEVICE);
+				send_event(EVENT_ERROR_REMOTE_DEVICE);
 			}
 
 			ESP_LOGW(TAG, ""TRAZAR"Sensor escalvo/master (0/1) %d en fallo entramos en politica de reintentos ", INFOTRAZA, datosApp->termostato.master);
@@ -118,8 +100,19 @@ void process_local_event_answer_temperature(DATOS_APLICACION *datosApp) {
 
 void process_local_event_waiting_response_temperature(DATOS_APLICACION *datosApp) {
 
+
+    const esp_timer_create_args_t timer_remote_read_args = {
+    		.callback = &event_handler_request_remote_temperature,
+			.name = "timer remote read",
+			.arg = (void*) datosApp
+    };
+
+
 	//process_local_event_answer_temperature(datosApp);
 	ESP_LOGI(TAG, ""TRAZAR"ESPERANDO RESPUESTA DEL DISPOSITIVO REMOTO", INFOTRAZA);
+    ESP_ERROR_CHECK(esp_timer_create(&timer_remote_read_args, &timer_request_remote_temperature));
+    ESP_ERROR_CHECK(esp_timer_start_once(timer_request_remote_temperature, TIMEOUT_REQUEST_REMOTE_TEMPERATURE * 1000000));
+
 }
 
 

@@ -335,5 +335,7 @@ void appuser_received_local_event(DATOS_APLICACION *datosApp, EVENT_DEVICE event
 char* local_event_2_mnemonic(EVENT_DEVICE event);
 void appuser_notify_alarm_on_device(DATOS_APLICACION *datosApp, ALARM_TYPE alarm);
 void appuser_notify_alarm_off_device(DATOS_APLICACION *datosApp, ALARM_TYPE alarm);
+void appuser_notify_error_remote_device(DATOS_APLICACION *datosApp);
+void appuser_notify_smartconfig_end(DATOS_APLICACION *datosApp);
 
 #endif /* COMPONENTS_INTERFAZ_USUARIO_INCLUDE_INTERFAZ_USUARIO_H_ */

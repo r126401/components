@@ -78,6 +78,7 @@ char* local_event_2_mnemonic(EVENT_DEVICE event) {
 		break;
 	case EVENT_WAITING_RESPONSE_TEMPERATURE:
 		strcpy(mnemonic, "EVENT_WAITING_RESPONSE_TEMPERATURE");
+		break;
 
 
 
@@ -158,10 +159,10 @@ esp_err_t appuser_set_default_config(DATOS_APLICACION *datosApp) {
 esp_err_t appuser_notify_smartconfig(DATOS_APLICACION *datosApp) {
 
 	ESP_LOGI(TAG, ""TRAZAR"appuser_notify_smartconfig", INFOTRAZA);
+	lv_configure_smartconfig();
+	lv_factory_boot();
 
-	//lv_smartconfig_notify(datosApp);
-
-	//aplicar_temporizacion(CADENCIA_SMARTCONFIG, parapadeo_led, "smartconfig");
+	//lv_timer_handler();
 
 
 	return ESP_OK;
@@ -259,7 +260,8 @@ esp_err_t appuser_notify_connecting_wifi(DATOS_APLICACION *datosApp) {
 	switch (datosApp->datosGenerales->estadoApp) {
 
 	case FACTORY:
-		datosApp->datosGenerales->estadoApp = STARTING;
+
+		//datosApp->datosGenerales->estadoApp = STARTING;
 		break;
 
 	case STARTING:
@@ -279,9 +281,11 @@ esp_err_t appuser_notify_connecting_wifi(DATOS_APLICACION *datosApp) {
 
 esp_err_t appuser_notify_wifi_connected_ok(DATOS_APLICACION *datosApp) {
 
-	ESP_LOGI(TAG, ""TRAZAR"appuser_notify_wifi_connected_ok", INFOTRAZA);
+	ESP_LOGI(TAG, ""TRAZAR"appuser_notify_wifi_connected_ok, ESTADO: %s", INFOTRAZA, status2mnemonic(get_current_status_application(datosApp)));
 	lv_update_alarm_device(datosApp);
-
+	if (get_current_status_application(datosApp) == FACTORY) {
+		esp_restart();
+	}
 
 	return ESP_OK;
 }
@@ -293,20 +297,8 @@ esp_err_t appuser_notify_error_wifi_connection(DATOS_APLICACION *datosApp) {
 	ESP_LOGI(TAG, ""TRAZAR"appuser_notify_error_wifi_connection", INFOTRAZA);
 	lv_update_alarm_device(datosApp);
 
-	if (datosApp->datosGenerales->estadoApp == STARTING) {
-		lv_update_button_wifi(true);
-
-		fail ++;
-		ESP_LOGI(TAG, ""TRAZAR"FAIL VALE %d", INFOTRAZA, fail);
-		if (fail == 2) {
-			lv_update_button_wifi(false);
-		}
-
-		if (fail > 5) {
-			lv_update_button_wifi(true);
-			fail = 5;
-		}
-	}
+	lv_configure_smartconfig();
+	lv_factory_boot();
 
 
 
@@ -1162,3 +1154,41 @@ void appuser_notify_alarm_off_device(DATOS_APLICACION *datosApp, ALARM_TYPE alar
 	}
 
 }
+
+void appuser_notify_error_remote_device(DATOS_APLICACION *datosApp) {
+
+
+	EVENT_DEVICE event = EVENT_NONE;
+	ESP_LOGI(TAG, ""TRAZAR"LEEMOS EN LOCAL PORQUE NO RESPONDE EL DISPOSITIVO REMOTO", INFOTRAZA);
+
+	event = reading_local_temperature(datosApp);
+
+
+	switch(event) {
+
+	case EVENT_ANSWER_TEMPERATURE:
+		send_event_device(EVENT_ANSWER_TEMPERATURE);
+		//update_thermostat_device(datosApp);
+		break;
+	case EVENT_ERROR_READ_LOCAL_TEMPERATURE:
+		send_event_device(EVENT_ERROR_READ_LOCAL_TEMPERATURE);
+		break;
+
+	default:
+		break;
+
+	}
+
+
+
+
+}
+
+void appuser_notify_smartconfig_end(DATOS_APLICACION *datosApp) {
+
+
+	vTaskDelay(3000 / portTICK_RATE_MS);
+	esp_restart();
+}
+
+

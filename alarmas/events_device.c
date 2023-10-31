@@ -110,6 +110,13 @@ char* event2mnemonic(EVENT_TYPE event) {
 		strcpy(mnemonic, "EVENT_LOCAL_DEVICE");
 		break;
 
+	case EVENT_SMARTCONFIG:
+		strcpy(mnemonic, "EVENT_SMARTCONFIG");
+		break;
+	case EVENT_SMARTCONFIG_END:
+		strcpy(mnemonic, "EVENT_SMARTCONFIG_END");
+		break;
+
 
 
 
@@ -405,6 +412,57 @@ void process_event_upgrade_firmware(DATOS_APLICACION *datosApp) {
 }
 
 
+void process_event_factory(DATOS_APLICACION *datosApp) {
+
+	change_status_application(datosApp, FACTORY);
+	appuser_notify_smartconfig(datosApp);
+
+
+}
+
+void process_event_device_ok(DATOS_APLICACION *datosApp) {
+
+	switch (get_current_status_application(datosApp)) {
+
+	case FACTORY:
+		ESP_LOGW(TAG, ""TRAZAR", NO SE CAMBIA EL ESTADO PORQUE ESTAMOS EN FACTORY", INFOTRAZA);
+		break;
+
+
+	default:
+		if (datosApp->alarmas[ALARM_DEVICE].estado_alarma == ALARM_ON) {
+			send_alarm(datosApp, ALARM_DEVICE, ALARM_OFF, true);
+			if (datosApp->alarmas[ALARM_NTP].estado_alarma == ALARM_OFF) {
+				change_status_application(datosApp, CHECK_PROGRAMS);
+			} else {
+				change_status_application(datosApp,NORMAL_MANUAL);
+			}
+			appuser_notify_device_ok(datosApp);
+
+
+		} else {
+			ESP_LOGI(TAG, ""TRAZAR"EL DISPOSITIVO YA ESTABA OK", INFOTRAZA);
+		}
+		break;
+
+
+	}
+}
+
+
+void process_event_smartconfig(DATOS_APLICACION *datosApp) {
+
+	conectar_dispositivo_wifi();
+
+}
+
+void process_event_smartconfig_end(DATOS_APLICACION *datosApp) {
+
+	appuser_notify_smartconfig_end(datosApp);
+
+}
+
+
 
 void receive_event(DATOS_APLICACION *datosApp, EVENT_APP event) {
 
@@ -418,6 +476,7 @@ void receive_event(DATOS_APLICACION *datosApp, EVENT_APP event) {
 
 		case EVENT_ERROR_REMOTE_DEVICE:
 			send_alarm(datosApp, ALARM_REMOTE_DEVICE, ALARM_ON, true);
+			appuser_notify_error_remote_device(datosApp);
 			break;
 		case EVENT_ERROR_DEVICE:
 			if (datosApp->alarmas[ALARM_DEVICE].estado_alarma == ALARM_OFF) {
@@ -453,21 +512,7 @@ void receive_event(DATOS_APLICACION *datosApp, EVENT_APP event) {
 			send_alarm(datosApp, ALARM_MQTT, ALARM_ON, false);
 			break;
 		case EVENT_DEVICE_OK:
-			if (datosApp->alarmas[ALARM_DEVICE].estado_alarma == ALARM_ON) {
-				send_alarm(datosApp, ALARM_DEVICE, ALARM_OFF, true);
-				if (datosApp->alarmas[ALARM_NTP].estado_alarma == ALARM_OFF) {
-					change_status_application(datosApp, CHECK_PROGRAMS);
-				} else {
-					change_status_application(datosApp,NORMAL_MANUAL);
-				}
-				appuser_notify_device_ok(datosApp);
-
-
-			} else {
-				ESP_LOGI(TAG, ""TRAZAR"EL DISPOSITIVO YA ESTABA OK", INFOTRAZA);
-			}
-
-
+			process_event_device_ok(datosApp);
 			break;
 		case EVENT_APP_OK:
 			ESP_LOGE(TAG, ""TRAZAR"RECIBIDO APP OK", INFOTRAZA);
@@ -512,7 +557,7 @@ void receive_event(DATOS_APLICACION *datosApp, EVENT_APP event) {
 			process_event_none_schedule(datosApp);
 			break;
 		case EVENT_FACTORY:
-			change_status_application(datosApp, FACTORY);
+			process_event_factory(datosApp);
 			break;
 		case EVENT_UPGRADE_FIRMWARE:
 			process_event_upgrade_firmware(datosApp);
@@ -523,6 +568,14 @@ void receive_event(DATOS_APLICACION *datosApp, EVENT_APP event) {
 				send_event(EVENT_DEVICE_OK);
 			}
 
+			break;
+
+		case EVENT_SMARTCONFIG:
+			process_event_smartconfig(datosApp);
+			break;
+
+		case EVENT_SMARTCONFIG_END:
+			process_event_smartconfig_end(datosApp);
 			break;
 
 		default:
@@ -565,7 +618,7 @@ void create_event_task(DATOS_APLICACION *datosApp) {
 
 
 	init_alarms(datosApp);
-	xTaskCreate(event_task, "mqtt_task", 4096, (void*) datosApp, 4, NULL);
+	xTaskCreate(event_task, "event_task", 4096, (void*) datosApp, 4, NULL);
 	ESP_LOGW(TAG, ""TRAZAR"TAREA DE EVENTOS CREADA", INFOTRAZA);
 	change_status_application(datosApp, STARTING);
 
@@ -592,13 +645,16 @@ ESTADO_APP get_current_status_application(DATOS_APLICACION *datosApp) {
 
 void send_event_device(EVENT_DEVICE event) {
 
+
+
+	ESP_LOGI(TAG, ""TRAZAR"RECIBIDO EVENTO LOCAL %s", INFOTRAZA, local_event_2_mnemonic(event));
 	EVENT_APP event_received;
 	event_received.event_app = EVENT_LOCAL_DEVICE;
 	event_received.event_device = event;
 
-
+	ESP_LOGI(TAG, ""TRAZAR"VAMOS A ENVIAR EL EVENTO LOCAL %s", INFOTRAZA, local_event_2_mnemonic(event));
 	xQueueSend(event_queue, &event_received,0);
-
+	ESP_LOGI(TAG, ""TRAZAR"HEMOS ENVIADO EVENTO LOCAL %s", INFOTRAZA, local_event_2_mnemonic(event));
 }
 
 

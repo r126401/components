@@ -288,6 +288,7 @@ esp_err_t publicar_mensaje_json(DATOS_APLICACION *datosAppp, cJSON *mensaje, cha
 	memset(&cola, 0, sizeof(COLA_MQTT));
 	if (client == NULL) {
 		ESP_LOGE(TAG, ""TRAZAR"NO HAY CONEXION CON EL BROKER Y NO SE PUEDE ENVIAR EL MENSAJE", INFOTRAZA);
+		cJSON_Delete(mensaje);
 		return ESP_FAIL;
 	}
 	texto = cJSON_Print(mensaje);

@@ -231,7 +231,7 @@ static void on_wifi_disconnect(void *arg, esp_event_base_t event_base,
         esp_wifi_set_protocol(ESP_IF_WIFI_STA, WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G | WIFI_PROTOCOL_11N);
     }
 */
-    if (datosApp.datosGenerales->estadoApp != UPGRADE_EN_PROGRESO) {
+    if ((datosApp.datosGenerales->estadoApp != UPGRADE_EN_PROGRESO) && (datosApp.datosGenerales->estadoApp != FACTORY)) {
     	//registrar_alarma(&datosApp, NOTIFICACION_ALARMA_WIFI, ALARMA_WIFI, ALARMA_ON, false);
     	send_event(EVENT_ERROR_WIFI);
     	ESP_ERROR_CHECK(esp_wifi_connect());
@@ -356,9 +356,6 @@ esp_err_t restaurar_wifi_fabrica() {
 
 void tarea_smartconfig(void* parm) {
     EventBits_t uxBits;
-    DATOS_APLICACION *datosApp;
-    datosApp = (DATOS_APLICACION*) parm;
-    appuser_notify_smartconfig(datosApp);
     ESP_ERROR_CHECK(esp_smartconfig_set_type(SC_TYPE_ESPTOUCH));
     smartconfig_start_config_t cfg = SMARTCONFIG_START_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_smartconfig_start(&cfg));
@@ -372,6 +369,7 @@ void tarea_smartconfig(void* parm) {
 
         if (uxBits & ESPTOUCH_DONE_BIT) {
             ESP_LOGI(TAG, "SMARTCONFIG TERMINADO");
+            esp_restart();
             esp_smartconfig_stop();
             vTaskDelete(NULL);
         }
