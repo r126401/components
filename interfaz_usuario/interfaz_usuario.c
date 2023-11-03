@@ -299,6 +299,7 @@ esp_err_t appuser_notify_error_wifi_connection(DATOS_APLICACION *datosApp) {
 
 	lv_configure_smartconfig();
 	lv_factory_boot();
+	lv_timer_handler();
 
 
 
