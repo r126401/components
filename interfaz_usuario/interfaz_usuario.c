@@ -142,7 +142,7 @@ esp_err_t appuser_set_default_config(DATOS_APLICACION *datosApp) {
     datosApp->termostato.retry_interval = 3;
     datosApp->termostato.margenTemperatura = 0.5;
     datosApp->termostato.read_interval = 10;
-    datosApp->termostato.tempUmbral = -1000;
+    datosApp->termostato.tempUmbral = 21.5;
     datosApp->termostato.tempUmbralDefecto = 21.5;
     datosApp->termostato.calibrado = -2.0;
     datosApp->termostato.master = true;
@@ -161,6 +161,7 @@ esp_err_t appuser_notify_smartconfig(DATOS_APLICACION *datosApp) {
 	ESP_LOGI(TAG, ""TRAZAR"appuser_notify_smartconfig", INFOTRAZA);
 	lv_configure_smartconfig();
 	lv_factory_boot();
+	lv_cancel_timing_backlight();
 
 	//lv_timer_handler();
 
