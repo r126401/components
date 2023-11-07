@@ -34,6 +34,7 @@
 #include "esp_netif.h"
 #include "alarmas.h"
 #include "conexiones_mqtt.h"
+#include "events_device.h"
 
 
 
@@ -237,7 +238,16 @@ static void on_wifi_disconnect(void *arg, esp_event_base_t event_base,
     	ESP_ERROR_CHECK(esp_wifi_connect());
     	xEventGroupClearBits(grupo_eventos, CONNECTED_BIT);
     }
+
+    if (get_current_status_application(&datosApp) == FACTORY) {
+
+    	ESP_LOGE(TAG, ""TRAZAR"PASSWORD ERRONEA", INFOTRAZA);
+    	restaurar_wifi_fabrica();
+
+    }
+    ESP_LOGE(TAG, ""TRAZAR"vamos a enviar error wifi en factory", INFOTRAZA);
     send_event(EVENT_ERROR_WIFI);
+    ESP_LOGE(TAG, ""TRAZAR"Hemos enviado error wifi en factory", INFOTRAZA);
     //registrar_alarma(&datosApp, NOTIFICACION_ALARMA_WIFI, ALARMA_WIFI, ALARMA_ON, false);
     //appuser_notify_error_wifi_connection(&datosApp);
 
@@ -253,6 +263,9 @@ static void on_got_ip(void *arg, esp_event_base_t event_base,
     xEventGroupSetBits(grupo_eventos, CONNECTED_BIT);
     //registrar_alarma(&datosApp, NOTIFICACION_ALARMA_WIFI, ALARMA_WIFI, ALARMA_OFF, false);
     //send_event_application(&datosApp, NOTIFICACION_ALARMA_WIFI, EVENT_WIFI_OK);
+    if (get_current_status_application(&datosApp) == FACTORY) {
+    	change_status_application(&datosApp, STARTING);
+    }
     send_event(EVENT_WIFI_OK);
     //appuser_notify_wifi_connected_ok(&datosApp);
 
@@ -345,10 +358,9 @@ inline static void inicializar_wifi() {
 
 esp_err_t restaurar_wifi_fabrica() {
 
-	wifi_config_t wifi_config;
-	strcpy((char*) &wifi_config.sta.ssid, "none");
-	strcpy((char*) &wifi_config.sta.password, "none");
-    ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config));
+	wifi_config_t conf_wifi;
+	memset(&conf_wifi, 0, sizeof(wifi_config_t));
+    ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &conf_wifi));
 
     return ESP_OK;
 
@@ -369,7 +381,6 @@ void tarea_smartconfig(void* parm) {
 
         if (uxBits & ESPTOUCH_DONE_BIT) {
             ESP_LOGI(TAG, "SMARTCONFIG TERMINADO");
-            esp_restart();
             esp_smartconfig_stop();
             vTaskDelete(NULL);
         }

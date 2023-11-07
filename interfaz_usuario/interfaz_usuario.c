@@ -5,7 +5,6 @@
  *      Author: t126401
  */
 
-
 #include "dialogos_json.h"
 #include "interfaz_usuario.h"
 #include "configuracion_usuario.h"
@@ -300,7 +299,6 @@ esp_err_t appuser_notify_error_wifi_connection(DATOS_APLICACION *datosApp) {
 
 	lv_configure_smartconfig();
 	lv_factory_boot();
-	lv_timer_handler();
 
 
 
