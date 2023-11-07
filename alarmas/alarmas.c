@@ -20,6 +20,7 @@
 
 
 
+
 static const char *TAG = "ALARMAS";
 
 #define TIMEOUT_REQUEST_REMOTE_TEMPERATURE 5
