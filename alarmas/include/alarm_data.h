@@ -9,7 +9,7 @@
 #define COMPONENTS_ALARMAS_INCLUDE_ALARM_DATA_H_
 
 
-
+#include "time.h"
 
 
 
