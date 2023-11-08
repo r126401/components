@@ -20,8 +20,8 @@ void process_event_error_device(DATOS_APLICACION *datosApp);
 void process_event_error_app(DATOS_APLICACION *datosApp);
 void process_event_error_nvs(DATOS_APLICACION *datosApp);
 void process_event_nvs_ok(DATOS_APLICACION *datosApp);
-void send_event(EVENT_TYPE event);
-void send_event_device(EVENT_DEVICE event);
+void send_event(const char *func, EVENT_TYPE event);
+void send_event_device(const char *func, EVENT_DEVICE event);
 void create_event_task(DATOS_APLICACION *datosApp);
 char* event2mnemonic(EVENT_TYPE event);
 

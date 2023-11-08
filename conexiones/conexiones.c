@@ -47,55 +47,7 @@ static EventGroupHandle_t grupo_eventos;
 static const char *TAG = "CONEXIONES";
 extern DATOS_APLICACION datosApp;
 
-/*
-void extraer_datos_mqtt(void * event_data, wifi_config_t *wifi_config) {
 
-	char* ptr;
-	char broker[100] = "mqtt://";
-	char pass[65] = {0};
-	char *texto;
-
-	texto = (char*) calloc(256, sizeof(char));
-	memcpy(texto, event_data+32, 256);
-	texto[253] = 33;
-	texto[255]=0;
-	ESP_LOGI(TAG, ""TRAZAR" datos:%s, longitud: %d", INFOTRAZA, texto, strlen(texto));
-
-	smartconfig_event_got_ssid_pswd_t* evt = (smartconfig_event_got_ssid_pswd_t*)event_data;
-
-
-	memcpy(pass, (char*) evt->password, sizeof(wifi_config->sta.password) );
-    ptr = strtok((char*) evt->password, ":");
-    strcpy(pass, ptr);
-    if ((ptr = strtok(NULL, ":")) != NULL) {
-        strcpy(datosApp.datosGenerales->parametrosMqtt.broker, ptr);
-        strcat(broker, datosApp.datosGenerales->parametrosMqtt.broker);
-        strcpy(datosApp.datosGenerales->parametrosMqtt.broker, broker);
-        printf ("broker:%s\n", datosApp.datosGenerales->parametrosMqtt.broker);
-    }
-
-    if ((ptr = strtok(NULL, ":")) != NULL) {
-        datosApp.datosGenerales->parametrosMqtt.port = atoi(ptr);
-        ESP_LOGI(TAG, ""TRAZAR" PUERTO: %d\n",INFOTRAZA, datosApp.datosGenerales->parametrosMqtt.port);
-    }
-
-    if ((ptr = strtok(NULL, ":")) != NULL) {
-        strcpy(datosApp.datosGenerales->parametrosMqtt.user, ptr);
-        ESP_LOGI(TAG, ""TRAZAR"user: %s\n", INFOTRAZA, datosApp.datosGenerales->parametrosMqtt.user);
-    }
-
-    if ((ptr = strtok(NULL, ":")) != NULL) {
-        strcpy(datosApp.datosGenerales->parametrosMqtt.password, ptr);
-        ESP_LOGI(TAG, ""TRAZAR"password: %s\n",INFOTRAZA, datosApp.datosGenerales->parametrosMqtt.password);
-    }
-
-    memset(wifi_config->sta.password, 0, 64);
-    memcpy((char*) wifi_config->sta.password, pass,sizeof(wifi_config->sta.password) );
-
-
-
-}
-*/
 void extraer_datos_smartconfig(void * event_data, wifi_config_t *wifi_config) {
 
 
@@ -223,33 +175,23 @@ static void on_wifi_disconnect(void *arg, esp_event_base_t event_base,
                                int32_t event_id, void *event_data)
 {
 
-    //system_event_sta_disconnected_t *event = (system_event_sta_disconnected_t *)event_data;
 
     ESP_LOGW(TAG, ""TRAZAR"Wi-Fi desconectado, se intenta la reconexion...", INFOTRAZA);
-    /*
-    if (event->reason == WIFI_REASON_BASIC_RATE_NOT_SUPPORT) {
 
-        esp_wifi_set_protocol(ESP_IF_WIFI_STA, WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G | WIFI_PROTOCOL_11N);
+    if (get_current_status_application(&datosApp) == RESTARTING){
+    	return;
     }
-*/
-    if ((datosApp.datosGenerales->estadoApp != UPGRADE_EN_PROGRESO) && (datosApp.datosGenerales->estadoApp != FACTORY)) {
+    if (datosApp.datosGenerales->estadoApp != UPGRADE_EN_PROGRESO) {
     	//registrar_alarma(&datosApp, NOTIFICACION_ALARMA_WIFI, ALARMA_WIFI, ALARMA_ON, false);
-    	send_event(EVENT_ERROR_WIFI);
-    	ESP_ERROR_CHECK(esp_wifi_connect());
+    	send_event(__func__,EVENT_ERROR_WIFI);
+    	esp_wifi_connect();
     	xEventGroupClearBits(grupo_eventos, CONNECTED_BIT);
     }
 
     if (get_current_status_application(&datosApp) == FACTORY) {
-
-    	ESP_LOGE(TAG, ""TRAZAR"PASSWORD ERRONEA", INFOTRAZA);
-    	restaurar_wifi_fabrica();
-
+    	reinicio_fabrica(&datosApp);
     }
-    ESP_LOGE(TAG, ""TRAZAR"vamos a enviar error wifi en factory", INFOTRAZA);
-    send_event(EVENT_ERROR_WIFI);
-    ESP_LOGE(TAG, ""TRAZAR"Hemos enviado error wifi en factory", INFOTRAZA);
-    //registrar_alarma(&datosApp, NOTIFICACION_ALARMA_WIFI, ALARMA_WIFI, ALARMA_ON, false);
-    //appuser_notify_error_wifi_connection(&datosApp);
+
 
 
 }
@@ -264,9 +206,10 @@ static void on_got_ip(void *arg, esp_event_base_t event_base,
     //registrar_alarma(&datosApp, NOTIFICACION_ALARMA_WIFI, ALARMA_WIFI, ALARMA_OFF, false);
     //send_event_application(&datosApp, NOTIFICACION_ALARMA_WIFI, EVENT_WIFI_OK);
     if (get_current_status_application(&datosApp) == FACTORY) {
-    	change_status_application(&datosApp, STARTING);
+    	send_event(__func__, EVENT_SMARTCONFIG_END);
+    	//change_status_application(&datosApp, STARTING);
     }
-    send_event(EVENT_WIFI_OK);
+    send_event(__func__,EVENT_WIFI_OK);
     //appuser_notify_wifi_connected_ok(&datosApp);
 
 
@@ -432,12 +375,12 @@ void sync_app_by_ntp(DATOS_APLICACION *datosApp) {
 		datosApp->datosGenerales->estadoProgramacion = INVALID_PROG;
 		appuser_error_get_date_sntp(datosApp);
 		//registrar_alarma(datosApp, NOTIFICACION_ALARMA_NTP, ALARMA_NTP, ALARMA_ON, false);
-		send_event(EVENT_ERROR_NTP);
+		send_event(__func__,EVENT_ERROR_NTP);
 
 	} else {
 		ESP_LOGI(TAG, ""TRAZAR" VAMOS A REGISTRAR ALARMA", INFOTRAZA);
 		//registrar_alarma(datosApp, NOTIFICACION_ALARMA_NTP, ALARMA_NTP, ALARMA_OFF, false);
-		send_event(EVENT_NTP_OK);
+		send_event(__func__,EVENT_NTP_OK);
 		appuser_sntp_ok(datosApp);
 		actualizar_hora(&datosApp->datosGenerales->clock);
 		//ESP_LOGI(TAG, ""TRAZAR"Hora inicializada:%s", INFOTRAZA, pintar_fecha(datosApp->datosGenerales->clock.date);

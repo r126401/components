@@ -30,7 +30,7 @@ const esp_timer_create_args_t timer_remote_read_args;
 void event_handler_request_remote_temperature(void *arg) {
 
 
-	send_event_device(EVENT_TIMEOUT_REMOTE_TEMPERATURE);
+	send_event_device(__func__ ,EVENT_TIMEOUT_REMOTE_TEMPERATURE);
 
 
 }
@@ -55,15 +55,15 @@ void process_local_event_timeout_reading_temperature(DATOS_APLICACION *datosApp,
 	if (reset_counter) {
 		error_counter = 0;
 		ESP_LOGW(TAG, ""TRAZAR"Sensor %d se ha recuperado antes de llegar al umbral de fallo ", INFOTRAZA, datosApp->termostato.master);
-		send_event_device(EVENT_REMOTE_DEVICE_OK);
+		send_event_device(__func__,EVENT_REMOTE_DEVICE_OK);
 		return;
 	} else {
 		ESP_LOGW(TAG,""TRAZAR" CONTADOR DE FALLOS %d", INFOTRAZA, error_counter);
 		if (error_counter >= NUM_FAILS) {
 			if (datosApp->termostato.master) {
-				send_event(EVENT_ERROR_DEVICE);
+				send_event(__func__,EVENT_ERROR_DEVICE);
 			}else {
-				send_event(EVENT_ERROR_REMOTE_DEVICE);
+				send_event(__func__,EVENT_ERROR_REMOTE_DEVICE);
 			}
 
 			ESP_LOGW(TAG, ""TRAZAR"Sensor escalvo/master (0/1) %d en fallo entramos en politica de reintentos ", INFOTRAZA, datosApp->termostato.master);
@@ -90,7 +90,7 @@ void process_local_event_answer_temperature(DATOS_APLICACION *datosApp) {
 	}
 	ESP_LOGW(TAG, ""TRAZAR"Reiniciamos el contador de fallos", INFOTRAZA);
 	process_local_event_timeout_reading_temperature(datosApp, true);
-	send_event(EVENT_DEVICE_OK);
+	send_event(__func__,EVENT_DEVICE_OK);
 	appuser_received_local_event(datosApp, EVENT_ANSWER_TEMPERATURE);
 
 

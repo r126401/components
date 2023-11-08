@@ -708,13 +708,13 @@ SCHEDULE_SEARCH calcular_programa_activo(DATOS_APLICACION *datosApp, time_t *t_s
 		visualizartiempo(datosApp->datosGenerales->programacion[datosApp->datosGenerales->nProgramaCandidato].programacion);
 		ESP_LOGI(TAG, ""TRAZAR"START_SCHEDULE", INFOTRAZA);
 		//change_status_application(datosApp, NORMAL_AUTO);
-		//send_event(EVENT_START_SCHEDULE);
+		//send_event(__func__,EVENT_START_SCHEDULE);
 		//start_schedule(datosApp);
 
 	} else {
 		error = INTERVALO_SIN_PROGRAMACION;
 		ESP_LOGW(TAG, ""TRAZAR"No hay programacion o programa activo en este momento", INFOTRAZA);
-		//send_event(EVENT_NONE_SCHEDULE);
+		//send_event(__func__,EVENT_NONE_SCHEDULE);
 	}
 */
 	return error;
@@ -748,7 +748,7 @@ void gestion_programas(void *arg) {
 			ESP_LOGW(TAG, ""TRAZAR"SIN CALCULO DE PROGRAMA ACTIVO POR FALLO NTP", INFOTRAZA);
 		} else {
 			if (datosApp->datosGenerales->nProgramacion == 0) {
-				send_event(EVENT_NONE_SCHEDULE);
+				send_event(__func__,EVENT_NONE_SCHEDULE);
 				//change_status_application(datosApp, NORMAL_SIN_PROGRAMACION);
 			} else {
 				ESP_LOGI(TAG, ""TRAZAR"CALCULAMOS EL PROGRAMA ACTIVO EN CHECK_PROGRAMS", INFOTRAZA);
@@ -757,11 +757,11 @@ void gestion_programas(void *arg) {
 				case NO_ACTIVE_SCHEDULE:
 				case NO_SCHEDULE:
 					ESP_LOGI(TAG, ""TRAZAR"INTERVALO SIN PROGRAMACION ACTIVA", INFOTRAZA);
-					send_event(EVENT_NONE_SCHEDULE);
+					send_event(__func__,EVENT_NONE_SCHEDULE);
 					break;
 				case ACTIVE_SCHEDULE:
 					ESP_LOGI(TAG, ""TRAZAR"ENCONTRADA PROGRAMACION ACTIVA", INFOTRAZA);
-					send_event(EVENT_START_SCHEDULE);
+					send_event(__func__,EVENT_START_SCHEDULE);
 					//change_status_application(datosApp, NORMAL_AUTO);
 					break;
 
@@ -770,7 +770,7 @@ void gestion_programas(void *arg) {
 				/*
 				if (calcular_programa_activo(datosApp, &t_siguiente_intervalo) == NO_ACTIVE_SCHEDULE) {
 					ESP_LOGI(TAG, ""TRAZAR"INTERVALO SIN PROGRAMACION ACTIVA", INFOTRAZA);
-					send_event(EVENT_NONE_SCHEDULE);
+					send_event(__func__,EVENT_NONE_SCHEDULE);
 				} else {
 					ESP_LOGI(TAG, ""TRAZAR"ENCONTRADA PROGRAMACION ACTIVA", INFOTRAZA);
 					(datosApp);
@@ -798,12 +798,12 @@ void gestion_programas(void *arg) {
 			case NO_ACTIVE_SCHEDULE:
 			case NO_SCHEDULE:
 				ESP_LOGI(TAG, ""TRAZAR"INTERVALO SIN PROGRAMACION ACTIVA", INFOTRAZA);
-				send_event(EVENT_NONE_SCHEDULE);
+				send_event(__func__,EVENT_NONE_SCHEDULE);
 				break;
 			case ACTIVE_SCHEDULE:
 				ESP_LOGI(TAG, ""TRAZAR"ENCONTRADA PROGRAMACION ACTIVA", INFOTRAZA);
 				start_schedule(datosApp);
-				send_event(EVENT_START_SCHEDULE);
+				send_event(__func__,EVENT_START_SCHEDULE);
 				//change_status_application(datosApp, NORMAL_AUTO);
 				break;
 
@@ -826,7 +826,7 @@ void gestion_programas(void *arg) {
 				ESP_LOGI(TAG, ""TRAZAR"AQUI HABRIA CUMPLIDO EL TEMPORIZADOR", INFOTRAZA);
 				if (calcular_programa_activo(datosApp, &t_siguiente_intervalo) == NO_ACTIVE_SCHEDULE) {
 					ESP_LOGW(TAG, ""TRAZAR"NO HAY PROGRAMAS ALMACENADOS", INFOTRAZA);
-					send_event(EVENT_NONE_SCHEDULE);
+					send_event(__func__,EVENT_NONE_SCHEDULE);
 				} else {
 					ESP_LOGW(TAG, ""TRAZAR"", INFOTRAZA);
 					(datosApp);
@@ -935,7 +935,7 @@ void temporizacion_intermedia(void *arg) {
 
 void end_schedule(void *arg) {
 
-	send_event(EVENT_END_SCHEDULE);
+	send_event(__func__,EVENT_END_SCHEDULE);
 
 
 }
@@ -1000,7 +1000,7 @@ esp_err_t logica_temporizacion(DATOS_APLICACION *datosApp) {
 
 		if (tiempo_restante < 0 ) {
 			ESP_LOGW(TAG, ""TRAZAR"LA DURACION YA HA EXCEDIDO DE LA HORA Y NO SE ACTIVA", INFOTRAZA);
-			send_event(EVENT_END_SCHEDULE);
+			send_event(__func__,EVENT_END_SCHEDULE);
 			//appuser_end_schedule(datosApp);
 			return PROGRAMACION_DURACION_EXCEDIDA;
 		}
@@ -1019,7 +1019,7 @@ esp_err_t start_schedule(DATOS_APLICACION *datosApp) {
 	ESP_LOGW(TAG, ""TRAZAR"start_schedule", INFOTRAZA);
 	if (logica_temporizacion(datosApp) == ESP_OK) {
 		ESP_LOGW(TAG, ""TRAZAR"COMIENZA EL PROGRAMA", INFOTRAZA);
-		send_event(EVENT_START_SCHEDULE);
+		send_event(__func__,EVENT_START_SCHEDULE);
 	}
 	//appuser_start_schedule(datosApp);
 
@@ -1047,7 +1047,7 @@ esp_err_t iniciar_gestion_programacion(DATOS_APLICACION *datosApp) {
 
     ESP_ERROR_CHECK(esp_timer_create(&schedules_shot_timer_args, &temporizador));
     ESP_ERROR_CHECK(esp_timer_start_periodic(temporizador, 1000000));
-    send_event(EVENT_CHECK_PROGRAMS);
+    send_event(__func__,EVENT_CHECK_PROGRAMS);
     //change_status_application(datosApp, CHECK_PROGRAMS);
 
 

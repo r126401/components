@@ -156,7 +156,7 @@ esp_err_t appuser_set_default_config(DATOS_APLICACION *datosApp) {
 
 
 
-esp_err_t appuser_notify_smartconfig(DATOS_APLICACION *datosApp) {
+esp_err_t appuser_notify_no_config(DATOS_APLICACION *datosApp) {
 
 	ESP_LOGI(TAG, ""TRAZAR"appuser_notify_smartconfig", INFOTRAZA);
 	lv_configure_smartconfig();
@@ -179,9 +179,9 @@ esp_err_t appuser_notify_application_started(DATOS_APLICACION *datosApp) {
     if (datosApp->termostato.master == false) {
     	ESP_LOGI(TAG, ""TRAZAR"sensor remoto. Nos subscribimos a %s", INFOTRAZA, datosApp->datosGenerales->parametrosMqtt.topics[CONFIG_INDEX_REMOTE_TOPIC_TEMPERATURE].subscribe);
     	if (subscribe_topic(datosApp, datosApp->datosGenerales->parametrosMqtt.topics[CONFIG_INDEX_REMOTE_TOPIC_TEMPERATURE].subscribe) == ESP_OK) {
-    		send_event(EVENT_REMOTE_DEVICE_OK);
+    		send_event(__func__,EVENT_REMOTE_DEVICE_OK);
     	} else {
-    		send_event(EVENT_ERROR_REMOTE_DEVICE);
+    		send_event(__func__,EVENT_ERROR_REMOTE_DEVICE);
     	}
     }
 
@@ -267,8 +267,8 @@ esp_err_t appuser_notify_connecting_wifi(DATOS_APLICACION *datosApp) {
 
 	case STARTING:
 		//lv_send_lcd_commands(CONNECTING_WIFI);
-		lv_connecting_to_wifi_station(datosApp);
-		lv_timer_handler();
+		//lv_connecting_to_wifi_station(datosApp);
+		//lv_timer_handler();
 		break;
 	default:
 		break;
@@ -284,9 +284,7 @@ esp_err_t appuser_notify_wifi_connected_ok(DATOS_APLICACION *datosApp) {
 
 	ESP_LOGI(TAG, ""TRAZAR"appuser_notify_wifi_connected_ok, ESTADO: %s", INFOTRAZA, status2mnemonic(get_current_status_application(datosApp)));
 	lv_update_alarm_device(datosApp);
-	if (get_current_status_application(datosApp) == FACTORY) {
-		esp_restart();
-	}
+
 
 	return ESP_OK;
 }
@@ -300,6 +298,13 @@ esp_err_t appuser_notify_error_wifi_connection(DATOS_APLICACION *datosApp) {
 
 	lv_configure_smartconfig();
 	lv_factory_boot();
+	/*
+	if (get_current_status_application(datosApp) == FACTORY) {
+		ESP_LOGI(TAG, ""TRAZAR"ENSEÑAMOS SMARTCONFIG", INFOTRAZA);
+		lv_configure_smartconfig();
+		lv_factory_boot();
+	}
+*/
 
 
 
@@ -718,12 +723,12 @@ esp_err_t appuser_reading_remote_temperature(DATOS_APLICACION *datosApp, char *m
 		datosApp->termostato.humedad = (float) dato;
 		ESP_LOGI(TAG, ""TRAZAR" temperatura remota :%lf, humedad remota:%lf, %s", INFOTRAZA, datosApp->termostato.tempActual,datosApp->termostato.humedad, __func__);
 		cJSON_Delete(respuesta);
-		send_event_device(EVENT_ANSWER_TEMPERATURE);
+		send_event_device(__func__,EVENT_ANSWER_TEMPERATURE);
 		return ESP_OK;
 
 	} else {
 		return ESP_FAIL;
-		send_event(EVENT_ERROR_REMOTE_DEVICE);
+		send_event(__func__,EVENT_ERROR_REMOTE_DEVICE);
 	}
 
 
@@ -798,6 +803,9 @@ esp_err_t appuser_notify_app_status(DATOS_APLICACION *datosApp, enum ESTADO_APP 
 		break;
 	case SCHEDULING:
 		strcpy(status, "SCHEDULING");
+		break;
+	case RESTARTING:
+		strcpy(status, "RESTARTING");
 		break;
 
 
@@ -1168,11 +1176,11 @@ void appuser_notify_error_remote_device(DATOS_APLICACION *datosApp) {
 	switch(event) {
 
 	case EVENT_ANSWER_TEMPERATURE:
-		send_event_device(EVENT_ANSWER_TEMPERATURE);
+		send_event_device(__func__,EVENT_ANSWER_TEMPERATURE);
 		//update_thermostat_device(datosApp);
 		break;
 	case EVENT_ERROR_READ_LOCAL_TEMPERATURE:
-		send_event_device(EVENT_ERROR_READ_LOCAL_TEMPERATURE);
+		send_event_device(__func__,EVENT_ERROR_READ_LOCAL_TEMPERATURE);
 		break;
 
 	default:
@@ -1188,8 +1196,16 @@ void appuser_notify_error_remote_device(DATOS_APLICACION *datosApp) {
 void appuser_notify_smartconfig_end(DATOS_APLICACION *datosApp) {
 
 
-	vTaskDelay(3000 / portTICK_RATE_MS);
-	esp_restart();
+	lv_screen_thermostat(datosApp);
+
+
+}
+
+void appuser_notify_error_smartconfig(DATOS_APLICACION *datosApp) {
+
+	ESP_LOGI(TAG, ""TRAZAR"Señalizamos el error en smartconfig", INFOTRAZA);
+
+
 }
 
 

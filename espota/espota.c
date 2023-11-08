@@ -118,7 +118,7 @@ void otaesp_task(void *pvParameter)
 	const esp_app_desc_t *aplicacion;
 	cJSON *upgrade;
 
-	send_event(EVENT_UPGRADE_FIRMWARE);
+	send_event(__func__,EVENT_UPGRADE_FIRMWARE);
 	aplicacion = esp_app_get_description();
 	ESP_LOGW(TAG, ""TRAZAR"Comienzo upgrade firmware", INFOTRAZA);
     ip = name_to_ip(datosApp->datosGenerales->ota.server);

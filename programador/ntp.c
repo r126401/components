@@ -17,6 +17,7 @@
 #include "esp_sntp.h"
 #include "logging.h"
 #include "events_device.h"
+#include "esp_netif_sntp.h"
 
 
 #define TIMEOUT_NTP CONFIG_TIMEOUT_NTP
@@ -48,15 +49,16 @@ void inicializar_parametros_ntp(NTP_CLOCK *clock) {
 	 switch (sntp_get_sync_status()) {
 
 	 case SNTP_SYNC_STATUS_COMPLETED:
-		 send_event(EVENT_NTP_OK);
+		 send_event(__func__,EVENT_NTP_OK);
 		 ESP_LOGI(TAG, ""TRAZAR"Evento de sincronizacion completado", INFOTRAZA);
 		 break;
 	 case SNTP_SYNC_STATUS_RESET:
 		 ESP_LOGE(TAG, ""TRAZAR"Error: Evento de sincronizacion completado", INFOTRAZA);
-		 send_event(EVENT_ERROR_NTP);
+		 send_event(__func__,EVENT_ERROR_NTP);
 		 break;
 	 case SNTP_SYNC_STATUS_IN_PROGRESS:
 		 ESP_LOGW(TAG, ""TRAZAR"Evento de sincronizacion no completado", INFOTRAZA);
+		 send_event(__func__,EVENT_NTP_OK);
 		 break;
 
 
@@ -76,6 +78,7 @@ esp_err_t obtener_fecha_hora(NTP_CLOCK *clock) {
     struct tm timeinfo = { 0 };
     int retry = 0;
     const int retry_count = 10;
+
 
 	ESP_LOGI(TAG, ""TRAZAR"Inicializando ntp", INFOTRAZA);
 	esp_sntp_setoperatingmode(SNTP_OPMODE_POLL);

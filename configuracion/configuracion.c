@@ -315,12 +315,12 @@ esp_err_t init_application(DATOS_APLICACION *datosApp, bool forzado) {
 			ESP_LOGI(TAG, ""TRAZAR" Configuracion general leida correctamente",INFOTRAZA);
 			// cargamos en la estructura dinamica la configuracion leida
 			error = json_a_datos_aplicacion(datosApp, datos);
-			send_event(EVENT_APP_OK);
+			send_event(__func__,EVENT_APP_OK);
 		} else {
 			ESP_LOGW(TAG, ""TRAZAR"La configuracion no se ha cargado. Se carga la de defecto.", INFOTRAZA);
 			cargar_configuracion_defecto(datosApp);
 			if (datosApp->datosGenerales->estadoApp != FACTORY) {
-				send_event(EVENT_ERROR_APP);
+				send_event(__func__,EVENT_ERROR_APP);
 				return error;
 			}
 

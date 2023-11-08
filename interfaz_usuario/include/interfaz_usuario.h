@@ -159,7 +159,7 @@ esp_err_t appuser_start_ota(DATOS_APLICACION *datosApp);
  * @param datosApp
  * @return
  */
-esp_err_t appuser_notify_smartconfig(DATOS_APLICACION *datosApp);
+esp_err_t appuser_notify_no_config(DATOS_APLICACION *datosApp);
 
 /**
  * @fn esp_err_t appuser_notify_local_alarm(DATOS_APLICACION*, uint8_t)
@@ -337,5 +337,6 @@ void appuser_notify_alarm_on_device(DATOS_APLICACION *datosApp, ALARM_TYPE alarm
 void appuser_notify_alarm_off_device(DATOS_APLICACION *datosApp, ALARM_TYPE alarm);
 void appuser_notify_error_remote_device(DATOS_APLICACION *datosApp);
 void appuser_notify_smartconfig_end(DATOS_APLICACION *datosApp);
+void appuser_notify_error_smartconfig(DATOS_APLICACION *datosApp);
 
 #endif /* COMPONENTS_INTERFAZ_USUARIO_INCLUDE_INTERFAZ_USUARIO_H_ */

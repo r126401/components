@@ -14,6 +14,8 @@
 #include "conexiones.h"
 #include "interfaz_usuario.h"
 #include "dialogos_json.h"
+#include "conexiones_mqtt.h"
+
 
 
 
@@ -110,16 +112,20 @@ char* event2mnemonic(EVENT_TYPE event) {
 		strcpy(mnemonic, "EVENT_LOCAL_DEVICE");
 		break;
 
-	case EVENT_SMARTCONFIG:
+	case EVENT_SMARTCONFIG_START:
 		strcpy(mnemonic, "EVENT_SMARTCONFIG");
 		break;
 	case EVENT_SMARTCONFIG_END:
 		strcpy(mnemonic, "EVENT_SMARTCONFIG_END");
 		break;
 
+	case EVENT_START_APP:
+		strcpy(mnemonic, "EVENT_START_APP");
+		break;
 
-
-
+	case EVENT_ERROR_SMARTCONFIG:
+		strcpy(mnemonic, "EVENT_ERROR_SMARTCONFIG");
+		break;
 
 	}
 
@@ -181,6 +187,8 @@ void process_event_error_nvs(DATOS_APLICACION *datosApp) {
 		break;
 	case SCHEDULING:
 		break;
+	case RESTARTING:
+		break;
 
 
 	}
@@ -214,16 +222,29 @@ void process_event_wifi_ok(DATOS_APLICACION *datosApp) {
 
 	switch(datosApp->datosGenerales->estadoApp) {
 
+	case FACTORY:
+		change_status_application(datosApp, STARTING);
+		break;
 
 	default:
-		send_alarm(datosApp, ALARM_WIFI, ALARM_OFF, true);
+
 		break;
 
 
 	}
 
+	send_alarm(datosApp, ALARM_WIFI, ALARM_OFF, true);
 	sync_app_by_ntp(datosApp);
 	appuser_notify_wifi_connected_ok(datosApp);
+	if (datosApp->handle_mqtt == NULL) {
+		ESP_LOGI(TAG, ""TRAZAR"INICIAMOS LA TAREA MQTT PORQUE NO EXISTE", INFOTRAZA);
+		iniciar_gestion_programacion(datosApp);
+		//sync_app_by_ntp(&datosApp);
+		crear_tarea_mqtt(datosApp);
+
+	} else {
+		ESP_LOGW(TAG, ""TRAZAR"NO INICIAMOS LA TAREA MQTT PORQUE EXISTE", INFOTRAZA);
+	}
 
 }
 
@@ -231,12 +252,15 @@ void process_event_error_wifi(DATOS_APLICACION *datosApp) {
 
 	switch(datosApp->datosGenerales->estadoApp) {
 
-
+	case FACTORY:
+		ESP_LOGE(TAG, ""TRAZAR" ERROR AL PONER LA CLAVE WIFI EN SMARTCONFIG", INFOTRAZA);
+		reinicio_fabrica(datosApp);
+		break;
 
 	default:
 		send_alarm(datosApp, ALARM_WIFI, ALARM_ON, false);
-		send_event(EVENT_ERROR_NTP);
-		send_event(EVENT_ERROR_MQTT);
+		send_event(__func__,EVENT_ERROR_NTP);
+		send_event(__func__,EVENT_ERROR_MQTT);
 
 		break;
 
@@ -415,7 +439,8 @@ void process_event_upgrade_firmware(DATOS_APLICACION *datosApp) {
 void process_event_factory(DATOS_APLICACION *datosApp) {
 
 	change_status_application(datosApp, FACTORY);
-	appuser_notify_smartconfig(datosApp);
+	//send_event(__func__, EVENT_SMARTCONFIG);
+	appuser_notify_no_config(datosApp);
 
 
 }
@@ -450,9 +475,25 @@ void process_event_device_ok(DATOS_APLICACION *datosApp) {
 }
 
 
-void process_event_smartconfig(DATOS_APLICACION *datosApp) {
+void process_event_smartconfig_start(DATOS_APLICACION *datosApp) {
 
-	conectar_dispositivo_wifi();
+	switch (get_current_status_application(datosApp)) {
+
+	case FACTORY:
+		//appuser_notify_no_config(datosApp);
+		conectar_dispositivo_wifi();
+		break;
+	default:
+		ESP_LOGI(TAG, ""TRAZAR" RECIBIDO EVENTO SMARTCONFIG EN ESTADO %s", INFOTRAZA, status2mnemonic(get_current_status_application(datosApp)));
+		esp_wifi_stop();
+		esp_wifi_deinit();
+		reinicio_fabrica(datosApp);
+		conectar_dispositivo_wifi();
+		break;
+
+
+	}
+
 
 }
 
@@ -460,6 +501,12 @@ void process_event_smartconfig_end(DATOS_APLICACION *datosApp) {
 
 	appuser_notify_smartconfig_end(datosApp);
 
+
+}
+
+void process_event_error_smartconfig(DATOS_APLICACION *datosApp) {
+
+	appuser_notify_error_smartconfig(datosApp);
 }
 
 
@@ -565,17 +612,23 @@ void receive_event(DATOS_APLICACION *datosApp, EVENT_APP event) {
 		case EVENT_REMOTE_DEVICE_OK:
 			if (get_status_alarm(datosApp, ALARM_REMOTE_DEVICE)) {
 				send_alarm(datosApp, ALARM_REMOTE_DEVICE, ALARM_OFF, true);
-				send_event(EVENT_DEVICE_OK);
+				send_event(__func__,EVENT_DEVICE_OK);
 			}
 
 			break;
 
-		case EVENT_SMARTCONFIG:
-			process_event_smartconfig(datosApp);
+		case EVENT_SMARTCONFIG_START:
+			process_event_smartconfig_start(datosApp);
 			break;
 
 		case EVENT_SMARTCONFIG_END:
 			process_event_smartconfig_end(datosApp);
+			break;
+		case EVENT_START_APP:
+			break;
+
+		case EVENT_ERROR_SMARTCONFIG:
+			process_event_error_smartconfig(datosApp);
 			break;
 
 		default:
@@ -624,14 +677,14 @@ void create_event_task(DATOS_APLICACION *datosApp) {
 
 }
 
-void send_event(EVENT_TYPE event) {
+void send_event(const char *func, EVENT_TYPE event) {
 
 	EVENT_APP event_received;
 
 	event_received.event_app = event;
 	event_received.event_device = EVENT_NONE;
 
-
+	ESP_LOGW(TAG, ""TRAZAR" %s: %s", INFOTRAZA, func, event2mnemonic(event));
 	xQueueSend(event_queue, &event_received,0);
 
 }
@@ -643,19 +696,22 @@ ESTADO_APP get_current_status_application(DATOS_APLICACION *datosApp) {
 }
 
 
-void send_event_device(EVENT_DEVICE event) {
+
+
+void send_event_device(const char *func, EVENT_DEVICE event) {
 
 
 
-	ESP_LOGI(TAG, ""TRAZAR"RECIBIDO EVENTO LOCAL %s", INFOTRAZA, local_event_2_mnemonic(event));
+	ESP_LOGW(TAG, ""TRAZAR"RECIBIDO EVENTO LOCAL %s: %s", INFOTRAZA, func, local_event_2_mnemonic(event));
 	EVENT_APP event_received;
 	event_received.event_app = EVENT_LOCAL_DEVICE;
 	event_received.event_device = event;
-
-	ESP_LOGI(TAG, ""TRAZAR"VAMOS A ENVIAR EL EVENTO LOCAL %s", INFOTRAZA, local_event_2_mnemonic(event));
 	xQueueSend(event_queue, &event_received,0);
-	ESP_LOGI(TAG, ""TRAZAR"HEMOS ENVIADO EVENTO LOCAL %s", INFOTRAZA, local_event_2_mnemonic(event));
+
+
 }
+
+
 
 
 

@@ -30,6 +30,7 @@
 
 static const char *TAG = "API_JSON";
 extern xQueueHandle cola_mqtt;
+esp_timer_handle_t tiempo;
 
 
 char* report_2_mnmonic(TIPO_INFORME report) {
@@ -804,7 +805,7 @@ esp_err_t   insertar_nuevo_programa(cJSON *peticion,DATOS_APLICACION *datosApp, 
        //gestion_programas(datosApp);
        escribir_programa_actual(datosApp, respuesta);
        codigoRespuesta(respuesta, RESP_OK);
-       send_event(EVENT_INSERT_SCHEDULE);
+       send_event(__func__,EVENT_INSERT_SCHEDULE);
 
    }
    guardar_programas(datosApp, CONFIG_CLAVE_PROGRAMACION);
@@ -858,7 +859,7 @@ esp_err_t   borrar_programa(cJSON *peticion,struct DATOS_APLICACION *datosApp, c
        cJSON_AddNumberToObject(respuesta, PROGRAMMER_STATE, datosApp->datosGenerales->estadoProgramacion);
        printf("idprograma borrado:%s\n", idPrograma);
        cJSON_AddStringToObject(respuesta, PROGRAM_ID, idPrograma);
-       send_event(EVENT_DELETE_SCEDULE);
+       send_event(__func__,EVENT_DELETE_SCEDULE);
        //datosApp->datosGenerales->estadoApp = NORMAL_SINCRONIZANDO;
        //appuser_notify_app_status(datosApp, NORMAL_SINCRONIZANDO);
        //gestion_programas(datosApp);
@@ -930,7 +931,7 @@ esp_err_t   modificar_programa(cJSON *peticion,struct DATOS_APLICACION *datosApp
         cJSON_AddNumberToObject(respuesta, PROGRAM_ACTION, datosApp->datosGenerales->programacion[nPrograma].accion);
         appuser_reporting_schedule_extra_data(&datosApp->datosGenerales->programacion[nPrograma], respuesta);
 
-        send_event(EVENT_MODIFY_SCHEDULE);
+        send_event(__func__,EVENT_MODIFY_SCHEDULE);
         //datosApp->datosGenerales->estadoApp = NORMAL_SINCRONIZANDO;
         //appuser_notify_app_status(datosApp, NORMAL_SINCRONIZANDO);
         //gestion_programas(datosApp);
@@ -966,16 +967,25 @@ void restart_normal(void* parametros) {
 esp_err_t   ejecutar_reset(DATOS_APLICACION *datosApp, cJSON *respuesta) {
 
     //static os_timer_t restart;
-    esp_timer_handle_t tiempo;
+
     esp_timer_create_args_t temporizador;
+
+
+    const esp_timer_create_args_t timer_reset_args = {
+    		.callback = &restart_normal,
+			.name = "timer reset",
+			.arg = (void*) datosApp
+    };
+
     temporizador.callback = &restart_normal;
     temporizador.arg = NULL;
     temporizador.name = "restart";
-    esp_timer_create(&temporizador, &tiempo);
+    esp_timer_create(&timer_reset_args, &tiempo);
     esp_timer_start_once(tiempo, 3000000);
     if (respuesta != NULL) {
     	codigoRespuesta(respuesta, RESP_OK);
     }
+    change_status_application(datosApp, RESTARTING);
 
 
     return ESP_OK;
@@ -1031,15 +1041,17 @@ esp_err_t   upgrade_ota(cJSON *peticion, struct DATOS_APLICACION *datosApp, cJSO
 }
 
 
-esp_err_t   reinicio_fabrica(DATOS_APLICACION *datosApp) {
+esp_err_t reinicio_fabrica(DATOS_APLICACION *datosApp) {
 
 	wifi_config_t conf_wifi;
+	ESP_LOGW(TAG, ""TRAZAR"SE REINICIA LA CLAVE WIFI Y SE BORRAN LAS CONFIGURACIONES", INFOTRAZA);
 	memset(&conf_wifi, 0, sizeof(wifi_config_t));
-	restaurar_wifi_fabrica();
+	//restaurar_wifi_fabrica();
 	// Restear claves wifi
 	esp_wifi_set_config(WIFI_IF_STA, &conf_wifi);
 	//resetar nvs
 	nvs_erase_all(datosApp->handle);
+	change_status_application(datosApp, FACTORY);
 	//nvs_flash_erase();
 
 

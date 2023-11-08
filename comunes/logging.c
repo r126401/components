@@ -83,6 +83,10 @@ char* status2mnemonic(ESTADO_APP status) {
 	case SCHEDULING:
 		strcpy(mnemonic, "SCHEDULING");
 		break;
+	case RESTARTING:
+		strcpy(mnemonic, "RESTARTING");
+		break;
+
 	}
 	return mnemonic;
 }
