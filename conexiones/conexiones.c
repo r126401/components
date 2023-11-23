@@ -38,6 +38,7 @@
 
 
 
+
 static const int CONNECTED_BIT = BIT0;
 static const int ESPTOUCH_DONE_BIT = BIT1;
 
@@ -47,6 +48,16 @@ static EventGroupHandle_t grupo_eventos;
 static const char *TAG = "CONEXIONES";
 extern DATOS_APLICACION datosApp;
 
+
+
+void deactivate_wifi() {
+
+	esp_wifi_disconnect();
+	esp_wifi_stop();
+	esp_wifi_deinit();
+
+
+}
 
 void extraer_datos_smartconfig(void * event_data, wifi_config_t *wifi_config) {
 
@@ -181,6 +192,11 @@ static void on_wifi_disconnect(void *arg, esp_event_base_t event_base,
     if (get_current_status_application(&datosApp) == RESTARTING){
     	return;
     }
+    if (get_current_status_application(&datosApp) == FACTORY) {
+    	 ESP_LOGW(TAG, ""TRAZAR"Wi-Fi desconectado, estamos en factory", INFOTRAZA);
+    	 appuser_notify_error_smartconfig(&datosApp);
+    }
+
     if (datosApp.datosGenerales->estadoApp != UPGRADE_EN_PROGRESO) {
     	//registrar_alarma(&datosApp, NOTIFICACION_ALARMA_WIFI, ALARMA_WIFI, ALARMA_ON, false);
     	send_event(__func__,EVENT_ERROR_WIFI);
@@ -188,9 +204,7 @@ static void on_wifi_disconnect(void *arg, esp_event_base_t event_base,
     	xEventGroupClearBits(grupo_eventos, CONNECTED_BIT);
     }
 
-    if (get_current_status_application(&datosApp) == FACTORY) {
-    	reinicio_fabrica(&datosApp);
-    }
+
 
 
 
@@ -272,8 +286,8 @@ inline static void inicializar_wifi() {
 	}
 
     grupo_eventos = xEventGroupCreate();
-    ESP_ERROR_CHECK(esp_netif_init());
-    ESP_ERROR_CHECK(esp_event_loop_create_default());
+    esp_netif_init();
+    esp_event_loop_create_default();
 #if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32S3)
     esp_netif_create_default_wifi_sta ();
 #endif
@@ -291,7 +305,7 @@ inline static void inicializar_wifi() {
     ESP_ERROR_CHECK(esp_event_handler_register(SC_EVENT, ESP_EVENT_ANY_ID, &manejador_eventos_smart, NULL));
 #endif
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
-    ESP_ERROR_CHECK(esp_wifi_init(&cfg));
+    esp_wifi_init(&cfg);
 
 
     //ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
@@ -325,9 +339,22 @@ void tarea_smartconfig(void* parm) {
         if (uxBits & ESPTOUCH_DONE_BIT) {
             ESP_LOGI(TAG, "SMARTCONFIG TERMINADO");
             esp_smartconfig_stop();
+            send_event(__func__, EVENT_SMARTCONFIG_END);
             vTaskDelete(NULL);
         }
     }
+}
+
+
+
+void task_smartconfig() {
+
+	ESP_LOGI(TAG, "VAMOS A CREAR LA TAREA SMARTCONFIG");
+	xTaskCreate(tarea_smartconfig, "tarea_smart", 4096, (void*)&datosApp, tskIDLE_PRIORITY + 0, NULL);
+	ESP_LOGI(TAG, "TAREA SMARCONFIG CREADA");
+	conectar_wifi();
+
+
 }
 
 
@@ -335,12 +362,20 @@ esp_err_t conectar_dispositivo_wifi() {
 
 	wifi_config_t conf_wifi;
 	int i;
-	inicializar_wifi();
+	static bool inicializado = false;
+	if (!inicializado) {
+		ESP_LOGW(TAG, ""TRAZAR" INICIALIZAMOS", INFOTRAZA);
+		inicializar_wifi();
+		inicializado = true;
+	} else {
+		ESP_LOGW(TAG, ""TRAZAR" YA INICIALIZADO", INFOTRAZA);
+	}
     esp_wifi_get_config(WIFI_IF_STA, &conf_wifi);
     conf_wifi.sta.pmf_cfg.capable = true;
     conf_wifi.sta.pmf_cfg.required = false;
-    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
-    ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &conf_wifi) );
+    esp_wifi_set_mode(WIFI_MODE_STA);
+    esp_wifi_set_config(ESP_IF_WIFI_STA, &conf_wifi);
+
 
 	for (i=0;i<32;i++) {
 		if (conf_wifi.sta.ssid[i] != 0) {
@@ -351,11 +386,9 @@ esp_err_t conectar_dispositivo_wifi() {
 	}
 
 	ESP_LOGW(TAG, ""TRAZAR" WIFI NO CONFIGURADA", INFOTRAZA);
+	task_smartconfig();
 
-	xTaskCreate(tarea_smartconfig, "tarea_smart", 4096, (void*)&datosApp, tskIDLE_PRIORITY + 0, NULL);
-	//xEventGroupWaitBits(grupo_eventos, CONNECTED_BIT, true, true, portMAX_DELAY);
-	conectar_wifi();
-	return ESP_FAIL;
+	return ESP_OK;
 
 }
 
@@ -429,22 +462,4 @@ void wifi_task(void *arg) {
 
 
 }
-/*
-static bool is_wifi_configured(wifi_config_t *conf_wifi) {
 
-	int i;
-    esp_wifi_get_config(WIFI_IF_STA, conf_wifi);
-    conf_wifi->sta.pmf_cfg.capable = true;
-    conf_wifi->sta.pmf_cfg.required = false;
-
-	for (i=0;i<32;i++) {
-		if (conf_wifi->sta.ssid[i] != 0) {
-			ESP_LOGW(TAG, ""TRAZAR" WIFI CONFIGURADA %s, %s", INFOTRAZA, (char*) conf_wifi->sta.ssid, (char*) conf_wifi->sta.password);
-			return conf_wifi;
-		}
-	}
-
-	return NULL;
-
-}
-*/

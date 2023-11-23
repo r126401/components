@@ -615,8 +615,6 @@ esp_err_t json_a_ota(DATOS_APLICACION *datosApp) {
 esp_err_t is_factory() {
 
 
-
-
 	wifi_config_t conf_wifi = {0};
 	wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
 	esp_wifi_init(&cfg);
@@ -626,10 +624,12 @@ esp_err_t is_factory() {
 		if (conf_wifi.sta.ssid[i] != 0) {
 			ESP_LOGW(TAG, ""TRAZAR" WIFI CONFIGURADA %s, %s", INFOTRAZA, (char*) conf_wifi.sta.ssid, (char*) conf_wifi.sta.password);
 			return ESP_FAIL;
+
 		}
 	}
 
 	ESP_LOGW(TAG, ""TRAZAR" WIFI NO CONFIGURADA", INFOTRAZA);
+
 
 	return ESP_OK;
 
