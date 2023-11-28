@@ -22,6 +22,7 @@
 #include "espota.h"
 #include "events_device.h"
 #include "alarmas.h"
+#include "nvslib.h"
 
 
 
@@ -1102,3 +1103,67 @@ esp_err_t   modificar_configuracion_app(cJSON *peticion,struct DATOS_APLICACION 
 
 	return appuser_modify_local_configuration_application(peticion, datosApp, respuesta);
 }
+
+
+esp_err_t send_spontaneous_report(DATOS_APLICACION *datosApp, enum TIPO_INFORME tipoInforme) {
+
+
+    cJSON *respuesta = NULL;
+    char valor[20];
+
+    ESP_LOGI(TAG, ""TRAZAR"send_spontaneous_report", INFOTRAZA);
+    respuesta = cabecera_espontaneo(datosApp, tipoInforme);
+    if (respuesta == NULL) {
+    	ESP_LOGE(TAG, ""TRAZAR"send_spontaneous_report:Cabecera nula", INFOTRAZA);
+    	return ESP_FAIL;
+    }
+    switch(tipoInforme) {
+        case ARRANQUE_APLICACION:
+        	cJSON_AddStringToObject(respuesta, MNEMONIC_REPORT, report_2_mnmonic(tipoInforme));
+            cJSON_AddNumberToObject(respuesta, PROGRAMMER_STATE, datosApp->datosGenerales->estadoProgramacion);
+            cJSON_AddNumberToObject(respuesta, DEVICE_STATE, datosApp->datosGenerales->estadoApp);
+            if (leer_configuracion(datosApp, FIN_UPGRADE, valor) == ESP_OK) {
+            	cJSON *upgrade;
+            	int dato;
+            	upgrade = cJSON_Parse(valor);
+            	extraer_dato_int(upgrade, FIN_UPGRADE, &dato);
+            	ESP_LOGI(TAG, ""TRAZAR" ESCRIBIMOS EL FIN DE UPGRADE", INFOTRAZA);
+            	cJSON_AddNumberToObject(respuesta, FIN_UPGRADE, dato);
+            	borrar_clave(&datosApp->handle, FIN_UPGRADE);
+            }
+                escribir_programa_actual(datosApp, respuesta);
+                codigoRespuesta(respuesta,RESP_OK);
+                break;
+        case ACTUACION_RELE_LOCAL:
+        case CAMBIO_DE_PROGRAMA:
+        case RELE_TEMPORIZADO:
+        case CAMBIO_TEMPERATURA:
+        case CAMBIO_UMBRAL_TEMPERATURA:
+        	cJSON_AddStringToObject(respuesta, MNEMONIC_REPORT, report_2_mnmonic(tipoInforme));
+            cJSON_AddNumberToObject(respuesta, PROGRAMMER_STATE, datosApp->datosGenerales->estadoProgramacion);
+            cJSON_AddNumberToObject(respuesta, DEVICE_STATE, datosApp->datosGenerales->estadoApp);
+            escribir_programa_actual(datosApp, respuesta);
+            codigoRespuesta(respuesta,RESP_OK);
+            break;
+
+        default:
+        	cJSON_AddStringToObject(respuesta, MNEMONIC_REPORT, report_2_mnmonic(tipoInforme));
+            codigoRespuesta(respuesta, RESP_NOK);
+            printf("enviarReporte--> Salida no prevista\n");
+            break;
+    }
+
+    appuser_send_spontaneous_report(datosApp, tipoInforme, respuesta);
+
+	if (respuesta != NULL) {
+		publicar_mensaje_json(datosApp, respuesta, NULL);
+		ESP_LOGI(TAG, ""TRAZAR" PUBLICADO DESDE API_JSON", INFOTRAZA);
+	}
+
+
+	return ESP_OK;
+
+}
+
+
+

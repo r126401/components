@@ -289,6 +289,14 @@ esp_err_t init_application(DATOS_APLICACION *datosApp, bool forzado) {
 
 
 	esp_err_t error;
+
+	error = inicializar_nvs(CONFIG_NAMESPACE, &datosApp->handle);
+	if (error != ESP_OK) {
+		ESP_LOGW(TAG, ""TRAZAR" ERROR AL INICIALIZAR NVS", INFOTRAZA);
+		return ESP_FAIL;
+
+	}
+
 	char datos[CONFIG_TAMANO_BUFFER_LECTURA];
     datosApp->datosGenerales->ota.swVersion = esp_app_get_description();
     //free(aplicacion);

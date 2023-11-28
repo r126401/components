@@ -94,39 +94,6 @@ char* local_event_2_mnemonic(EVENT_DEVICE event) {
 }
 
 
-/*
-enum ESTADO_APP change_status_application(DATOS_APLICACION *datosApp) {
-
-	enum ESTADO_APP estado_final;
-
-	switch (datosApp->datosGenerales->estadoApp) {
-
-	case ESPERA_FIN_ARRANQUE:
-		if (datosApp->datosGenerales->nProgramacion == 0) {
-			estado_final = NORMAL_SIN_PROGRAMACION;
-		} else {
-			estado_final = NORMAL_AUTO;
-		}
-	break;
-	case STARTING:
-		datosApp->datosGenerales->estadoApp = ESPERA_FIN_ARRANQUE;
-		estado_final = ESPERA_FIN_ARRANQUE;
-		break;
-
-
-	default:
-		estado_final = NORMAL_AUTO;
-		break;
-	}
-
-	appuser_notify_app_status(datosApp, estado_final);
-
-
-
-	return estado_final;
-}
-*/
-
 esp_err_t appuser_set_default_config(DATOS_APLICACION *datosApp) {
 
 	ESP_LOGI(TAG, ""TRAZAR"appuser_set_default_config", INFOTRAZA);
@@ -171,7 +138,7 @@ esp_err_t appuser_notify_no_config(DATOS_APLICACION *datosApp) {
 
 esp_err_t appuser_notify_application_started(DATOS_APLICACION *datosApp) {
 
-	cJSON *informe;
+
 	ESP_LOGI(TAG, ""TRAZAR"appuser_notify_application_started. Estado Aplicacion: %s", INFOTRAZA, status2mnemonic(datosApp->datosGenerales->estadoApp));
 	//datosApp->datosGenerales->estadoApp = change_status_application(datosApp);
 	//ESP_LOGI(TAG, ""TRAZAR"appuser_notify_application_started. Estado final Aplicacion: %d", INFOTRAZA, datosApp->datosGenerales->estadoApp);
@@ -190,14 +157,16 @@ esp_err_t appuser_notify_application_started(DATOS_APLICACION *datosApp) {
 	lv_update_temperature(datosApp);
 
 	//lv_screen_thermostat(datosApp);
-	informe = appuser_send_spontaneous_report(datosApp, ARRANQUE_APLICACION, NULL);
-
 	ESP_LOGI(TAG, ""TRAZAR" vamos a publicar el arranque del dispositivo", INFOTRAZA);
+	send_spontaneous_report(datosApp, ARRANQUE_APLICACION);
+
+
+	/*
 	if (informe != NULL) {
 		publicar_mensaje_json(datosApp, informe, NULL);
 		ESP_LOGI(TAG, ""TRAZAR" PUBLICADO", INFOTRAZA);
 	}
-
+*/
 
 	return ESP_OK;
 }
@@ -340,22 +309,24 @@ esp_err_t appuser_notify_broker_disconnected(DATOS_APLICACION *datosApp) {
 
 void appuser_end_schedule(DATOS_APLICACION *datosApp) {
 
-    cJSON * respuesta = NULL;
+
     ESP_LOGI(TAG, ""TRAZAR"appuser_end_schedule", INFOTRAZA);
     datosApp->termostato.tempUmbral = datosApp->termostato.tempUmbralDefecto;
     lv_update_threshold(datosApp, true);
     lv_update_bar_schedule(datosApp, false);
-    respuesta = appuser_send_spontaneous_report(datosApp, RELE_TEMPORIZADO, NULL);
+    send_spontaneous_report(datosApp, RELE_TEMPORIZADO);
+/*
     if (respuesta != NULL) {
     	publicar_mensaje_json(datosApp, respuesta, NULL);
     }
+    */
     ESP_LOGI(TAG, ""TRAZAR"FIN DE LA TEMPORIZACION. SE PASA A LA TEMPERATURA DE DEFECTO", INFOTRAZA);
 
 }
 
 esp_err_t appuser_start_schedule(DATOS_APLICACION *datosApp) {
 
-	cJSON *respuesta;
+
 	enum ESTADO_RELE accion;
 
 	ESP_LOGI(TAG, ""TRAZAR"appuser_start_schedule", INFOTRAZA);
@@ -366,10 +337,12 @@ esp_err_t appuser_start_schedule(DATOS_APLICACION *datosApp) {
 
     }
 
-	respuesta = appuser_send_spontaneous_report(datosApp, CAMBIO_DE_PROGRAMA, NULL);
+	send_spontaneous_report(datosApp, CAMBIO_DE_PROGRAMA);
+	/*
 	if (respuesta != NULL) {
 		publicar_mensaje_json(datosApp, respuesta, NULL);
 	}
+	*/
 	lv_update_threshold(datosApp, true);
 	// actualizar los intervalos del lcd
 	lv_update_bar_schedule(datosApp, true);
@@ -397,74 +370,42 @@ esp_err_t appuser_notify_device_ok(DATOS_APLICACION *datosApp) {
 }
 
 
-cJSON* appuser_send_spontaneous_report(DATOS_APLICACION *datosApp, enum TIPO_INFORME tipoInforme, cJSON *comandoOriginal) {
+cJSON* appuser_send_spontaneous_report(DATOS_APLICACION *datosApp, enum TIPO_INFORME tipoInforme, cJSON *spontaneous) {
 
 
-    cJSON *respuesta = NULL;
-    char valor[20];
-
-    ESP_LOGI(TAG, ""TRAZAR"appuser_send_spontaneous_report", INFOTRAZA);
-    respuesta = cabecera_espontaneo(datosApp, tipoInforme);
-    if (respuesta == NULL) {
-    	ESP_LOGE(TAG, ""TRAZAR"appuser_send_spontaneous_report:Cabecera nula", INFOTRAZA);
-    	return NULL;
-    }
     switch(tipoInforme) {
         case ARRANQUE_APLICACION:
-        	cJSON_AddStringToObject(respuesta, MNEMONIC_REPORT, report_2_mnmonic(tipoInforme));
-            cJSON_AddNumberToObject(respuesta, APP_COMAND_ESTADO_RELE, gpio_get_level(CONFIG_GPIO_PIN_RELE));
-            cJSON_AddNumberToObject(respuesta, PROGRAMMER_STATE, datosApp->datosGenerales->estadoProgramacion);
-            cJSON_AddNumberToObject(respuesta, DEVICE_STATE, datosApp->datosGenerales->estadoApp);
-            cJSON_AddNumberToObject(respuesta, TEMPERATURA, datosApp->termostato.tempActual);
+            cJSON_AddNumberToObject(spontaneous, APP_COMAND_ESTADO_RELE, gpio_get_level(CONFIG_GPIO_PIN_RELE));
+            cJSON_AddNumberToObject(spontaneous, TEMPERATURA, datosApp->termostato.tempActual);
 #ifdef CONFIG_DHT22
-            cJSON_AddNumberToObject(respuesta, HUMEDAD, datosApp->termostato.humedad);
+            cJSON_AddNumberToObject(spontaneous, HUMEDAD, datosApp->termostato.humedad);
 #endif
-            cJSON_AddNumberToObject(respuesta, UMBRAL_TEMPERATURA, datosApp->termostato.tempUmbral);
-            cJSON_AddBoolToObject(respuesta, MASTER, datosApp->termostato.master);
-            cJSON_AddStringToObject(respuesta, SENSOR_REMOTO, datosApp->termostato.sensor_remoto);
+            cJSON_AddNumberToObject(spontaneous, UMBRAL_TEMPERATURA, datosApp->termostato.tempUmbral);
+            cJSON_AddBoolToObject(spontaneous, MASTER, datosApp->termostato.master);
+            cJSON_AddStringToObject(spontaneous, SENSOR_REMOTO, datosApp->termostato.sensor_remoto);
+            break;
 
-
-            if (leer_configuracion(datosApp, FIN_UPGRADE, valor) == ESP_OK) {
-            	cJSON *upgrade;
-            	int dato;
-            	upgrade = cJSON_Parse(valor);
-            	extraer_dato_int(upgrade, FIN_UPGRADE, &dato);
-            	ESP_LOGI(TAG, ""TRAZAR" ESCRIBIMOS EL FIN DE UPGRADE", INFOTRAZA);
-            	cJSON_AddNumberToObject(respuesta, FIN_UPGRADE, dato);
-            	borrar_clave(&datosApp->handle, FIN_UPGRADE);
-            }
-                escribir_programa_actual(datosApp, respuesta);
-                codigoRespuesta(respuesta,RESP_OK);
-                break;
         case ACTUACION_RELE_LOCAL:
         case CAMBIO_DE_PROGRAMA:
         case RELE_TEMPORIZADO:
         case CAMBIO_TEMPERATURA:
         case CAMBIO_UMBRAL_TEMPERATURA:
-        	cJSON_AddStringToObject(respuesta, MNEMONIC_REPORT, report_2_mnmonic(tipoInforme));
-            cJSON_AddNumberToObject(respuesta, APP_COMAND_ESTADO_RELE, gpio_get_level(CONFIG_GPIO_PIN_RELE));
-            cJSON_AddNumberToObject(respuesta, PROGRAMMER_STATE, datosApp->datosGenerales->estadoProgramacion);
-            cJSON_AddNumberToObject(respuesta, DEVICE_STATE, datosApp->datosGenerales->estadoApp);
-            cJSON_AddNumberToObject(respuesta, TEMPERATURA, datosApp->termostato.tempActual);
+            cJSON_AddNumberToObject(spontaneous, APP_COMAND_ESTADO_RELE, gpio_get_level(CONFIG_GPIO_PIN_RELE));
+            cJSON_AddNumberToObject(spontaneous, TEMPERATURA, datosApp->termostato.tempActual);
 #ifdef CONFIG_DHT22
-            cJSON_AddNumberToObject(respuesta, HUMEDAD, datosApp->termostato.humedad);
+            cJSON_AddNumberToObject(spontaneous, HUMEDAD, datosApp->termostato.humedad);
 #endif
-            cJSON_AddNumberToObject(respuesta, UMBRAL_TEMPERATURA, datosApp->termostato.tempUmbral);
-            cJSON_AddBoolToObject(respuesta, MASTER, datosApp->termostato.master);
-            cJSON_AddStringToObject(respuesta, SENSOR_REMOTO, datosApp->termostato.sensor_remoto);
-            cJSON_AddStringToObject(respuesta, MNEMONIC_REPORT, report_2_mnmonic(tipoInforme));
-            escribir_programa_actual(datosApp, respuesta);
-            codigoRespuesta(respuesta,RESP_OK);
-            break;
+            cJSON_AddNumberToObject(spontaneous, UMBRAL_TEMPERATURA, datosApp->termostato.tempUmbral);
+            cJSON_AddBoolToObject(spontaneous, MASTER, datosApp->termostato.master);
+            cJSON_AddStringToObject(spontaneous, SENSOR_REMOTO, datosApp->termostato.sensor_remoto);
+             break;
 
         default:
-        	cJSON_AddStringToObject(respuesta, MNEMONIC_REPORT, report_2_mnmonic(tipoInforme));
-            codigoRespuesta(respuesta, RESP_NOK);
             printf("enviarReporte--> Salida no prevista\n");
             break;
     }
 
-    return respuesta;
+    return spontaneous;
 
 }
 esp_err_t appuser_load_schedule_extra_data(DATOS_APLICACION *datosApp, TIME_PROGRAM *programa_actual, cJSON *nodo) {
@@ -1054,18 +995,19 @@ void appuser_notify_event_none_schedule(DATOS_APLICACION *datosApp) {
 
 void change_threshold(void *arg) {
 
-	cJSON* informe = NULL;
+
 	DATOS_APLICACION *datosApp;
 	datosApp = (DATOS_APLICACION*) arg;
 	thermostat_action(datosApp);
 	lv_update_threshold(datosApp, true);
-	informe = appuser_send_spontaneous_report(datosApp, CAMBIO_UMBRAL_TEMPERATURA, NULL);
+	send_spontaneous_report(datosApp, CAMBIO_UMBRAL_TEMPERATURA);
+	/*
     if (informe != NULL) {
     	publicar_mensaje_json(datosApp, informe, NULL);
     } else {
     	ESP_LOGI(TAG, "El informe iba vacio");
     }
-
+*/
 
 }
 
