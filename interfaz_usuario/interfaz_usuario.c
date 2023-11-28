@@ -153,7 +153,7 @@ esp_err_t appuser_notify_application_started(DATOS_APLICACION *datosApp) {
     }
 
 
-	datosApp->termostato.tempActual = -1000;
+	//datosApp->termostato.tempActual = -1000;
 	lv_update_temperature(datosApp);
 
 	//lv_screen_thermostat(datosApp);
@@ -1145,7 +1145,7 @@ void appuser_notify_smartconfig_end(DATOS_APLICACION *datosApp) {
 
 void appuser_notify_error_smartconfig(DATOS_APLICACION *datosApp) {
 
-	ESP_LOGI(TAG, ""TRAZAR"Señalizamos el error en smartconfig", INFOTRAZA);
+	ESP_LOGE(TAG, ""TRAZAR"Senalizamos el error en smartconfig", INFOTRAZA);
 
 
 }

@@ -92,7 +92,6 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
     switch ((esp_mqtt_event_id_t)event_id) {
     case MQTT_EVENT_CONNECTED:
         ESP_LOGI(TAG, ""TRAZAR"MQTT_EVENT_CONNECTED: CONECTADO AL BROKER", INFOTRAZA);
-        appuser_notify_broker_connected_ok(&datosApp);
         msg_id = esp_mqtt_client_subscribe(client, datosApp.datosGenerales->parametrosMqtt.topics[0].subscribe,datosApp.datosGenerales->parametrosMqtt.qos);
         ESP_LOGI(TAG, ""TRAZAR"ACCION PARA SUBSCRIBIR AL TOPIC :%s msg_id=%d", INFOTRAZA, datosApp.datosGenerales->parametrosMqtt.subscribe, msg_id);
         if (datosApp.alarmas[ALARM_MQTT].estado_alarma == ALARM_ON) {

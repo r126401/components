@@ -57,6 +57,8 @@ esp_err_t conectar_dispositivo_wifi();
 void sync_app_by_ntp(DATOS_APLICACION *datosApp);
 esp_err_t get_scan_station_list();
 void wifi_task(void *arg);
+void deactivate_wifi();
+void task_smartconfig();
 
 
 #ifdef __cplusplus

@@ -113,7 +113,7 @@ char* event2mnemonic(EVENT_TYPE event) {
 		break;
 
 	case EVENT_SMARTCONFIG_START:
-		strcpy(mnemonic, "EVENT_SMARTCONFIG");
+		strcpy(mnemonic, "EVENT_SMARTCONFIG_START");
 		break;
 	case EVENT_SMARTCONFIG_END:
 		strcpy(mnemonic, "EVENT_SMARTCONFIG_END");
@@ -239,21 +239,23 @@ void process_event_wifi_ok(DATOS_APLICACION *datosApp) {
 	if (datosApp->handle_mqtt == NULL) {
 		ESP_LOGI(TAG, ""TRAZAR"INICIAMOS LA TAREA MQTT PORQUE NO EXISTE", INFOTRAZA);
 		iniciar_gestion_programacion(datosApp);
-		//sync_app_by_ntp(&datosApp);
 		crear_tarea_mqtt(datosApp);
 
 	} else {
-		ESP_LOGW(TAG, ""TRAZAR"NO INICIAMOS LA TAREA MQTT PORQUE EXISTE", INFOTRAZA);
+		ESP_LOGW(TAG, ""TRAZAR"NO INICIAMOS LA TAREA MQTT PORQUE YA EXISTE", INFOTRAZA);
 	}
 
 }
 
 void process_event_error_wifi(DATOS_APLICACION *datosApp) {
 
+	ESP_LOGE(TAG, ""TRAZAR" process_event_error_wifi: eeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", INFOTRAZA);
+
 	switch(datosApp->datosGenerales->estadoApp) {
 
 	case FACTORY:
 		ESP_LOGE(TAG, ""TRAZAR" ERROR AL PONER LA CLAVE WIFI EN SMARTCONFIG", INFOTRAZA);
+		appuser_notify_error_smartconfig(datosApp);
 		reinicio_fabrica(datosApp);
 		break;
 
@@ -389,6 +391,7 @@ void process_event_mqtt_ok(DATOS_APLICACION *datosApp) {
 
 
 	send_alarm(datosApp, ALARM_MQTT, ALARM_OFF, true);
+	appuser_notify_broker_connected_ok(&datosApp);
 
 
 
@@ -401,8 +404,6 @@ void process_event_mqtt_ok(DATOS_APLICACION *datosApp) {
 
 	default:
 		break;
-
-
 
 	}
 
@@ -477,18 +478,18 @@ void process_event_device_ok(DATOS_APLICACION *datosApp) {
 
 void process_event_smartconfig_start(DATOS_APLICACION *datosApp) {
 
+
 	switch (get_current_status_application(datosApp)) {
 
 	case FACTORY:
-		//appuser_notify_no_config(datosApp);
+		ESP_LOGI(TAG, ""TRAZAR"SMARTCONFIG START EN MODO FACTORY", INFOTRAZA);
 		conectar_dispositivo_wifi();
 		break;
 	default:
 		ESP_LOGI(TAG, ""TRAZAR" RECIBIDO EVENTO SMARTCONFIG EN ESTADO %s", INFOTRAZA, status2mnemonic(get_current_status_application(datosApp)));
-		esp_wifi_stop();
-		esp_wifi_deinit();
+		change_status_application(datosApp, FACTORY);
 		reinicio_fabrica(datosApp);
-		conectar_dispositivo_wifi();
+		task_smartconfig();
 		break;
 
 
@@ -499,6 +500,7 @@ void process_event_smartconfig_start(DATOS_APLICACION *datosApp) {
 
 void process_event_smartconfig_end(DATOS_APLICACION *datosApp) {
 
+	change_status_application(datosApp, STARTING);
 	appuser_notify_smartconfig_end(datosApp);
 
 
