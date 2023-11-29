@@ -104,7 +104,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
         ESP_LOGW(TAG, ""TRAZAR"MQTT_EVENT_DISCONNECTED: Desconectado del broker :%s msg_id=%d", INFOTRAZA, datosApp.datosGenerales->parametrosMqtt.broker, msg_id);
         //registrar_alarma(&datosApp, NOTIFICACION_ALARMA_MQTT, ALARMA_MQTT, ALARMA_ON, false);
         send_event(__func__,EVENT_ERROR_MQTT);
-        appuser_notify_broker_disconnected(&datosApp);
+
         break;
 
     case MQTT_EVENT_SUBSCRIBED:
@@ -246,7 +246,8 @@ esp_err_t establecer_conexion_mqtt(DATOS_APLICACION *datosApp) {
 
 
     ESP_LOGI(TAG, ""TRAZAR"Nos conectamos al broker %s", INFOTRAZA, mqtt_cfg.broker.address.uri);
-    appuser_notify_connecting_broker_mqtt(datosApp);
+    send_event(__func__, EVENT_CONNECT_MQTT);
+    //appuser_notify_connecting_broker_mqtt(datosApp);
     //client = esp_mqtt_client_init(&mqtt_cfg);
     //esp_mqtt_client_handle_t client = esp_mqtt_client_init(&mqtt_cfg);
     //esp_mqtt_client_register_event(client, ESP_EVENT_ANY_ID, mqtt_event_handler, client);

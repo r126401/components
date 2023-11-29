@@ -75,12 +75,20 @@ char* event2mnemonic(EVENT_TYPE event) {
 	case EVENT_NTP_OK:
 		strcpy(mnemonic, "EVENT_NTP_OK");
 		break;
+	case EVENT_GET_NTP:
+		strcpy(mnemonic, "EVENT_GET_NTP");
+		break;
+
 	case EVENT_WIFI_OK:
 		strcpy(mnemonic, "EVENT_WIFI_OK");
 		break;
 	case EVENT_MQTT_OK:
 		strcpy(mnemonic, "EVENT_MQTT_OK");
 		break;
+	case EVENT_CONNECT_MQTT:
+		strcpy(mnemonic, "EVENT_CONNECT_MQTT");
+		break;
+
 	case EVENT_CHECK_PROGRAMS:
 		strcpy(mnemonic, "EVENT_CHECK_PROGRAMS");
 		break;
@@ -152,9 +160,6 @@ void process_event_warning_device(DATOS_APLICACION *datosApp) {
 
 }
 
-void process_event_error_device(DATOS_APLICACION *datosApp) {
-
-}
 
 void process_event_error_app(DATOS_APLICACION *datosApp) {
 
@@ -304,7 +309,7 @@ void process_event_ntp_ok(DATOS_APLICACION *datosApp) {
 
 
 	}
-	appuser_sntp_ok(datosApp);
+	appuser_notify_sntp_ok(datosApp);
 }
 
 void process_event_error_ntp(DATOS_APLICACION *datosApp) {
@@ -327,7 +332,7 @@ void process_event_error_ntp(DATOS_APLICACION *datosApp) {
 
 	}
 
-	appuser_error_get_date_sntp(datosApp);
+	appuser_notify_error_sntp(datosApp);
 
 }
 
@@ -546,7 +551,23 @@ void process_event_error_upgrade(DATOS_APLICACION *datosApp) {
 
 }
 
+void process_event_error_mqtt(DATOS_APLICACION *datosApp) {
 
+	send_alarm(datosApp, ALARM_MQTT, ALARM_ON, false);
+	appuser_notify_broker_disconnected(datosApp);
+
+}
+
+void process_event_error_device(DATOS_APLICACION *datosApp) {
+
+	if (datosApp->alarmas[ALARM_DEVICE].estado_alarma == ALARM_OFF) {
+		send_alarm(datosApp, ALARM_DEVICE, ALARM_ON, true);
+	}
+	appuser_notify_error_device(datosApp);
+	change_status_application(datosApp, ERROR_APP);
+
+
+}
 
 
 
@@ -565,11 +586,7 @@ void receive_event(DATOS_APLICACION *datosApp, EVENT_APP event) {
 			appuser_notify_error_remote_device(datosApp);
 			break;
 		case EVENT_ERROR_DEVICE:
-			if (datosApp->alarmas[ALARM_DEVICE].estado_alarma == ALARM_OFF) {
-				send_alarm(datosApp, ALARM_DEVICE, ALARM_ON, true);
-			}
-			appuser_notify_error_device(datosApp);
-			change_status_application(datosApp, ERROR_APP);
+			process_event_error_device(datosApp);
 			break;
 		case EVENT_ERROR_APP:
 			ESP_LOGE(TAG, ""TRAZAR"RECIBIDO ERROR APP", INFOTRAZA);
@@ -595,7 +612,8 @@ void receive_event(DATOS_APLICACION *datosApp, EVENT_APP event) {
 			process_event_error_wifi(datosApp);
 			break;
 		case EVENT_ERROR_MQTT:
-			send_alarm(datosApp, ALARM_MQTT, ALARM_ON, false);
+			process_event_error_mqtt(datosApp);
+
 			break;
 		case EVENT_DEVICE_OK:
 			process_event_device_ok(datosApp);
@@ -611,6 +629,10 @@ void receive_event(DATOS_APLICACION *datosApp, EVENT_APP event) {
 		case EVENT_LCD_OK:
 			ESP_LOGE(TAG, ""TRAZAR"RECIBIDO LCD OK", INFOTRAZA);
 			break;
+		case EVENT_GET_NTP:
+			appuser_get_date_sntp(datosApp);
+			break;
+
 		case EVENT_NTP_OK:
 			process_event_ntp_ok(datosApp);
 			break;
@@ -619,8 +641,11 @@ void receive_event(DATOS_APLICACION *datosApp, EVENT_APP event) {
 			break;
 		case EVENT_MQTT_OK:
 			process_event_mqtt_ok(datosApp);
-
 			break;
+		case EVENT_CONNECT_MQTT:
+			appuser_notify_connecting_broker_mqtt(datosApp);
+			break;
+
 		case EVENT_CHECK_PROGRAMS:
 
 			break;

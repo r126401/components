@@ -809,72 +809,19 @@ void gestion_programas(void *arg) {
 
 			}
 		} else {
-			ESP_LOGI(TAG, ""TRAZAR"HORA: %lld. siguiente intervalo: %lld, diff: %lld", INFOTRAZA,
+			ESP_LOGD(TAG, ""TRAZAR"HORA: %lld. siguiente intervalo: %lld, diff: %lld", INFOTRAZA,
 					datosApp->datosGenerales->clock.time,
 					t_siguiente_intervalo,
 					(t_siguiente_intervalo - datosApp->datosGenerales->clock.time ));
 		}
 
 
-/*
-			if (calcular_programa_activo(datosApp, &t_siguiente_intervalo) == ACTIVE_SCHEDULE) {
-				(datosApp);
-			}
-
-		} else {
-			if (datosApp->datosGenerales->clock.time == t_siguiente_intervalo){
-				ESP_LOGI(TAG, ""TRAZAR"AQUI HABRIA CUMPLIDO EL TEMPORIZADOR", INFOTRAZA);
-				if (calcular_programa_activo(datosApp, &t_siguiente_intervalo) == NO_ACTIVE_SCHEDULE) {
-					ESP_LOGW(TAG, ""TRAZAR"NO HAY PROGRAMAS ALMACENADOS", INFOTRAZA);
-					send_event(__func__,EVENT_NONE_SCHEDULE);
-				} else {
-					ESP_LOGW(TAG, ""TRAZAR"", INFOTRAZA);
-					(datosApp);
-				}
-			} else {
-				//ESP_LOGI(TAG, ""TRAZAR"HORA: %ld. siguiente intervalo: %ld, diff: %ld", INFOTRAZA, datosApp->datosGenerales->clock.time, t_siguiente_intervalo, (t_siguiente_intervalo - datosApp->datosGenerales->clock.time ));
-
-			}
-		}
-*/
 
 		break;
 	case NO_PROGRAM:
 		ESP_LOGW(TAG, ""TRAZAR"NORMAL_SIN_PROGRAMACION", INFOTRAZA);
 		break;
-		/*
-	case NORMAL_SINCRONIZANDO:
-		ESP_LOGW(TAG, ""TRAZAR"NORMAL_SINCRONIZANDO", INFOTRAZA);
-		if (calcular_programa_activo(datosApp, &t_siguiente_intervalo) == ESP_OK) {
-			ESP_LOGI(TAG, ""TRAZAR"AJUSTE DE PROGRAMA REALIZADO", INFOTRAZA);
-			datosApp->datosGenerales->estadoApp = NORMAL_AUTO;
 
-		} else {
-			ESP_LOGE(TAG, ""TRAZAR"ERROR AL AJUSTAR LOS PROGRAMAS", INFOTRAZA);
-			if (datosApp->datosGenerales->nProgramacion > 0) {
-				datosApp->datosGenerales->estadoApp = NORMAL_AUTO;
-				appuser_notify_app_status(datosApp, NORMAL_AUTO);
-			} else {
-				datosApp->datosGenerales->estadoApp = NORMAL_SIN_PROGRAMACION;
-				appuser_notify_app_status(datosApp, NORMAL_SIN_PROGRAMACION);
-			}
-
-
-		}
-		break;
-
-	case ESPERA_FIN_ARRANQUE:
-		ESP_LOGW(TAG, ""TRAZAR"ESPERA_FIN_ARRANQUE", INFOTRAZA);
-		calcular_programa_activo(datosApp, &t_siguiente_intervalo);
-		appuser_notify_app_status(datosApp, ESPERA_FIN_ARRANQUE);
-		ESP_LOGI(TAG, ""TRAZAR" EN ESPERA DE FIN DE ARRANQUE", INFOTRAZA);
-		if (datosApp->datosGenerales->nProgramacion == 0) {
-			datosApp->datosGenerales->estadoApp = NORMAL_SIN_PROGRAMACION;
-		} else {
-			datosApp->datosGenerales->estadoApp = NORMAL_AUTO;
-		}
-		break;
-*/
 	case NORMAL_FIN_PROGRAMA_ACTIVO:
 		ESP_LOGW(TAG, ""TRAZAR"NORMAL_FIN_PROGRAMA_ACTIVO", INFOTRAZA);
 		if (calcular_programa_activo(datosApp, &t_siguiente_intervalo) == ESP_OK) {

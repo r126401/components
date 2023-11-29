@@ -138,6 +138,10 @@ esp_err_t appuser_notify_no_config(DATOS_APLICACION *datosApp) {
 
 esp_err_t appuser_notify_application_started(DATOS_APLICACION *datosApp) {
 
+/**
+ * Introduce el codigo para notificar que la aplicacion ha comenzado. Si estas en este punto,
+ * significa que ya estas conectado a la red wifi y a mqtt y por lo tanto ,puedes notificarlo a la aplicacion.
+ */
 
 	ESP_LOGI(TAG, ""TRAZAR"appuser_notify_application_started. Estado Aplicacion: %s", INFOTRAZA, status2mnemonic(datosApp->datosGenerales->estadoApp));
     if (datosApp->termostato.master == false) {
@@ -184,15 +188,15 @@ esp_err_t appuser_get_date_sntp(DATOS_APLICACION *datosApp) {
 
 	return ESP_OK;
 }
-esp_err_t appuser_error_get_date_sntp(DATOS_APLICACION *datosApp) {
+esp_err_t appuser_notify_error_sntp(DATOS_APLICACION *datosApp) {
 
-	ESP_LOGI(TAG, ""TRAZAR"appuser_error_get_date_sntp", INFOTRAZA);
+	ESP_LOGI(TAG, ""TRAZAR"appuser_notify_error_sntp", INFOTRAZA);
 	lv_update_alarm_device(datosApp);
 
 	return ESP_OK;
 }
 
-esp_err_t appuser_sntp_ok(DATOS_APLICACION *datosApp) {
+esp_err_t appuser_notify_sntp_ok(DATOS_APLICACION *datosApp) {
 
 	char fecha_actual[10] = {0};
 	time_t now;
@@ -319,7 +323,7 @@ esp_err_t appuser_start_schedule(DATOS_APLICACION *datosApp) {
 
 esp_err_t appuser_notify_error_device(DATOS_APLICACION *datosApp) {
 
-	ESP_LOGI(TAG, ""TRAZAR"appuser_notify_local_alarm", INFOTRAZA);
+	ESP_LOGI(TAG, ""TRAZAR"appuser_notify_error_device", INFOTRAZA);
 	lv_update_alarm_device(datosApp);
 
 

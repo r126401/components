@@ -108,7 +108,7 @@ esp_err_t appuser_get_date_sntp(DATOS_APLICACION *datosApp);
  * @post
  * @return
  */
-esp_err_t appuser_error_get_date_sntp(DATOS_APLICACION *datosApp);
+esp_err_t appuser_notify_error_sntp(DATOS_APLICACION *datosApp);
 /**
  * @fn esp_err_t appuser_sntp_ok()
  * @brief Llamada desde el modulo ntp para indicar que la aplicacion ha sincronizado la hora correctamente
@@ -117,7 +117,7 @@ esp_err_t appuser_error_get_date_sntp(DATOS_APLICACION *datosApp);
  * @post
  * @return
  */
-esp_err_t appuser_sntp_ok(DATOS_APLICACION *datosApp);
+esp_err_t appuser_notify_sntp_ok(DATOS_APLICACION *datosApp);
 /**
  * @fn esp_err_t appuser_arranque_aplicacion(DATOS_APLICACION*)
  * @brief Esta funcion es llamada despues de la inicializacion del dispositivo y una vez suscrito al topic para que se pueda notificar
