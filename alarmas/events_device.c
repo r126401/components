@@ -289,6 +289,11 @@ void process_event_ntp_ok(DATOS_APLICACION *datosApp) {
 
 	switch(datosApp->datosGenerales->estadoApp) {
 
+	case STARTING:
+		send_alarm(datosApp, ALARM_NTP, ALARM_OFF, true);
+		actualizar_hora(&datosApp->datosGenerales->clock);
+		datosApp->datosGenerales->estadoProgramacion = VALID_PROG;
+		break;
 
 	default:
 		send_alarm(datosApp, ALARM_NTP, ALARM_OFF, true);

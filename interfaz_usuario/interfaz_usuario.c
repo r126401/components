@@ -153,7 +153,7 @@ esp_err_t appuser_notify_application_started(DATOS_APLICACION *datosApp) {
 	lv_update_temperature(datosApp);
 
 
-	ESP_LOGI(TAG, ""TRAZAR" vamos a publicar el arranque del dispositivo", INFOTRAZA);
+	ESP_LOGW(TAG, ""TRAZAR" vamos a publicar el arranque del dispositivo", INFOTRAZA);
 	send_spontaneous_report(datosApp, STARTED);
 
 
@@ -169,8 +169,13 @@ esp_err_t appuser_notify_start_ota(DATOS_APLICACION *datosApp) {
 	ESP_LOGI(TAG, ""TRAZAR"servidor ota: %s\n, puerto: %d\n, url: %s, version %s", INFOTRAZA,
 			datosApp->datosGenerales->ota.server, datosApp->datosGenerales->ota.puerto, datosApp->datosGenerales->ota.url, datosApp->datosGenerales->ota.swVersion->version);
 
+#ifdef CONFIG_IDF_TARGET_ESP8266
+	return RESP_RESTART;
+#else
 
 	return ESP_OK;
+#endif
+
 }
 
 esp_err_t appuser_get_date_sntp(DATOS_APLICACION *datosApp) {

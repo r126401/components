@@ -177,8 +177,6 @@ void otaesp_task(void *pvParameter)
     	cJSON_AddNumberToObject(upgrade, FIN_UPGRADE, 1);
 		guardar_configuracion(datosApp, FIN_UPGRADE, cJSON_Print(upgrade));
 		send_event(__func__, EVENT_END_UPGRADE);
-    	//notificar_evento_ota(datosApp, OTA_UPGRADE_FINALIZADO);
-        //esp_restart();
     } else {
         ESP_LOGE(TAG, "Firmware upgrade failed, error: %d", ret);
         ESP_LOGE(TAG, ""TRAZAR" memoria error %ld", INFOTRAZA,esp_get_free_heap_size ());
@@ -186,8 +184,7 @@ void otaesp_task(void *pvParameter)
     	cJSON_AddNumberToObject(upgrade, FIN_UPGRADE, 0);
 		guardar_configuracion(datosApp, FIN_UPGRADE, cJSON_Print(upgrade));
 		send_event(__func__, EVENT_ERROR_UPGRADE);
-        //notificar_evento_ota(datosApp, OTA_ERROR);
-        esp_restart();
+
 
     }
 
