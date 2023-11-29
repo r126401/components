@@ -59,16 +59,16 @@ char* status2mnemonic(ESTADO_APP status) {
 	case STARTING:
 		strcpy(mnemonic, "STARTING");
 		break;
-	case NORMAL_SIN_PROGRAMACION:
+	case NO_PROGRAM:
 		strcpy(mnemonic, "NORMAL_SIN_PROGRAMACION");
 		break;
-	case UPGRADE_EN_PROGRESO:
+	case UPGRADING:
 		strcpy(mnemonic, "UPGRADE_EN_PROGRESO");
 		break;
-	case NORMAL_SINCRONIZANDO:
+	case SYNCRONIZING:
 		strcpy(mnemonic, "NORMAL_SINCRONIZANDO");
 		break;
-	case ESPERA_FIN_ARRANQUE:
+	case WAITING_END_STARTING:
 		strcpy(mnemonic, "ESPERA_FIN_ARRANQUE");
 		break;
 	case FACTORY:

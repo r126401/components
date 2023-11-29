@@ -197,7 +197,7 @@ static void on_wifi_disconnect(void *arg, esp_event_base_t event_base,
     	 appuser_notify_error_smartconfig(&datosApp);
     }
 
-    if (datosApp.datosGenerales->estadoApp != UPGRADE_EN_PROGRESO) {
+    if (datosApp.datosGenerales->estadoApp != UPGRADING) {
     	//registrar_alarma(&datosApp, NOTIFICACION_ALARMA_WIFI, ALARMA_WIFI, ALARMA_ON, false);
     	send_event(__func__,EVENT_ERROR_WIFI);
     	esp_wifi_connect();

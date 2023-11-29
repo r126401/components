@@ -854,7 +854,7 @@ esp_err_t   borrar_programa(cJSON *peticion,struct DATOS_APLICACION *datosApp, c
        datosApp->datosGenerales->programacion = borrarPrograma(datosApp->datosGenerales->programacion, &datosApp->datosGenerales->nProgramacion, nPrograma);
        if (datosApp->datosGenerales->nProgramacion == 0) {
            //datosApp->datosGenerales->estadoApp = NORMAL_SIN_PROGRAMACION;
-           appuser_notify_app_status(datosApp, NORMAL_SIN_PROGRAMACION);
+           appuser_notify_app_status(datosApp, NO_PROGRAM);
        }
        cJSON_AddNumberToObject(respuesta, DEVICE_STATE, datosApp->datosGenerales->estadoApp);
        cJSON_AddNumberToObject(respuesta, PROGRAMMER_STATE, datosApp->datosGenerales->estadoProgramacion);
@@ -1022,7 +1022,7 @@ esp_err_t   upgrade_ota(cJSON *peticion, struct DATOS_APLICACION *datosApp, cJSO
 
 
 
-   if (datosApp->datosGenerales->estadoApp != UPGRADE_EN_PROGRESO) {
+   if (datosApp->datosGenerales->estadoApp != UPGRADING) {
 	   codigoRespuesta(respuesta, RESP_OK);
 	   if (appuser_start_ota(datosApp) == RESP_RESTART) {
 		   ejecutar_reset(datosApp, NULL);
@@ -1080,6 +1080,7 @@ esp_err_t notificar_evento_alarma(DATOS_APLICACION *datosApp, int tipo_alarma, c
 	if (respuesta == NULL) {
 		return ESP_FAIL;
 	}
+	cJSON_AddStringToObject(respuesta, MNEMONIC_REPORT, report_2_mnmonic(INFORME_ALARMA));
 	cJSON_AddNumberToObject(respuesta, mnemonico_alarma, datosApp->alarmas[tipo_alarma].estado_alarma);
 	cJSON_AddNumberToObject(respuesta, FECHA_ALARMA, datosApp->alarmas[tipo_alarma].fecha_alarma);
 	publicar_mensaje_json(datosApp, respuesta, NULL);

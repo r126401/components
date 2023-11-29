@@ -166,14 +166,14 @@ void process_event_error_nvs(DATOS_APLICACION *datosApp) {
 	case STARTING:
 		esp_restart();
 		break;
-	case NORMAL_SIN_PROGRAMACION:
+	case NO_PROGRAM:
 		esp_restart();
 		break;
-	case UPGRADE_EN_PROGRESO:
+	case UPGRADING:
 		break;
-	case NORMAL_SINCRONIZANDO:
+	case SYNCRONIZING:
 		break;
-	case ESPERA_FIN_ARRANQUE:
+	case WAITING_END_STARTING:
 		break;
 	case FACTORY:
 		break;
@@ -433,7 +433,7 @@ void process_event_insert_schedule(DATOS_APLICACION *datosApp) {
 
 void process_event_upgrade_firmware(DATOS_APLICACION *datosApp) {
 
-	change_status_application(datosApp, UPGRADE_EN_PROGRESO);
+	change_status_application(datosApp, UPGRADING);
 }
 
 

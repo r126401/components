@@ -140,9 +140,6 @@ esp_err_t appuser_notify_application_started(DATOS_APLICACION *datosApp) {
 
 
 	ESP_LOGI(TAG, ""TRAZAR"appuser_notify_application_started. Estado Aplicacion: %s", INFOTRAZA, status2mnemonic(datosApp->datosGenerales->estadoApp));
-	//datosApp->datosGenerales->estadoApp = change_status_application(datosApp);
-	//ESP_LOGI(TAG, ""TRAZAR"appuser_notify_application_started. Estado final Aplicacion: %d", INFOTRAZA, datosApp->datosGenerales->estadoApp);
-
     if (datosApp->termostato.master == false) {
     	ESP_LOGI(TAG, ""TRAZAR"sensor remoto. Nos subscribimos a %s", INFOTRAZA, datosApp->datosGenerales->parametrosMqtt.topics[CONFIG_INDEX_REMOTE_TOPIC_TEMPERATURE].subscribe);
     	if (subscribe_topic(datosApp, datosApp->datosGenerales->parametrosMqtt.topics[CONFIG_INDEX_REMOTE_TOPIC_TEMPERATURE].subscribe) == ESP_OK) {
@@ -153,20 +150,12 @@ esp_err_t appuser_notify_application_started(DATOS_APLICACION *datosApp) {
     }
 
 
-	//datosApp->termostato.tempActual = -1000;
 	lv_update_temperature(datosApp);
 
-	//lv_screen_thermostat(datosApp);
+
 	ESP_LOGI(TAG, ""TRAZAR" vamos a publicar el arranque del dispositivo", INFOTRAZA);
 	send_spontaneous_report(datosApp, ARRANQUE_APLICACION);
 
-
-	/*
-	if (informe != NULL) {
-		publicar_mensaje_json(datosApp, informe, NULL);
-		ESP_LOGI(TAG, ""TRAZAR" PUBLICADO", INFOTRAZA);
-	}
-*/
 
 	return ESP_OK;
 }
@@ -224,20 +213,14 @@ esp_err_t appuser_notify_connecting_wifi(DATOS_APLICACION *datosApp) {
 
 
 	ESP_LOGI(TAG, ""TRAZAR"appuser_notify_connecting_wifi", INFOTRAZA);
-	//aplicar_temporizacion(CADENCIA_WIFI, parapadeo_led, "wifi");
-	//lv_init_thermostat(datosApp);
 
 	switch (datosApp->datosGenerales->estadoApp) {
 
 	case FACTORY:
 
-		//datosApp->datosGenerales->estadoApp = STARTING;
 		break;
 
 	case STARTING:
-		//lv_send_lcd_commands(CONNECTING_WIFI);
-		//lv_connecting_to_wifi_station(datosApp);
-		//lv_timer_handler();
 		break;
 	default:
 		break;
@@ -260,22 +243,13 @@ esp_err_t appuser_notify_wifi_connected_ok(DATOS_APLICACION *datosApp) {
 
 esp_err_t appuser_notify_error_wifi_connection(DATOS_APLICACION *datosApp) {
 
-	static uint8_t fail = 0;
+
 
 	ESP_LOGI(TAG, ""TRAZAR"appuser_notify_error_wifi_connection", INFOTRAZA);
 	lv_update_alarm_device(datosApp);
 
 	lv_configure_smartconfig();
 	lv_factory_boot();
-	/*
-	if (get_current_status_application(datosApp) == FACTORY) {
-		ESP_LOGI(TAG, ""TRAZAR"ENSEÑAMOS SMARTCONFIG", INFOTRAZA);
-		lv_configure_smartconfig();
-		lv_factory_boot();
-	}
-*/
-
-
 
 	return ESP_OK;
 
@@ -315,11 +289,6 @@ void appuser_end_schedule(DATOS_APLICACION *datosApp) {
     lv_update_threshold(datosApp, true);
     lv_update_bar_schedule(datosApp, false);
     send_spontaneous_report(datosApp, RELE_TEMPORIZADO);
-/*
-    if (respuesta != NULL) {
-    	publicar_mensaje_json(datosApp, respuesta, NULL);
-    }
-    */
     ESP_LOGI(TAG, ""TRAZAR"FIN DE LA TEMPORIZACION. SE PASA A LA TEMPERATURA DE DEFECTO", INFOTRAZA);
 
 }
@@ -336,13 +305,7 @@ esp_err_t appuser_start_schedule(DATOS_APLICACION *datosApp) {
     	relay_operation(datosApp, TEMPORIZADA, accion);
 
     }
-
 	send_spontaneous_report(datosApp, CAMBIO_DE_PROGRAMA);
-	/*
-	if (respuesta != NULL) {
-		publicar_mensaje_json(datosApp, respuesta, NULL);
-	}
-	*/
 	lv_update_threshold(datosApp, true);
 	// actualizar los intervalos del lcd
 	lv_update_bar_schedule(datosApp, true);
@@ -601,7 +564,6 @@ esp_err_t appuser_modify_local_configuration_application(cJSON *root, DATOS_APLI
 			   unsubscribe_topic(datosApp, CONFIG_INDEX_REMOTE_TOPIC_TEMPERATURE);
 		   } else {
 			   ESP_LOGE(TAG, ""TRAZAR"Se configura sensor remoto: %ld\n", INFOTRAZA, esp_get_free_heap_size());
-			   //strcpy(datosApp->termostato.sensor_remoto, cJSON_GetObjectItem(nodo, SENSOR_REMOTO)->valuestring);
 			   extraer_dato_string(nodo, SENSOR_REMOTO, datosApp->termostato.sensor_remoto);
 			   ESP_LOGE(TAG, ""TRAZAR"despues: %ld\n", INFOTRAZA, esp_get_free_heap_size());
 			   ESP_LOGW(TAG, ""TRAZAR" Se selecciona el sensor remoto a :%s", INFOTRAZA, datosApp->termostato.sensor_remoto);
@@ -610,19 +572,8 @@ esp_err_t appuser_modify_local_configuration_application(cJSON *root, DATOS_APLI
 			   cJSON_AddStringToObject(respuesta, SENSOR_REMOTO, datosApp->termostato.sensor_remoto);
 
 		   }
-/*
-		   if (datosApp->termostato.master == false) {
 
-			   extraer_dato_string(nodo,  SENSOR_REMOTO, &datosApp->termostato.sensor_remoto);
-			   cJSON_AddStringToObject(respuesta, SENSOR_REMOTO, datosApp->termostato.sensor_remoto);
-		   } else {
-			   strcpy(datosApp->termostato.sensor_remoto, "");
-		   }
-		   */
 		   cJSON_AddBoolToObject(respuesta, MASTER, datosApp->termostato.master);
-
-
-
 
 	   }
 	   codigoRespuesta(respuesta, RESP_OK);
@@ -677,23 +628,6 @@ esp_err_t appuser_reading_remote_temperature(DATOS_APLICACION *datosApp, char *m
 	return ESP_OK;
 }
 
-/*
-void nemonicos_alarmas(DATOS_APLICACION *datosApp, int i) {
-
-	ESP_LOGI(TAG, ""TRAZAR"nemonicos_alarmas", INFOTRAZA);
-	
-	strncpy(datosApp->alarmas[ALARM_DEVICE].nemonico, MNEMONIC_ALARM_DEVICE, 50);
-	strncpy(datosApp->alarmas[ALARM_APP].nemonico, MNEMONIC_ALARM_APP, 50);
-	strncpy(datosApp->alarmas[ALARM_NVS].nemonico, MNEMONIC_ALARM_NVS, 50);
-	strncpy(datosApp->alarmas[ALARM_WIFI].nemonico, MNEMONIC_ALARM_WIFI, 50);
-	strncpy(datosApp->alarmas[ALARM_NTP].nemonico, MNEMONIC_ALARM_NTP, 50);
-	strncpy(datosApp->alarmas[ALARM_MQTT].nemonico, MNEMONIC_ALARM_MQTT, 50);
-
-
-
-
-}
-*/
 
 esp_err_t appuser_notify_app_status(DATOS_APLICACION *datosApp, enum ESTADO_APP estado) {
 
@@ -715,16 +649,16 @@ esp_err_t appuser_notify_app_status(DATOS_APLICACION *datosApp, enum ESTADO_APP 
 	case STARTING:
 		strcpy(status, "STARTING");
 		break;
-	case NORMAL_SIN_PROGRAMACION:
+	case NO_PROGRAM:
 		strcpy(status, "NO ACTIVO");
 		break;
-	case UPGRADE_EN_PROGRESO:
+	case UPGRADING:
 		strcpy(status, "UPGRADE EN PROGRESO");
 		break;
-	case NORMAL_SINCRONIZANDO:
+	case SYNCRONIZING:
 		strcpy(status, "SINCRONIZANDO");
 		break;
-	case ESPERA_FIN_ARRANQUE:
+	case WAITING_END_STARTING:
 		strcpy(status, "----");
 		break;
 	case FACTORY:
@@ -824,7 +758,6 @@ void display_act_remote_relay(DATOS_APLICACION *datosApp, cJSON *respuesta) {
 
 	ESP_LOGI(TAG, ""TRAZAR"display_act_remote_relay", INFOTRAZA);
     cJSON_AddNumberToObject(respuesta, DLG_COD_RESPUESTA, DLG_OK_CODE);
-    //gpio_rele_in();
     cJSON_AddNumberToObject(respuesta, APP_COMAND_ESTADO_RELE, gpio_get_level(CONFIG_GPIO_PIN_RELE));
     cJSON_AddNumberToObject(respuesta, DEVICE_STATE, datosApp->datosGenerales->estadoApp);
     cJSON_AddNumberToObject(respuesta, PROGRAMMER_STATE, datosApp->datosGenerales->estadoProgramacion);
@@ -917,24 +850,19 @@ esp_err_t appuser_set_command_application(cJSON *peticion, int nComando, DATOS_A
 
 	ESP_LOGI(TAG, ""TRAZAR"appuser_set_command_application", INFOTRAZA);
     switch(nComando) {
-        case OPERAR_RELE:
+        case OP_RELAY:
             relay_operation(datosApp, MANUAL, INDETERMINADO);
             display_act_remote_relay(datosApp, respuesta);
             break;
 
-        case STATUS_DISPOSITIVO:
+        case STATUS_DEVICE:
             display_status_application(datosApp, respuesta);
             break;
-        case MODIFICAR_UMBRAL:
+        case MODIFY_THRESHOLD_TEMPERATURE:
         	modify_threshold_temperature(peticion, datosApp, respuesta);
-        	//modify_threshold_temperature(peticion, datosApp, respuesta);
+
         	break;
-			/*
-            if ((modificarUmbralTemperatura(peticion, datosApp, respuesta) == true)) {
-            	accionar_termostato(datosApp);
-            }
-            */
-        case SELECCIONAR_SENSOR:
+        case SELECT_SENSOR_TEMPERATURE:
         	select_temperature_sensor(peticion, datosApp, respuesta);
         	break;
 
@@ -970,7 +898,7 @@ void appuser_notify_event_none_schedule(DATOS_APLICACION *datosApp) {
 
 	switch (datosApp->datosGenerales->estadoApp) {
 
-	case NORMAL_SIN_PROGRAMACION:
+	case NO_PROGRAM:
 	case NORMAL_AUTO:
 	case NORMAL_AUTOMAN:
 		datosApp->termostato.tempUmbral = datosApp->termostato.tempUmbralDefecto;
@@ -1001,13 +929,7 @@ void change_threshold(void *arg) {
 	thermostat_action(datosApp);
 	lv_update_threshold(datosApp, true);
 	send_spontaneous_report(datosApp, CAMBIO_UMBRAL_TEMPERATURA);
-	/*
-    if (informe != NULL) {
-    	publicar_mensaje_json(datosApp, informe, NULL);
-    } else {
-    	ESP_LOGI(TAG, "El informe iba vacio");
-    }
-*/
+
 
 }
 

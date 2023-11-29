@@ -839,7 +839,7 @@ void gestion_programas(void *arg) {
 */
 
 		break;
-	case NORMAL_SIN_PROGRAMACION:
+	case NO_PROGRAM:
 		ESP_LOGW(TAG, ""TRAZAR"NORMAL_SIN_PROGRAMACION", INFOTRAZA);
 		break;
 		/*
