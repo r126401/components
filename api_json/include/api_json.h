@@ -36,21 +36,24 @@ typedef enum MESSAGE_TYPE {
 	APPLICATION_DEVICE_MESSAGE
 }MESSAGE_TYPE;
 
-typedef enum TIPO_INFORME {
-    ARRANQUE_APLICACION,
-    ACTUACION_RELE_LOCAL,
-    ACTUACION_RELE_REMOTO,
+typedef enum SPONTANEOUS_TYPE {
+    STARTED,
+    OP_LOCAL_RELAY,
+    OP_REMOTE_RELAY,
     UPGRADE_FIRMWARE_FOTA,
-    CAMBIO_DE_PROGRAMA,
-    COMANDO_APLICACION,
-    CAMBIO_TEMPERATURA,
-    ESTADO,
-    RELE_TEMPORIZADO,
-    INFORME_ALARMA,
+    START_SCHEDULE,
+    APPLICATION_COMMAND,
+    CHANGE_TEMPERATURE,
+    STATUS_REPORT,
+    END_SCHEDULE,
+    ALARM_REPORT,
     CAMBIO_UMBRAL_TEMPERATURA,
 	CAMBIO_ESTADO_APLICACION,
-    ERROR
-}TIPO_INFORME;
+    ERROR_REPORT,
+	START_UPGRADE_OTA,
+	END_UPGRADE_OTA,
+	ERROR_UPGRADE_OTA
+}SPONTANEOUS_TYPE;
 
 
 /**
@@ -58,29 +61,29 @@ typedef enum TIPO_INFORME {
  * Con la migracion a idf han quedado obsoletos algunos comandos corresondientes a funciones
  * especificar que habia que implementar.
  */
-typedef enum COMANDOS { NO_JSON = -4,
-                NO_IMPLEMENTADO = -3,
-                COMANDO_DESCONOCIDO = -2,
-                ESPONTANEO = -1,
-                CONSULTAR_CONF_APP, //ok
-                CONSULTAR_CONF_WIFI, //ok
-                CONSULTAR_CONF_MQTT, //ok
-                CONSULTAR_CONF_RELOJ,//ok
-                SINCRONIZAR_RELOJ,//ok
-                MODIFICAR_SERVIDOR_NTP, //ok
-                CONSULTAR_CONF_PROGRAMACION,//ok
-                INSERTAR_PROGRAMACION, //ok
-                MODIFICAR_PROGRAMACION,//ok
-                BORRAR_PROGRAMACION,//ok
-                EJECUTAR_RESET, //ok
-                EJECUTAR_FACTORY_RESET, // OK
-                MODIFICAR_CONF_APP,
-                MODIFICAR_CONF_WIFI, //ok
-                MODIFICAR_CONF_MQTT, //ok
-                MODIFICAR_CONF_RELOJ, // ok
-                EJECUTAR_TEST,
-                ENVIAR_STATUS,
-                ENVIAR_DATOS_APP,
+typedef enum COMMAND_TYPE { NO_JSON = -4,
+                NO_IMPLEMENTED = -3,
+                UNKNOWN_COMMAND = -2,
+                SPONTANEOUS_REPORT = -1,
+                DISPLAY_APP_CONF, //ok
+                DISPLAY_WIFI_CONF, //ok
+                DISPLAY_MQTT_CONF, //ok
+                DISPLAY_NTP_CONF,//ok
+                SYNCRHONIZE_NTP,//ok
+                MODIFY_NTP_SERVER, //ok
+                DISPLAY_SCHEDULES,//ok
+                INSERT_SCHEDULE, //ok
+                MODIFY_SCHEDULE,//ok
+                DELETE_SCHEDULE,//ok
+                RESET, //ok
+                FACTORY_RESET, // OK
+                MODIFY_APP_CONF,
+                MODIFY_WIFI_CONF, //ok
+                MODIFY_MQTT_CONF, //ok
+                MODIFY_NTP_CONF, // ok
+                TEST,
+                STATUS_APP,
+				APP_DATA,
                 GRABAR_CONFIGURACION,//ok
                 BACKUP_CONFIGURACION,//ok
                 CARGAR_BACKUP,//ok
@@ -89,17 +92,17 @@ typedef enum COMANDOS { NO_JSON = -4,
                 SUBIR_UMBRAL,
                 BAJAR_UMBRAL,
                 UPGRADE_FIRMWARE_OTA,// 26
-                ALARMAS_ACTIVAS
-}COMANDOS;
+                DISPLAY_ACTIVE_ALARMS
+}COMMAND_TYPE;
 
 /**
  * @brief Implementacion de los codigos de respuesta que e enviaran al usuario de la aplicacion.
  */
-typedef enum CODIGO_RESPUESTA {
+typedef enum ANSWER_CODE {
     RESP_OK = 200,
     RESP_NOK = 400,
 	RESP_RESTART = 100
-}CODIGO_RESPUESTA;
+}ANSWER_CODE;
 
 
 /**
@@ -141,7 +144,7 @@ typedef enum CODIGO_RESPUESTA {
   * @param codigo. Es el codigo de respuesta utilizado para insertar los elementos.
   *
   */
- void codigoRespuesta(cJSON *respuesta, enum CODIGO_RESPUESTA codigo);
+ void codigoRespuesta(cJSON *respuesta, enum ANSWER_CODE codigo);
  /**
   * @brief contenido estandard de la respuesta que se envia al usuario cuando el comando es erroneo o desconocido.
   * @param datosApp es la estructura de la aplicacion.
@@ -372,7 +375,7 @@ typedef enum CODIGO_RESPUESTA {
   * @param tipo_report
   * @return
   */
- cJSON* cabecera_espontaneo(DATOS_APLICACION *datosApp, enum TIPO_INFORME tipo_report);
+ cJSON* cabecera_espontaneo(DATOS_APLICACION *datosApp, enum SPONTANEOUS_TYPE tipo_report);
  /**
    * @fn esp_err_t ejecutar_reset(DATOS_APLICACION*, cJSON*)
   * @brief Funcion que ejecuta reset en el dispositivo
@@ -424,7 +427,8 @@ typedef enum CODIGO_RESPUESTA {
  esp_err_t notificar_evento_alarma(DATOS_APLICACION *datosApp, int tipo_alarma, char* mnemonico_alarma);
  esp_err_t visualizar_alarmas_activas(DATOS_APLICACION *datosApp, cJSON *respuesta);
  void tarea_upgrade_firmware(DATOS_APLICACION *datosApp);
- char* report_2_mnmonic(TIPO_INFORME report);
- esp_err_t send_spontaneous_report(DATOS_APLICACION *datosApp, enum TIPO_INFORME tipoInforme);
+ char* report_2_mnemonic(SPONTANEOUS_TYPE report);
+ esp_err_t send_spontaneous_report(DATOS_APLICACION *datosApp, enum SPONTANEOUS_TYPE tipoInforme);
+ esp_err_t create_header_report(DATOS_APLICACION *datosApp, cJSON *message, SPONTANEOUS_TYPE spontaneous_type);
 
 #endif /* COMPONENTS_API_JSON_INCLUDE_API_JSON_H_ */

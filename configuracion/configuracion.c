@@ -194,7 +194,7 @@ esp_err_t cargar_configuracion_defecto(DATOS_APLICACION *datosApp) {
 	error = salvar_configuracion_general(datosApp);
 	if (error != ESP_OK) {
 		ESP_LOGE(TAG, ""TRAZAR"ERROR AL SALVAR LA CONFIGURACION", INFOTRAZA);
-		return ERROR;
+		return ERROR_REPORT;
 	}
 /*
     ESP_LOGI(TAG, ""TRAZAR"fin de Carga de configuracion de defecto...", INFOTRAZA);

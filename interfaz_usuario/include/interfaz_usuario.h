@@ -150,7 +150,7 @@ void appuser_end_schedule(DATOS_APLICACION *datosApp);
  * @param datosApp
  * @return
  */
-esp_err_t appuser_start_ota(DATOS_APLICACION *datosApp);
+esp_err_t appuser_notify_start_ota(DATOS_APLICACION *datosApp);
 
 /**
  * @brief Es llamada desde la libreria conexiones cuando se comienza la tarea de smartconfig para que el usuario
@@ -313,7 +313,7 @@ void appuser_notify_schedule_events(DATOS_APLICACION *datosApp);
  * @param comandoOriginal
  * @return
  */
-cJSON* appuser_send_spontaneous_report(DATOS_APLICACION *datosApp, enum TIPO_INFORME tipoInforme, cJSON *comandoOriginal);
+cJSON* appuser_send_spontaneous_report(DATOS_APLICACION *datosApp, enum SPONTANEOUS_TYPE tipoInforme, cJSON *comandoOriginal);
 
 /**
  * @fn esp_err_t appuser_load_schedule_extra_data(DATOS_APLICACION*, TIME_PROGRAM*, cJSON*)

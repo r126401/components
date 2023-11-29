@@ -127,7 +127,19 @@ char* event2mnemonic(EVENT_TYPE event) {
 		strcpy(mnemonic, "EVENT_ERROR_SMARTCONFIG");
 		break;
 
+
+	case EVENT_END_UPGRADE:
+		strcpy(mnemonic, "EVENT_END_UPGRADE");
+		break;
+
+
+	case EVENT_ERROR_UPGRADE:
+		strcpy(mnemonic, "EVENT_END_UPGRADE");
+		break;
+
 	}
+
+
 
 	return mnemonic;
 
@@ -391,7 +403,7 @@ void process_event_mqtt_ok(DATOS_APLICACION *datosApp) {
 
 
 	send_alarm(datosApp, ALARM_MQTT, ALARM_OFF, true);
-	appuser_notify_broker_connected_ok(&datosApp);
+	appuser_notify_broker_connected_ok(datosApp);
 
 
 
@@ -434,6 +446,8 @@ void process_event_insert_schedule(DATOS_APLICACION *datosApp) {
 void process_event_upgrade_firmware(DATOS_APLICACION *datosApp) {
 
 	change_status_application(datosApp, UPGRADING);
+	appuser_notify_start_ota(datosApp);
+	send_spontaneous_report(datosApp, START_UPGRADE_OTA);
 }
 
 
@@ -510,6 +524,24 @@ void process_event_error_smartconfig(DATOS_APLICACION *datosApp) {
 
 	appuser_notify_error_smartconfig(datosApp);
 }
+
+void process_event_end_upgrade(DATOS_APLICACION *datosApp) {
+
+	//notificar_evento_ota(datosApp, OTA_UPGRADE_FINALIZADO);
+	send_spontaneous_report(datosApp, END_UPGRADE_OTA);
+	esp_restart();
+
+}
+
+
+void process_event_error_upgrade(DATOS_APLICACION *datosApp) {
+
+	send_spontaneous_report(datosApp, ERROR_UPGRADE_OTA);
+	esp_restart();
+
+}
+
+
 
 
 
@@ -611,6 +643,13 @@ void receive_event(DATOS_APLICACION *datosApp, EVENT_APP event) {
 		case EVENT_UPGRADE_FIRMWARE:
 			process_event_upgrade_firmware(datosApp);
 			break;
+		case EVENT_END_UPGRADE:
+			process_event_end_upgrade(datosApp);
+			break;
+		case EVENT_ERROR_UPGRADE:
+			process_event_error_upgrade(datosApp);
+			break;
+
 		case EVENT_REMOTE_DEVICE_OK:
 			if (get_status_alarm(datosApp, ALARM_REMOTE_DEVICE)) {
 				send_alarm(datosApp, ALARM_REMOTE_DEVICE, ALARM_OFF, true);

@@ -34,52 +34,63 @@ extern xQueueHandle cola_mqtt;
 esp_timer_handle_t tiempo;
 
 
-char* report_2_mnmonic(TIPO_INFORME report) {
+char* report_2_mnemonic(SPONTANEOUS_TYPE report) {
 
 	static char mnemonic[50] = {0};
 
 
 	switch (report) {
 
-	case ARRANQUE_APLICACION:
+	case STARTED:
 		strcpy(mnemonic, "START APPLICATION");
 	break;
-	case ACTUACION_RELE_LOCAL:
+	case OP_LOCAL_RELAY:
 		strcpy(mnemonic, "ACTION LOCAL RELAY");
 	break;
-	case ACTUACION_RELE_REMOTO:
+	case OP_REMOTE_RELAY:
 		strcpy(mnemonic, "ACTION REMOTE RELAY");
 	break;
 	case UPGRADE_FIRMWARE_FOTA:
 		strcpy(mnemonic, "UPGRADE FIRMWARE");
 	break;
-	case CAMBIO_DE_PROGRAMA:
-		strcpy(mnemonic, "CHANGE SCHEDULE");
+	case START_SCHEDULE:
+		strcpy(mnemonic, "START SCHEDULE");
 	break;
-	case COMANDO_APLICACION:
+	case APPLICATION_COMMAND:
 		strcpy(mnemonic, "APPLICATION COMMAND");
 	break;
-	case CAMBIO_TEMPERATURA:
+	case CHANGE_TEMPERATURE:
 		strcpy(mnemonic, "CHANGE TEMPERATURE");
 	break;
-	case ESTADO:
-		strcpy(mnemonic, "STATUS");
+	case STATUS_REPORT:
+		strcpy(mnemonic, "STATUS REPORT");
 	break;
-	case RELE_TEMPORIZADO:
-		strcpy(mnemonic, "TIMER RELAY");
+	case END_SCHEDULE:
+		strcpy(mnemonic, "END SCHEDULE");
 	break;
-	case INFORME_ALARMA:
+	case ALARM_REPORT:
 		strcpy(mnemonic, "ALARM REPORT");
 	break;
 	case CAMBIO_UMBRAL_TEMPERATURA:
 		strcpy(mnemonic, "CHANGE THRESHOLD TEMPERATURE");
 	break;
 	case CAMBIO_ESTADO_APLICACION:
-		strcpy(mnemonic, "CHANGE STATUS APPLICATION");
+		strcpy(mnemonic, "CHANGE THRESHOLD CAMBIO ESTADO_APLICACION");
 	break;
-	case ERROR:
+
+	case ERROR_REPORT:
 		strcpy(mnemonic, "ERROR");
 	break;
+	case START_UPGRADE_OTA:
+		strcpy(mnemonic, "START UPGRADE OTA");
+		break;
+	case END_UPGRADE_OTA:
+		strcpy(mnemonic, "END UPGRADE OTA");
+		break;
+	case ERROR_UPGRADE_OTA:
+		strcpy(mnemonic, "ERROR UPGRADE OTA");
+		break;
+
 
 
 	}
@@ -101,7 +112,7 @@ esp_err_t   comandoDesconocido(DATOS_APLICACION *datosApp, cJSON *respuesta) {
 
 
 
-void   codigoRespuesta(cJSON *respuesta, enum CODIGO_RESPUESTA codigo) {
+void   codigoRespuesta(cJSON *respuesta, enum ANSWER_CODE codigo) {
 
     cJSON_AddNumberToObject(respuesta, DLG_COD_RESPUESTA, codigo);
     return;
@@ -116,7 +127,7 @@ cJSON*  analizar_comando(DATOS_APLICACION *datosApp, char* info) {
     cJSON *idComando = NULL;
     cJSON *peticion = NULL;
     cJSON *respuesta = NULL;
-    enum COMANDOS com;
+    enum COMMAND_TYPE com;
     //time_t t_siguiente_intervalo;
     //1.- Analizar la peticion y vemos que comando nos piden.
 
@@ -128,11 +139,11 @@ cJSON*  analizar_comando(DATOS_APLICACION *datosApp, char* info) {
     } else {
         idComando = cJSON_GetObjectItem(peticion, COMANDO);
         if (idComando == NULL) {
-            com = COMANDO_DESCONOCIDO;
+            com = UNKNOWN_COMMAND;
         } else {
             idComando = cJSON_GetObjectItem(idComando, DLG_COMANDO);
             if (idComando == NULL) {
-                com = NO_IMPLEMENTADO;
+                com = NO_IMPLEMENTED;
             } else {
                 com = idComando->valueint;
             }
@@ -153,47 +164,47 @@ cJSON*  analizar_comando(DATOS_APLICACION *datosApp, char* info) {
 
         //4.- En funcion del comando ejecutamos una cosa u otra
         switch (com) {
-            case CONSULTAR_CONF_APP: //ok--- con cabecera
+            case DISPLAY_APP_CONF: //ok--- con cabecera
             	visualizar_datos_aplicacion(datosApp, respuesta);
                 //AppJsonComun(datosApp, respuesta);
                 break;
-            case CONSULTAR_CONF_MQTT: //probada ok--- con cabecera
+            case DISPLAY_MQTT_CONF: //probada ok--- con cabecera
                  //Visualizar la configuracion mqtt de aplicacion
             	visualizar_configuracion_mqtt(datosApp, respuesta);
             	break;
 
-            case CONSULTAR_CONF_WIFI: // probado ok--- con cabecera
+            case DISPLAY_WIFI_CONF: // probado ok--- con cabecera
                 //Visualizar la configuracion wifi
                 visualizar_datos_wifi(datosApp, respuesta);
                 break;
-            case CONSULTAR_CONF_PROGRAMACION: // probado ok--- con cabecera
+            case DISPLAY_SCHEDULES: // probado ok--- con cabecera
                 visualizar_programas(datosApp, respuesta);
                 break;
-            case INSERTAR_PROGRAMACION: // probado ok-- con construirCabecera
+            case INSERT_SCHEDULE: // probado ok-- con construirCabecera
             	insertar_nuevo_programa(peticion, datosApp, respuesta);
             	//calcular_programa_activo(datosApp, &t_siguiente_intervalo);
                 break;
-            case BORRAR_PROGRAMACION: // probado ok-- con construirCabecera
+            case DELETE_SCHEDULE: // probado ok-- con construirCabecera
                  borrar_programa(peticion, datosApp, respuesta);
                  //calcular_programa_activo(datosApp, &t_siguiente_intervalo);
                  break;
-            case MODIFICAR_PROGRAMACION: // probado ok-- con construirCabecera
+            case MODIFY_SCHEDULE: // probado ok-- con construirCabecera
             	modificar_programa(peticion, datosApp, respuesta);
             	//calcular_programa_activo(datosApp, &t_siguiente_intervalo);
                 break;
-            case EJECUTAR_RESET: // probado ok-- con cabecera
+            case RESET: // probado ok-- con cabecera
                 ejecutar_reset(datosApp, respuesta);
                 break;
-            case EJECUTAR_FACTORY_RESET: // probado ok-- con cabecera
+            case FACTORY_RESET: // probado ok-- con cabecera
                 ejecutar_factory_reset(datosApp, respuesta);
                 break;
             case UPGRADE_FIRMWARE_OTA:
                 upgrade_ota(peticion, datosApp, respuesta);
                 break;
-            case ALARMAS_ACTIVAS:
+            case DISPLAY_ACTIVE_ALARMS:
             	visualizar_alarmas_activas(datosApp, respuesta);
             	break;
-            case MODIFICAR_CONF_APP:
+            case MODIFY_APP_CONF:
             	modificar_configuracion_app(peticion, datosApp, respuesta);
                 break;
 
@@ -946,7 +957,7 @@ esp_err_t   modificar_programa(cJSON *peticion,struct DATOS_APLICACION *datosApp
     return ESP_OK;
 }
 
-cJSON*   cabecera_espontaneo(DATOS_APLICACION *datosApp, enum TIPO_INFORME tipo_report) {
+cJSON*   cabecera_espontaneo(DATOS_APLICACION *datosApp, enum SPONTANEOUS_TYPE tipo_report) {
 
     cJSON *respuesta;
     respuesta = cabeceraGeneral(datosApp);
@@ -1000,6 +1011,19 @@ esp_err_t   ejecutar_factory_reset(DATOS_APLICACION *datosApp, cJSON *respuesta)
     return ESP_OK;
 }
 
+bool is_esp8266() {
+
+#ifdef CONFIG_IDF_TARGET_ESP8266
+	return true;
+#else
+	return false;
+#endif
+
+
+}
+
+
+
 esp_err_t   upgrade_ota(cJSON *peticion, struct DATOS_APLICACION *datosApp, cJSON *respuesta) {
 
 
@@ -1024,15 +1048,11 @@ esp_err_t   upgrade_ota(cJSON *peticion, struct DATOS_APLICACION *datosApp, cJSO
 
    if (datosApp->datosGenerales->estadoApp != UPGRADING) {
 	   codigoRespuesta(respuesta, RESP_OK);
-	   if (appuser_start_ota(datosApp) == RESP_RESTART) {
+	   if (is_esp8266()) {
 		   ejecutar_reset(datosApp, NULL);
-
-	   }else {
-		   //parar_gestion_programacion(datosApp);
+	   } else {
 		   tarea_upgrade_firmware(datosApp);
 	   }
-
-
    } else {
 	   codigoRespuesta(respuesta, RESP_NOK);
    }
@@ -1076,11 +1096,11 @@ esp_err_t notificar_evento_alarma(DATOS_APLICACION *datosApp, int tipo_alarma, c
 
 	cJSON *respuesta;
 
-	respuesta = cabecera_espontaneo(datosApp, INFORME_ALARMA);
+	respuesta = cabecera_espontaneo(datosApp, ALARM_REPORT);
 	if (respuesta == NULL) {
 		return ESP_FAIL;
 	}
-	cJSON_AddStringToObject(respuesta, MNEMONIC_REPORT, report_2_mnmonic(INFORME_ALARMA));
+	cJSON_AddStringToObject(respuesta, MNEMONIC_REPORT, report_2_mnemonic(ALARM_REPORT));
 	cJSON_AddNumberToObject(respuesta, mnemonico_alarma, datosApp->alarmas[tipo_alarma].estado_alarma);
 	cJSON_AddNumberToObject(respuesta, FECHA_ALARMA, datosApp->alarmas[tipo_alarma].fecha_alarma);
 	publicar_mensaje_json(datosApp, respuesta, NULL);
@@ -1106,7 +1126,29 @@ esp_err_t   modificar_configuracion_app(cJSON *peticion,struct DATOS_APLICACION 
 }
 
 
-esp_err_t send_spontaneous_report(DATOS_APLICACION *datosApp, enum TIPO_INFORME tipoInforme) {
+
+
+esp_err_t create_header_report(DATOS_APLICACION *datosApp, cJSON *message, SPONTANEOUS_TYPE spontaneous_type) {
+
+	ESP_LOGI(TAG, ""TRAZAR"create_header_report", INFOTRAZA);
+
+
+    message = cabeceraGeneral(datosApp);
+    if (message == NULL) {
+    	ESP_LOGE(TAG, ""TRAZAR"CABECERA NULA", INFOTRAZA);
+    	return ESP_FAIL;
+    } else {
+    	cJSON_AddNumberToObject(message, TIPO_REPORT, spontaneous_type);
+    }
+
+    return ESP_OK;
+
+}
+
+
+
+
+esp_err_t send_spontaneous_report(DATOS_APLICACION *datosApp, enum SPONTANEOUS_TYPE tipoInforme) {
 
 
     cJSON *respuesta = NULL;
@@ -1118,9 +1160,10 @@ esp_err_t send_spontaneous_report(DATOS_APLICACION *datosApp, enum TIPO_INFORME 
     	ESP_LOGE(TAG, ""TRAZAR"send_spontaneous_report:Cabecera nula", INFOTRAZA);
     	return ESP_FAIL;
     }
+    cJSON_AddStringToObject(respuesta, MNEMONIC_REPORT, report_2_mnemonic(tipoInforme));
     switch(tipoInforme) {
-        case ARRANQUE_APLICACION:
-        	cJSON_AddStringToObject(respuesta, MNEMONIC_REPORT, report_2_mnmonic(tipoInforme));
+        case STARTED:
+
             cJSON_AddNumberToObject(respuesta, PROGRAMMER_STATE, datosApp->datosGenerales->estadoProgramacion);
             cJSON_AddNumberToObject(respuesta, DEVICE_STATE, datosApp->datosGenerales->estadoApp);
             if (leer_configuracion(datosApp, FIN_UPGRADE, valor) == ESP_OK) {
@@ -1135,20 +1178,30 @@ esp_err_t send_spontaneous_report(DATOS_APLICACION *datosApp, enum TIPO_INFORME 
                 escribir_programa_actual(datosApp, respuesta);
                 codigoRespuesta(respuesta,RESP_OK);
                 break;
-        case ACTUACION_RELE_LOCAL:
-        case CAMBIO_DE_PROGRAMA:
-        case RELE_TEMPORIZADO:
-        case CAMBIO_TEMPERATURA:
+        case OP_LOCAL_RELAY:
+        case START_SCHEDULE:
+        case END_SCHEDULE:
+        case CHANGE_TEMPERATURE:
         case CAMBIO_UMBRAL_TEMPERATURA:
-        	cJSON_AddStringToObject(respuesta, MNEMONIC_REPORT, report_2_mnmonic(tipoInforme));
+        	//cJSON_AddStringToObject(respuesta, MNEMONIC_REPORT, report_2_mnemonic(tipoInforme));
             cJSON_AddNumberToObject(respuesta, PROGRAMMER_STATE, datosApp->datosGenerales->estadoProgramacion);
             cJSON_AddNumberToObject(respuesta, DEVICE_STATE, datosApp->datosGenerales->estadoApp);
             escribir_programa_actual(datosApp, respuesta);
             codigoRespuesta(respuesta,RESP_OK);
             break;
+        case START_UPGRADE_OTA:
+        	//cJSON_AddStringToObject(respuesta, MNEMONIC_REPORT, report_2_mnemonic(tipoInforme));
+        	codigoRespuesta(respuesta,RESP_OK);
+        	break;
+        case END_UPGRADE_OTA:
+        	codigoRespuesta(respuesta,RESP_OK);
+        	break;
+        case ERROR_UPGRADE_OTA:
+        	codigoRespuesta(respuesta,RESP_NOK);
+        	break;
 
         default:
-        	cJSON_AddStringToObject(respuesta, MNEMONIC_REPORT, report_2_mnmonic(tipoInforme));
+        	cJSON_AddStringToObject(respuesta, MNEMONIC_REPORT, report_2_mnemonic(tipoInforme));
             codigoRespuesta(respuesta, RESP_NOK);
             printf("enviarReporte--> Salida no prevista\n");
             break;
@@ -1160,6 +1213,23 @@ esp_err_t send_spontaneous_report(DATOS_APLICACION *datosApp, enum TIPO_INFORME 
 		publicar_mensaje_json(datosApp, respuesta, NULL);
 		ESP_LOGI(TAG, ""TRAZAR" PUBLICADO DESDE API_JSON", INFOTRAZA);
 	}
+
+
+	return ESP_OK;
+
+}
+
+esp_err_t send_start_upgrade_event(DATOS_APLICACION *datosApp, cJSON *message) {
+
+
+	if (create_header_report(datosApp, message, START_UPGRADE_OTA) == ESP_FAIL) {
+		ESP_LOGE(TAG, ""TRAZAR"ERROR AL ENVIAR EL EVENTO SEND_START_OTA", INFOTRAZA);
+		return ESP_FAIL;
+	}
+	cJSON_AddStringToObject(message, MNEMONIC_REPORT, report_2_mnemonic(START_UPGRADE_OTA));
+	codigoRespuesta(message, RESP_OK);
+
+
 
 
 	return ESP_OK;

@@ -96,15 +96,15 @@ char* local_event_2_mnemonic(EVENT_DEVICE event) {
 
 esp_err_t appuser_set_default_config(DATOS_APLICACION *datosApp) {
 
-	ESP_LOGI(TAG, ""TRAZAR"appuser_set_default_config", INFOTRAZA);
-	if (datosApp->datosGenerales->tipoDispositivo == DESCONOCIDO) {
-		datosApp->datosGenerales->tipoDispositivo = CRONOTERMOSTATO;
-	}
+
 
     //Escribe aqui el codigo de inicializacion por defecto de la aplicacion.
 	// Esta funcion es llamada desde el componente configuracion defaultConfig.
 	// Aqui puedes establecer los valores por defecto para tu aplicacion.
-
+	ESP_LOGI(TAG, ""TRAZAR"appuser_set_default_config", INFOTRAZA);
+	if (datosApp->datosGenerales->tipoDispositivo == DESCONOCIDO) {
+		datosApp->datosGenerales->tipoDispositivo = CRONOTERMOSTATO;
+	}
     datosApp->termostato.reintentosLectura = 5;
     datosApp->termostato.retry_interval = 3;
     datosApp->termostato.margenTemperatura = 0.5;
@@ -154,19 +154,18 @@ esp_err_t appuser_notify_application_started(DATOS_APLICACION *datosApp) {
 
 
 	ESP_LOGI(TAG, ""TRAZAR" vamos a publicar el arranque del dispositivo", INFOTRAZA);
-	send_spontaneous_report(datosApp, ARRANQUE_APLICACION);
+	send_spontaneous_report(datosApp, STARTED);
 
 
 	return ESP_OK;
 }
 
-esp_err_t appuser_start_ota(DATOS_APLICACION *datosApp) {
+esp_err_t appuser_notify_start_ota(DATOS_APLICACION *datosApp) {
 
 
+	//Para esp8266 se ha de devolver RESP_RESTART;
 	ESP_LOGI(TAG, ""TRAZAR"appuser_start_ota", INFOTRAZA);
-	//datosApp->datosGenerales->ota.puerto = 80;
 	ESP_LOGI(TAG, ""TRAZAR"PUERTO: %d", INFOTRAZA, datosApp->datosGenerales->ota.puerto);
-	//ESP_LOGI(TAG, ""TRAZAR"PUERTO OTRA VEZ: %d", datosApp->datosGenerales->ota.puerto);
 	ESP_LOGI(TAG, ""TRAZAR"servidor ota: %s\n, puerto: %d\n, url: %s, version %s", INFOTRAZA,
 			datosApp->datosGenerales->ota.server, datosApp->datosGenerales->ota.puerto, datosApp->datosGenerales->ota.url, datosApp->datosGenerales->ota.swVersion->version);
 
@@ -288,7 +287,7 @@ void appuser_end_schedule(DATOS_APLICACION *datosApp) {
     datosApp->termostato.tempUmbral = datosApp->termostato.tempUmbralDefecto;
     lv_update_threshold(datosApp, true);
     lv_update_bar_schedule(datosApp, false);
-    send_spontaneous_report(datosApp, RELE_TEMPORIZADO);
+    send_spontaneous_report(datosApp, END_SCHEDULE);
     ESP_LOGI(TAG, ""TRAZAR"FIN DE LA TEMPORIZACION. SE PASA A LA TEMPERATURA DE DEFECTO", INFOTRAZA);
 
 }
@@ -305,7 +304,7 @@ esp_err_t appuser_start_schedule(DATOS_APLICACION *datosApp) {
     	relay_operation(datosApp, TEMPORIZADA, accion);
 
     }
-	send_spontaneous_report(datosApp, CAMBIO_DE_PROGRAMA);
+	send_spontaneous_report(datosApp, START_SCHEDULE);
 	lv_update_threshold(datosApp, true);
 	// actualizar los intervalos del lcd
 	lv_update_bar_schedule(datosApp, true);
@@ -333,11 +332,11 @@ esp_err_t appuser_notify_device_ok(DATOS_APLICACION *datosApp) {
 }
 
 
-cJSON* appuser_send_spontaneous_report(DATOS_APLICACION *datosApp, enum TIPO_INFORME tipoInforme, cJSON *spontaneous) {
+cJSON* appuser_send_spontaneous_report(DATOS_APLICACION *datosApp, enum SPONTANEOUS_TYPE tipoInforme, cJSON *spontaneous) {
 
 
     switch(tipoInforme) {
-        case ARRANQUE_APLICACION:
+        case STARTED:
             cJSON_AddNumberToObject(spontaneous, APP_COMAND_ESTADO_RELE, gpio_get_level(CONFIG_GPIO_PIN_RELE));
             cJSON_AddNumberToObject(spontaneous, TEMPERATURA, datosApp->termostato.tempActual);
 #ifdef CONFIG_DHT22
@@ -348,10 +347,10 @@ cJSON* appuser_send_spontaneous_report(DATOS_APLICACION *datosApp, enum TIPO_INF
             cJSON_AddStringToObject(spontaneous, SENSOR_REMOTO, datosApp->termostato.sensor_remoto);
             break;
 
-        case ACTUACION_RELE_LOCAL:
-        case CAMBIO_DE_PROGRAMA:
-        case RELE_TEMPORIZADO:
-        case CAMBIO_TEMPERATURA:
+        case OP_LOCAL_RELAY:
+        case START_SCHEDULE:
+        case END_SCHEDULE:
+        case CHANGE_TEMPERATURE:
         case CAMBIO_UMBRAL_TEMPERATURA:
             cJSON_AddNumberToObject(spontaneous, APP_COMAND_ESTADO_RELE, gpio_get_level(CONFIG_GPIO_PIN_RELE));
             cJSON_AddNumberToObject(spontaneous, TEMPERATURA, datosApp->termostato.tempActual);
@@ -362,6 +361,8 @@ cJSON* appuser_send_spontaneous_report(DATOS_APLICACION *datosApp, enum TIPO_INF
             cJSON_AddBoolToObject(spontaneous, MASTER, datosApp->termostato.master);
             cJSON_AddStringToObject(spontaneous, SENSOR_REMOTO, datosApp->termostato.sensor_remoto);
              break;
+        case START_UPGRADE_OTA:
+        	break;
 
         default:
             printf("enviarReporte--> Salida no prevista\n");
