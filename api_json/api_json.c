@@ -978,10 +978,6 @@ void restart_normal(void* parametros) {
 
 esp_err_t   ejecutar_reset(DATOS_APLICACION *datosApp, cJSON *respuesta) {
 
-    //static os_timer_t restart;
-
-    esp_timer_create_args_t temporizador;
-
 
     const esp_timer_create_args_t timer_reset_args = {
     		.callback = &restart_normal,
@@ -989,9 +985,7 @@ esp_err_t   ejecutar_reset(DATOS_APLICACION *datosApp, cJSON *respuesta) {
 			.arg = (void*) datosApp
     };
 
-    temporizador.callback = &restart_normal;
-    temporizador.arg = NULL;
-    temporizador.name = "restart";
+
     esp_timer_create(&timer_reset_args, &tiempo);
     esp_timer_start_once(tiempo, 3000000);
     if (respuesta != NULL) {

@@ -143,7 +143,7 @@ static void manejador_eventos_smart(void* arg, esp_event_base_t event_base,
 
 
 
-const char * get_my_id(void)
+char * get_my_id(void)
 {
    // Use MAC address for Station as unique ID
    static char my_id[13];

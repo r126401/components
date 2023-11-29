@@ -48,7 +48,7 @@ extern "C" {
  * @post
  * @return
  */
-const char * get_my_id(void);
+char * get_my_id(void);
 //void sc_callback(smartconfig_status_t status, void *pdata);
 void tarea_smartconfig(void * parm);
 esp_err_t establecer_conexion_wifi(void);
