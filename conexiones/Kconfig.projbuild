@@ -7,7 +7,12 @@ config DEFAULT_SCAN_LIST_SIZE
 		Define size scan list wifi
 		
 
-		
+config UINT32_FORMAT
+	string "Cadena para el formato de ESP_LOG cuando se formatea un long"
+	default "%ld"
+	help
+		Define la cadena que se pone	
+	
 
 
 
