@@ -150,15 +150,15 @@ cJSON*  analizar_comando(DATOS_APLICACION *datosApp, char* info) {
         }
 
     }
-    ESP_LOGW(TAG, ""TRAZAR"Memoria libre(3) Se ha creado el objeto peticion: "CONFIG_UINT32_ESPLOG_FORMAT"\n", INFOTRAZA, esp_get_free_heap_size());
+    ESP_LOGW(TAG, ""TRAZAR"Memoria libre(3) Se ha creado el objeto peticion: "CONFIG_UINT32_FORMAT"\n", INFOTRAZA, esp_get_free_heap_size());
     respuesta = cabeceraRespuestaComando(datosApp, peticion);
     if (respuesta == NULL) {
     	return NULL;
     }
-    ESP_LOGW(TAG, ""TRAZAR"Memoria libre(4) Se ha creado la respuesta: "CONFIG_UINT32_ESPLOG_FORMAT"\n", INFOTRAZA, esp_get_free_heap_size());
+    ESP_LOGW(TAG, ""TRAZAR"Memoria libre(4) Se ha creado la respuesta: "CONFIG_UINT32_FORMAT"\n", INFOTRAZA, esp_get_free_heap_size());
     if (com >= 50) {
         appuser_set_command_application(peticion, idComando->valueint, datosApp, respuesta);
-        ESP_LOGW(TAG, ""TRAZAR"Memoria libre(5). Se aumentan los campos de la cabecera: "CONFIG_UINT32_ESPLOG_FORMAT"\n", INFOTRAZA, esp_get_free_heap_size());
+        ESP_LOGW(TAG, ""TRAZAR"Memoria libre(5). Se aumentan los campos de la cabecera: "CONFIG_UINT32_FORMAT"\n", INFOTRAZA, esp_get_free_heap_size());
         printf("analizarComando-->comando de aplicacion ejecutado!!\n");
     } else {
 
@@ -218,7 +218,7 @@ cJSON*  analizar_comando(DATOS_APLICACION *datosApp, char* info) {
 
 
     cJSON_Delete(peticion);
-    ESP_LOGW(TAG, ""TRAZAR"Memoria libre(6) Se libera el json de la peticion: "CONFIG_UINT32_ESPLOG_FORMAT"\n", INFOTRAZA, esp_get_free_heap_size());
+    ESP_LOGW(TAG, ""TRAZAR"Memoria libre(6) Se libera el json de la peticion: "CONFIG_UINT32_FORMAT"\n", INFOTRAZA, esp_get_free_heap_size());
 	return respuesta;
 }
 
@@ -264,7 +264,7 @@ void process_application_message(DATOS_APLICACION *datosApp, char* peticion) {
 	 char *respuesta = NULL;
 	 COLA_MQTT cola;
 
-	 ESP_LOGE(TAG, ""TRAZAR"process_application_message: Memoria libre(1): "CONFIG_UINT32_ESPLOG_FORMAT"\n", INFOTRAZA, esp_get_free_heap_size());
+	 ESP_LOGE(TAG, ""TRAZAR"process_application_message: Memoria libre(1): "CONFIG_UINT32_FORMAT"\n", INFOTRAZA, esp_get_free_heap_size());
 
 	 root = analizar_comando(datosApp, peticion);
     if (root != NULL) {
@@ -284,7 +284,7 @@ void process_application_message(DATOS_APLICACION *datosApp, char* peticion) {
     free(respuesta);
 	 free(peticion);
 	 cJSON_Delete(root);
-	 ESP_LOGE(TAG, ""TRAZAR"Memoria despues: "CONFIG_UINT32_ESPLOG_FORMAT"\n", INFOTRAZA, esp_get_free_heap_size());
+	 ESP_LOGE(TAG, ""TRAZAR"Memoria despues: "CONFIG_UINT32_FORMAT"\n", INFOTRAZA, esp_get_free_heap_size());
 
 
 }
@@ -318,7 +318,7 @@ void process_unknown_message(DATOS_APLICACION *datosApp, char *message) {
 	 MESSAGE_TYPE message_type = UNKNOWN_MESSAGE;
 	 int index;
 
-	 ESP_LOGE(TAG, ""TRAZAR"Memoria libre(1): "CONFIG_UINT32_ESPLOG_FORMAT"\n", INFOTRAZA, esp_get_free_heap_size());
+	 ESP_LOGE(TAG, ""TRAZAR"Memoria libre(1): "CONFIG_UINT32_FORMAT"\n", INFOTRAZA, esp_get_free_heap_size());
 
 	 if(datosApp->handle_mqtt->data_len == 0) {
 		 ESP_LOGW(TAG, ""TRAZAR"MENSAJE VACIO", INFOTRAZA);
@@ -368,7 +368,7 @@ void process_unknown_message(DATOS_APLICACION *datosApp, char *message) {
      free(respuesta);
 	 free(peticion);
 	 cJSON_Delete(root);
-	 ESP_LOGE(TAG, ""TRAZAR"Memoria despues: "CONFIG_UINT32_ESPLOG_FORMAT"\n", INFOTRAZA, esp_get_free_heap_size());
+	 ESP_LOGE(TAG, ""TRAZAR"Memoria despues: "CONFIG_UINT32_FORMAT"\n", INFOTRAZA, esp_get_free_heap_size());
 	 */
  }
 
@@ -525,7 +525,7 @@ void process_unknown_message(DATOS_APLICACION *datosApp, char *message) {
      campo = cJSON_GetObjectItem(nodo, nombre_campo);
      if((campo != NULL) && (campo->type == cJSON_Number)) {
         *dato = (uint32_t) campo->valueint;
-        ESP_LOGI(TAG, ""TRAZAR"extraer_dato_int--> campo %s = "CONFIG_UINT32_ESPLOG_FORMAT"\n", INFOTRAZA, nombre_campo, *dato);
+        ESP_LOGI(TAG, ""TRAZAR"extraer_dato_int--> campo %s = "CONFIG_UINT32_FORMAT"\n", INFOTRAZA, nombre_campo, *dato);
         return ESP_OK;
      } else {
          ESP_LOGW(TAG, ""TRAZAR"extraer_dato_int-->campo %s no aparece\n", INFOTRAZA, nombre_campo);

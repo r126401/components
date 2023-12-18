@@ -36,7 +36,7 @@ esp_err_t inicializar_nvs(char* namespace, nvs_handle *handle) {
     // Se abre el espacio de nombres
     error = nvs_open(namespace, NVS_READWRITE, handle);
     if (error == ESP_OK) {
-    	ESP_LOGI(TAG, ""TRAZAR"NVS abierto correctamente. handle = "CONFIG_UINT32_ESPLOG_FORMAT"", INFOTRAZA, *handle);
+    	ESP_LOGI(TAG, ""TRAZAR"NVS abierto correctamente. handle = "CONFIG_UINT32_FORMAT"", INFOTRAZA, *handle);
     	//send_event_application(datosApp, NOTIFICACION_ALARMA_NVS, EVENT_NVS_OK);
     	send_event(__func__,EVENT_NVS_OK);
     } else {
@@ -68,7 +68,7 @@ esp_err_t escribir_dato_string_nvs(nvs_handle *handle, char* clave, char* valor)
 
 	esp_err_t error;
 
-	ESP_LOGI(TAG, ""TRAZAR"vamos a escribir el dato con handle "CONFIG_UINT32_ESPLOG_FORMAT"", INFOTRAZA, *handle);
+	ESP_LOGI(TAG, ""TRAZAR"vamos a escribir el dato con handle "CONFIG_UINT32_FORMAT"", INFOTRAZA, *handle);
 	error = nvs_set_str(*handle, clave, valor);
 	if (error == ESP_OK) {
 		ESP_LOGI(TAG, ""TRAZAR"clave %s, dato escrito: %s", INFOTRAZA, clave, valor);

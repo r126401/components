@@ -720,7 +720,7 @@ void event_task(void *arg) {
 	event_queue = xQueueCreate(10, sizeof(EVENT_APP));
 
 	for(;;) {
-		 ESP_LOGI(TAG, ""TRAZAR"ESPERANDO EVENTO...Memoria libre: "CONFIG_UINT32_ESPLOG_FORMAT"\n", INFOTRAZA, esp_get_free_heap_size());
+		 ESP_LOGI(TAG, ""TRAZAR"ESPERANDO EVENTO...Memoria libre: "CONFIG_UINT32_FORMAT"\n", INFOTRAZA, esp_get_free_heap_size());
 		if (xQueueReceive(event_queue, &event, portMAX_DELAY) == pdTRUE) {
 			ESP_LOGE(TAG, ""TRAZAR"event_task:Recibido evento app %s, evento device:%s. Estado App: %s", INFOTRAZA,
 					event2mnemonic(event.event_app), local_event_2_mnemonic(event.event_device),

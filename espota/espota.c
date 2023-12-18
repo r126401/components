@@ -179,7 +179,7 @@ void otaesp_task(void *pvParameter)
 		send_event(__func__, EVENT_END_UPGRADE);
     } else {
         ESP_LOGE(TAG, "Firmware upgrade failed, error: %d", ret);
-        ESP_LOGE(TAG, ""TRAZAR" memoria error "CONFIG_UINT32_ESPLOG_FORMAT"", INFOTRAZA,esp_get_free_heap_size ());
+        ESP_LOGE(TAG, ""TRAZAR" memoria error "CONFIG_UINT32_FORMAT"", INFOTRAZA,esp_get_free_heap_size ());
         upgrade = cJSON_CreateObject();
     	cJSON_AddNumberToObject(upgrade, FIN_UPGRADE, 0);
 		guardar_configuracion(datosApp, FIN_UPGRADE, cJSON_Print(upgrade));

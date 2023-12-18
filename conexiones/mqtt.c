@@ -84,7 +84,7 @@ esp_err_t unsubscribe_topic(DATOS_APLICACION *datosApp, int index_topic) {
 static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data)
 {
     static bool arranque = false;
-    ESP_LOGI(TAG, "Event dispatched from event loop base=%s, event_id="CONFIG_UINT32_ESPLOG_FORMAT"", base, event_id);
+    ESP_LOGI(TAG, "Event dispatched from event loop base=%s, event_id="CONFIG_UINT32_FORMAT"", base, event_id);
     esp_mqtt_event_handle_t event = event_data;
     esp_mqtt_client_handle_t client = event->client;
     datosApp.handle_mqtt = event;
@@ -175,7 +175,7 @@ void mqtt_task(void *arg) {
 
 
 	for(;;) {
-		 ESP_LOGI(TAG, ""TRAZAR"ESPERANDO MENSAJE...Memoria libre: "CONFIG_UINT32_ESPLOG_FORMAT"\n", INFOTRAZA, esp_get_free_heap_size());
+		 ESP_LOGI(TAG, ""TRAZAR"ESPERANDO MENSAJE...Memoria libre: "CONFIG_UINT32_FORMAT"\n", INFOTRAZA, esp_get_free_heap_size());
 		if (xQueueReceive(cola_mqtt, &cola, portMAX_DELAY) == pdTRUE) {
 			ESP_LOGE(TAG, ""TRAZAR"se va a procesar la peticion", INFOTRAZA);
 			publicar_mensaje(&datosApp, &cola);

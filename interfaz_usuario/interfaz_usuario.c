@@ -408,10 +408,10 @@ esp_err_t appuser_load_schedule_extra_data(DATOS_APLICACION *datosApp, TIME_PROG
 	item = cJSON_GetObjectItem(nodo, DURATION_PROGRAM);
 	if (item != NULL) {
 		programa_actual->duracion = item->valueint;
-		ESP_LOGI(TAG, ""TRAZAR"DURACION = "CONFIG_UINT32_ESPLOG_FORMAT"", INFOTRAZA, programa_actual->duracion);
+		ESP_LOGI(TAG, ""TRAZAR"DURACION = "CONFIG_UINT32_FORMAT"", INFOTRAZA, programa_actual->duracion);
 	} else {
 		programa_actual->duracion = 0;
-		ESP_LOGI(TAG, ""TRAZAR"NO SE GUARDA DURACION: "CONFIG_UINT32_ESPLOG_FORMAT"", INFOTRAZA, programa_actual->duracion);
+		ESP_LOGI(TAG, ""TRAZAR"NO SE GUARDA DURACION: "CONFIG_UINT32_FORMAT"", INFOTRAZA, programa_actual->duracion);
 	}
 
 	ESP_LOGI(TAG, ""TRAZAR" VAMOS A CALCULAR LA TEMPERATURA UMBRAL", INFOTRAZA);
@@ -573,9 +573,9 @@ esp_err_t appuser_modify_local_configuration_application(cJSON *root, DATOS_APLI
 			   memset(datosApp->termostato.sensor_remoto, 0,sizeof(datosApp->termostato.sensor_remoto));
 			   unsubscribe_topic(datosApp, CONFIG_INDEX_REMOTE_TOPIC_TEMPERATURE);
 		   } else {
-			   ESP_LOGE(TAG, ""TRAZAR"Se configura sensor remoto: "CONFIG_UINT32_ESPLOG_FORMAT"\n", INFOTRAZA, esp_get_free_heap_size());
+			   ESP_LOGE(TAG, ""TRAZAR"Se configura sensor remoto: "CONFIG_UINT32_FORMAT"\n", INFOTRAZA, esp_get_free_heap_size());
 			   extraer_dato_string(nodo, SENSOR_REMOTO, datosApp->termostato.sensor_remoto);
-			   ESP_LOGE(TAG, ""TRAZAR"despues: "CONFIG_UINT32_ESPLOG_FORMAT"\n", INFOTRAZA, esp_get_free_heap_size());
+			   ESP_LOGE(TAG, ""TRAZAR"despues: "CONFIG_UINT32_FORMAT"\n", INFOTRAZA, esp_get_free_heap_size());
 			   ESP_LOGW(TAG, ""TRAZAR" Se selecciona el sensor remoto a :%s", INFOTRAZA, datosApp->termostato.sensor_remoto);
 			   set_topic_remote_sensor(datosApp, datosApp->termostato.sensor_remoto);
 			   subscribe_topic(datosApp, datosApp->datosGenerales->parametrosMqtt.topics[CONFIG_INDEX_REMOTE_TOPIC_TEMPERATURE].subscribe);
@@ -839,10 +839,10 @@ esp_err_t select_temperature_sensor(cJSON *peticion, DATOS_APLICACION *datosApp,
 	   memset(datosApp->termostato.sensor_remoto, 0,sizeof(datosApp->termostato.sensor_remoto));
 	   unsubscribe_topic(datosApp, CONFIG_INDEX_REMOTE_TOPIC_TEMPERATURE);
    } else {
-	   ESP_LOGE(TAG, ""TRAZAR"ante: "CONFIG_UINT32_ESPLOG_FORMAT"\n", INFOTRAZA, esp_get_free_heap_size());
+	   ESP_LOGE(TAG, ""TRAZAR"ante: "CONFIG_UINT32_FORMAT"\n", INFOTRAZA, esp_get_free_heap_size());
 	   //strcpy(datosApp->termostato.sensor_remoto, cJSON_GetObjectItem(nodo, SENSOR_REMOTO)->valuestring);
 	   extraer_dato_string(nodo, SENSOR_REMOTO, datosApp->termostato.sensor_remoto);
-	   ESP_LOGE(TAG, ""TRAZAR"despues: "CONFIG_UINT32_ESPLOG_FORMAT"\n", INFOTRAZA, esp_get_free_heap_size());
+	   ESP_LOGE(TAG, ""TRAZAR"despues: "CONFIG_UINT32_FORMAT"\n", INFOTRAZA, esp_get_free_heap_size());
 	   ESP_LOGW(TAG, ""TRAZAR" Se selecciona el sensor remoto a :%s", INFOTRAZA, datosApp->termostato.sensor_remoto);
 	   set_topic_remote_sensor(datosApp, datosApp->termostato.sensor_remoto);
 	   subscribe_topic(datosApp, datosApp->datosGenerales->parametrosMqtt.topics[CONFIG_INDEX_REMOTE_TOPIC_TEMPERATURE].subscribe);
