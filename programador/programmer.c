@@ -201,7 +201,7 @@ esp_err_t ordenarListaProgramas(TIME_PROGRAM *listaProgramas, int nElementos, st
         listaProgramas[i].programacion.tm_isdst = -1;
         listaProgramas[i].programa = mktime(&listaProgramas[i].programacion);
 
-        //ESP_LOGI(TAG, ""TRAZAR"ordenarListaProgramas-->tPrograma : %ld, tActual: %ld, dif: %ld\n", listaProgramas[i].programa, clock->time,(listaProgramas[i].programa - clock->time) );
+        //ESP_LOGI(TAG, ""TRAZAR"ordenarListaProgramas-->tPrograma : "CONFIG_UINT32_ESPLOG_FORMAT", tActual: "CONFIG_UINT32_ESPLOG_FORMAT", dif: "CONFIG_UINT32_ESPLOG_FORMAT"\n", listaProgramas[i].programa, clock->time,(listaProgramas[i].programa - clock->time) );
         
     }
     // Una vez rellena toda la lista de programacion, se ordena de menor a mayor.
@@ -628,14 +628,14 @@ SCHEDULE_SEARCH buscar_programa(TIME_PROGRAM *programas, int elementos, int *pro
 					*t_tiempo_siguiente);
 
 			if (hora.time > programas[*programa_actual].programa + programas[*programa_actual].duracion) {
-				ESP_LOGW(TAG, "NO_ACTIVE_SCHEDULE: HORA: %lld, programa actual: %lld, duracion: %ld ",
+				ESP_LOGW(TAG, "NO_ACTIVE_SCHEDULE: HORA: %lld, programa actual: %lld, duracion: "CONFIG_UINT32_ESPLOG_FORMAT" ",
 						hora.time,
 						programas[*programa_actual].programa,
 						programas[*programa_actual].duracion);
 
 				return NO_ACTIVE_SCHEDULE;
 			} else {
-				ESP_LOGW(TAG, "ACTIVE_SCHEDULE: HORA: %lld, programa actual: %lld, duracion: %ld ",
+				ESP_LOGW(TAG, "ACTIVE_SCHEDULE: HORA: %lld, programa actual: %lld, duracion: "CONFIG_UINT32_ESPLOG_FORMAT" ",
 						hora.time,
 						programas[*programa_actual].programa,
 						programas[*programa_actual].duracion);
@@ -848,7 +848,7 @@ void gestion_programas(void *arg) {
 esp_err_t actualizar_programa_real(DATOS_APLICACION *datosApp) {
 
 
-	ESP_LOGI(TAG, ""TRAZAR"ENTRAMOS EN ACTUALIZAR PROGRAMA REAL, handle:%ld", INFOTRAZA, datosApp->handle);
+	ESP_LOGI(TAG, ""TRAZAR"ENTRAMOS EN ACTUALIZAR PROGRAMA REAL, handle:"CONFIG_UINT32_ESPLOG_FORMAT"", INFOTRAZA, datosApp->handle);
 
 
 	if (datosApp->datosGenerales->nProgramaCandidato >= 0) {

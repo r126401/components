@@ -451,10 +451,10 @@ esp_err_t cargar_programas_interruptor(TIME_PROGRAM *programa_actual, cJSON *nod
 	item = cJSON_GetObjectItem(nodo, DURATION_PROGRAM);
 	if (item != NULL) {
 		programa_actual->duracion = item->valueint;
-		ESP_LOGI(TAG, ""TRAZAR"DURACION = %ld", INFOTRAZA, programa_actual->duracion);
+		ESP_LOGI(TAG, ""TRAZAR"DURACION = "CONFIG_UINT32_ESPLOG_FORMAT"", INFOTRAZA, programa_actual->duracion);
 	} else {
 		programa_actual->duracion = 0;
-		ESP_LOGI(TAG, ""TRAZAR"NO SE GUARDA DURACION: %ld", INFOTRAZA, programa_actual->duracion);
+		ESP_LOGI(TAG, ""TRAZAR"NO SE GUARDA DURACION: "CONFIG_UINT32_ESPLOG_FORMAT"", INFOTRAZA, programa_actual->duracion);
 	}
 
 
