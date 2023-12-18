@@ -13,7 +13,12 @@ config UINT32_FORMAT
 	help
 		Define la cadena que se pone	
 	
-
+config LONG_FORMAT
+	string "Cadena para el formato de ESP_LOG cuando se formatea un long"
+	default "%lld"
+	help
+		Define la cadena que se pone	
+		
 
 
 

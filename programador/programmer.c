@@ -11,7 +11,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "esp_log.h"
-//#include "FreeRTOS.h"
 #include "esp_err.h"
 #include "interfaz_usuario.h"
 #include "esp_timer.h"
@@ -201,7 +200,7 @@ esp_err_t ordenarListaProgramas(TIME_PROGRAM *listaProgramas, int nElementos, st
         listaProgramas[i].programacion.tm_isdst = -1;
         listaProgramas[i].programa = mktime(&listaProgramas[i].programacion);
 
-        //ESP_LOGI(TAG, ""TRAZAR"ordenarListaProgramas-->tPrograma : "CONFIG_UINT32_FORMAT", tActual: "CONFIG_UINT32_FORMAT", dif: "CONFIG_UINT32_FORMAT"\n", listaProgramas[i].programa, clock->time,(listaProgramas[i].programa - clock->time) );
+        //ESP_LOGI(TAG, ""TRAZAR"ordenarListaProgramas-->tPrograma : %ld, tActual: %ld, dif: %ld\n", listaProgramas[i].programa, clock->time,(listaProgramas[i].programa - clock->time) );
         
     }
     // Una vez rellena toda la lista de programacion, se ordena de menor a mayor.
@@ -210,7 +209,7 @@ esp_err_t ordenarListaProgramas(TIME_PROGRAM *listaProgramas, int nElementos, st
     //printf("ordenarListaProgramas-->Despues de ordenar...\n");
     
     for(i=0;i<nElementos;i++) {
-        ESP_LOGD(TAG, ""TRAZAR"ordenarListaProgramas-->%d/%02d/%02d %d %02d %02d:%02d:%02d %d time_t = %lld", INFOTRAZA,
+        ESP_LOGD(TAG, ""TRAZAR"ordenarListaProgramas-->%d/%02d/%02d %d %02d %02d:%02d:%02d %d time_t = "CONFIG_LONG_FORMAT"", INFOTRAZA,
                 listaProgramas[i].programacion.tm_year + 1900,
                 listaProgramas[i].programacion.tm_mon +1,
                 listaProgramas[i].programacion.tm_mday,
@@ -601,10 +600,10 @@ SCHEDULE_SEARCH buscar_programa(TIME_PROGRAM *programas, int elementos, int *pro
 		if((hora_actual >= programas[i].programa) &&
 				(programas[i].estadoPrograma == ACTIVO) && (programas[i].activo == ACTIVO)){
 
-			ESP_LOGI(TAG, ""TRAZAR"ENCONTRADO SCHEDULE ID %d: %lld", INFOTRAZA, i, programas[i].programa);
+			ESP_LOGI(TAG, ""TRAZAR"ENCONTRADO SCHEDULE ID %d: "CONFIG_LONG_FORMAT"", INFOTRAZA, i, programas[i].programa);
 
 			if (i >= 0) {
-				//ESP_LOGW(TAG, ""TRAZAR"Puntero asignado al indice %d. Hora actual: %lld >=  %lld", INFOTRAZA, i, hora.time, programas[i].programa);
+				//ESP_LOGW(TAG, ""TRAZAR"Puntero asignado al indice %d. Hora actual: "CONFIG_LONG_FORMAT" >=  "CONFIG_LONG_FORMAT"", INFOTRAZA, i, hora.time, programas[i].programa);
 				*programa_actual = i;
 				*t_tiempo_siguiente = programas[i+1].programa;
 			}
@@ -615,27 +614,27 @@ SCHEDULE_SEARCH buscar_programa(TIME_PROGRAM *programas, int elementos, int *pro
 				tm_dia_siguiente.tm_min = 0;
 				tm_dia_siguiente.tm_sec = 0;
 				*t_tiempo_siguiente = mktime(&tm_dia_siguiente);
-				//ESP_LOGW(TAG, ""TRAZAR" EL PROXIMO INTERVALO ES %lld y se corresponde con la media noche", INFOTRAZA, *t_tiempo_siguiente);
+				//ESP_LOGW(TAG, ""TRAZAR" EL PROXIMO INTERVALO ES "CONFIG_LONG_FORMAT" y se corresponde con la media noche", INFOTRAZA, *t_tiempo_siguiente);
 				*programa_actual = i;
 
 
 			}
 
 
-			ESP_LOGW(TAG, ""TRAZAR"PROGRAMA ACTUAL: %d --- %lld. SIGUIENTE: %lld",
+			ESP_LOGW(TAG, ""TRAZAR"PROGRAMA ACTUAL: %d --- "CONFIG_LONG_FORMAT". SIGUIENTE: "CONFIG_LONG_FORMAT"",
 					INFOTRAZA, *programa_actual,
 					programas[*programa_actual].programa,
 					*t_tiempo_siguiente);
 
 			if (hora.time > programas[*programa_actual].programa + programas[*programa_actual].duracion) {
-				ESP_LOGW(TAG, "NO_ACTIVE_SCHEDULE: HORA: %lld, programa actual: %lld, duracion: "CONFIG_UINT32_FORMAT" ",
+				ESP_LOGW(TAG, "NO_ACTIVE_SCHEDULE: HORA: "CONFIG_LONG_FORMAT", programa actual: "CONFIG_LONG_FORMAT", duracion: %ld ",
 						hora.time,
 						programas[*programa_actual].programa,
 						programas[*programa_actual].duracion);
 
 				return NO_ACTIVE_SCHEDULE;
 			} else {
-				ESP_LOGW(TAG, "ACTIVE_SCHEDULE: HORA: %lld, programa actual: %lld, duracion: "CONFIG_UINT32_FORMAT" ",
+				ESP_LOGW(TAG, "ACTIVE_SCHEDULE: HORA: "CONFIG_LONG_FORMAT", programa actual: "CONFIG_LONG_FORMAT", duracion: %ld ",
 						hora.time,
 						programas[*programa_actual].programa,
 						programas[*programa_actual].duracion);
@@ -809,7 +808,7 @@ void gestion_programas(void *arg) {
 
 			}
 		} else {
-			ESP_LOGD(TAG, ""TRAZAR"HORA: %lld. siguiente intervalo: %lld, diff: %lld", INFOTRAZA,
+			ESP_LOGD(TAG, ""TRAZAR"HORA: "CONFIG_LONG_FORMAT". siguiente intervalo: "CONFIG_LONG_FORMAT", diff: "CONFIG_LONG_FORMAT"", INFOTRAZA,
 					datosApp->datosGenerales->clock.time,
 					t_siguiente_intervalo,
 					(t_siguiente_intervalo - datosApp->datosGenerales->clock.time ));
@@ -848,7 +847,7 @@ void gestion_programas(void *arg) {
 esp_err_t actualizar_programa_real(DATOS_APLICACION *datosApp) {
 
 
-	ESP_LOGI(TAG, ""TRAZAR"ENTRAMOS EN ACTUALIZAR PROGRAMA REAL, handle:"CONFIG_UINT32_FORMAT"", INFOTRAZA, datosApp->handle);
+	ESP_LOGI(TAG, ""TRAZAR"ENTRAMOS EN ACTUALIZAR PROGRAMA REAL, handle:%ld", INFOTRAZA, datosApp->handle);
 
 
 	if (datosApp->datosGenerales->nProgramaCandidato >= 0) {
