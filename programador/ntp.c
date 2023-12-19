@@ -17,7 +17,12 @@
 #include "esp_sntp.h"
 #include "logging.h"
 #include "events_device.h"
+#ifndef CONFIG_IDF_TARGET_ESP8266
 #include "esp_netif_sntp.h"
+#else
+#include "esp_sntp.h"
+#endif
+
 
 
 #define TIMEOUT_NTP CONFIG_TIMEOUT_NTP
@@ -81,11 +86,24 @@ esp_err_t obtener_fecha_hora(NTP_CLOCK *clock) {
 
 
 	ESP_LOGI(TAG, ""TRAZAR"Inicializando ntp", INFOTRAZA);
+
+#ifndef CONFIG_IDF_TARGET_ESP8266
+
 	esp_sntp_setoperatingmode(SNTP_OPMODE_POLL);
 	esp_sntp_setservername(0, CONFIG_SERVIDOR_NTP);
     sntp_set_time_sync_notification_cb(notificar_sincronizacion_ntp);
     sntp_set_sync_mode(SNTP_SYNC_MODE_SMOOTH);
     esp_sntp_init();
+
+#else
+    sntp_setoperatingmode(SNTP_OPMODE_POLL);
+    sntp_setservername(0, CONFIG_SERVIDOR_NTP);
+    sntp_set_time_sync_notification_cb(notificar_sincronizacion_ntp);
+    sntp_set_sync_mode(SNTP_SYNC_MODE_SMOOTH);
+    sntp_init();
+
+#endif
+
 
 
     while (timeinfo.tm_year < (2016 - 1900) && ++retry < retry_count) {
