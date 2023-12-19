@@ -13,9 +13,9 @@
 #include "nvs_flash.h"
 #include "esp_app_format.h"
 #ifndef CONFIG_IDF_TARGET_ESP8266
-
-#else
 #include "esp_app_desc.h"
+#else
+
 #endif
 
 #include "common_data.h"
