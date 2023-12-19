@@ -121,7 +121,12 @@ void otaesp_task(void *pvParameter)
 	cJSON *upgrade;
 
 	send_event(__func__,EVENT_UPGRADE_FIRMWARE);
+#ifndef CONFIG_IDF_TARGET_ESP8266
 	aplicacion = esp_app_get_description();
+#else
+	esp_ota_get_app_description();
+#endif
+
 	ESP_LOGW(TAG, ""TRAZAR"Comienzo upgrade firmware", INFOTRAZA);
     ip = name_to_ip(datosApp->datosGenerales->ota.server);
     if (ip == NULL) {
