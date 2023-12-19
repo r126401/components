@@ -298,7 +298,12 @@ esp_err_t init_application(DATOS_APLICACION *datosApp, bool forzado) {
 	}
 
 	char datos[CONFIG_TAMANO_BUFFER_LECTURA];
+#ifndef CONFIG_IDF_TARGET_ESP8266
     datosApp->datosGenerales->ota.swVersion = esp_app_get_description();
+#else
+    datosApp->datosGenerales->ota.swVersion = esp_ota_get_app_description();
+#endif
+
     //free(aplicacion);
     ESP_LOGE(TAG, ""TRAZAR" VERSION DE LA APLICACION (1)", INFOTRAZA);
     ESP_LOGE(TAG, ""TRAZAR" VERSION DE LA APLICACION %s", INFOTRAZA, datosApp->datosGenerales->ota.swVersion->version);
