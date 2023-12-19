@@ -117,7 +117,7 @@ void otaesp_task(void *pvParameter)
 	datosApp = (DATOS_APLICACION *) pvParameter;
 	char*ip;
 	char url[120];
-	const esp_app_desc_t *aplicacion;
+	const esp_app_desc_t *aplicacion = NULL;
 	cJSON *upgrade;
 
 	send_event(__func__,EVENT_UPGRADE_FIRMWARE);

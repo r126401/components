@@ -370,7 +370,7 @@ esp_err_t establecer_conexion_mqtt(DATOS_APLICACION *datosApp) {
 
 
     ESP_LOGI(TAG, ""TRAZAR"Nos conectamos al broker %s", INFOTRAZA, mqtt_cfg.uri);
-    appuser_broker_conectando(datosApp);
+    send_event(__func__, EVENT_CONNECT_MQTT);
     client = esp_mqtt_client_init(&mqtt_cfg);
     //esp_mqtt_client_handle_t client = esp_mqtt_client_init(&mqtt_cfg);
     //esp_mqtt_client_register_event(client, ESP_EVENT_ANY_ID, mqtt_event_handler, client);
