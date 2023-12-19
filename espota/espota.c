@@ -148,10 +148,11 @@ void otaesp_task(void *pvParameter)
 
     };
 
+#ifndef CONFIG_IDF_TARGET_ESP8266
     esp_https_ota_config_t ota_config = {
         .http_config = &config,
     };
-
+#endif
 
 
 
@@ -171,7 +172,12 @@ void otaesp_task(void *pvParameter)
 
     }
     config.skip_cert_common_name_check = true;
+#ifndef CONFIG_IDF_TARGET_ESP8266
     esp_err_t ret = esp_https_ota(&ota_config);
+#else
+    esp_err_t ret = esp_https_ota(&config);
+#endif
+
 
     if (datosApp->datosGenerales->parametrosMqtt.tls == true) {
     	crear_tarea_mqtt(datosApp);
