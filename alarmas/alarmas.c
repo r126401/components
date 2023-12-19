@@ -101,7 +101,7 @@ void init_alarms(DATOS_APLICACION *datosApp) {
 		strncpy(datosApp->alarmas[ALARM_NTP].nemonico, MNEMONIC_ALARM_NTP, 50);
 		strncpy(datosApp->alarmas[ALARM_MQTT].nemonico, MNEMONIC_ALARM_MQTT, 50);
 		strncpy(datosApp->alarmas[ALARM_REMOTE_DEVICE].nemonico, MNEMONIC_ALARM_REMOTE_DEVICE, 50);
-		ESP_LOGI(TAG, ""TRAZAR" INICIALIZADAS ALARMAS, TIPO_ALARMA: %s, ESTADO: %s, FECHA: %llu", INFOTRAZA,
+		ESP_LOGI(TAG, ""TRAZAR" INICIALIZADAS ALARMAS, TIPO_ALARMA: %s, ESTADO: %s, FECHA: "CONFIG_ULONG_FORMAT"", INFOTRAZA,
 				datosApp->alarmas[i].nemonico,
 				status_alarm_to_mnemonic(datosApp->alarmas[i].estado_alarma),
 				datosApp->alarmas[i].fecha_alarma);
