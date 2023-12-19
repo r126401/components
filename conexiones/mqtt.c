@@ -46,11 +46,9 @@ esp_err_t subscribe_topic(DATOS_APLICACION *datosApp, char* topic) {
 
 	if (id > 0) {
 		ESP_LOGI(TAG, ""TRAZAR"subscribe_topic: suscrito. id = %d", INFOTRAZA, id);
-		datosApp->datosGenerales->parametrosMqtt.topics[CONFIG_INDEX_REMOTE_TOPIC_TEMPERATURE].status = true;
 		return ESP_OK;
 	} else {
 		ESP_LOGI(TAG, ""TRAZAR"subscribe_topic: no suscrito. id = %d", INFOTRAZA, id);
-		datosApp->datosGenerales->parametrosMqtt.topics[CONFIG_INDEX_REMOTE_TOPIC_TEMPERATURE].status = false;
 		return ESP_FAIL;
 	}
 

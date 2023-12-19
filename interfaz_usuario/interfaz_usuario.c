@@ -147,9 +147,11 @@ esp_err_t appuser_notify_application_started(DATOS_APLICACION *datosApp) {
     if (datosApp->termostato.master == false) {
     	ESP_LOGI(TAG, ""TRAZAR"sensor remoto. Nos subscribimos a %s", INFOTRAZA, datosApp->datosGenerales->parametrosMqtt.topics[CONFIG_INDEX_REMOTE_TOPIC_TEMPERATURE].subscribe);
     	if (subscribe_topic(datosApp, datosApp->datosGenerales->parametrosMqtt.topics[CONFIG_INDEX_REMOTE_TOPIC_TEMPERATURE].subscribe) == ESP_OK) {
+			datosApp->datosGenerales->parametrosMqtt.topics[CONFIG_INDEX_REMOTE_TOPIC_TEMPERATURE].status = true;
     		send_event(__func__,EVENT_REMOTE_DEVICE_OK);
     	} else {
     		send_event(__func__,EVENT_ERROR_REMOTE_DEVICE);
+			datosApp->datosGenerales->parametrosMqtt.topics[CONFIG_INDEX_REMOTE_TOPIC_TEMPERATURE].status = false;
     	}
     }
 
