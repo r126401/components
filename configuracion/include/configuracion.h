@@ -9,7 +9,7 @@ Proyecto realizado por Emilio Jimenez Prieto
  *      Author: t126401
  */
 
-#include "configuracion_usuario.h"
+//#include "configuracion_usuario.h"
 #include "cJSON.h"
 #include "programmer.h"
 

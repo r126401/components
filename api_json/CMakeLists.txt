@@ -3,7 +3,7 @@ REQUIRES alarmas
 comunes
 conexiones
 nvslib
-interfaz_usuario
+user_interface
 configuracion
 espota
 programador

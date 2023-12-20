@@ -5,7 +5,8 @@
  *      Author: t126401
  */
 
-#include "configuracion_usuario.h"
+//#include "configuracion_usuario.h"
+#include "common_data.h"
 
 #ifndef COMPONENTS_CONEXIONES_INCLUDE_MQTT_H_
 #define COMPONENTS_CONEXIONES_INCLUDE_MQTT_H_

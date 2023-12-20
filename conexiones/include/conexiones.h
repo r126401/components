@@ -17,8 +17,9 @@ extern "C" {
 //#include "tcpip_adapter.h"
 #include "esp_smartconfig.h"
 #include "smartconfig_ack.h"
-#include "configuracion_usuario.h"
+//#include "configuracion_usuario.h"
 #include "esp_wifi.h"
+#include "common_data.h"
 
 
 

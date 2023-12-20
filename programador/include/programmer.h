@@ -31,9 +31,10 @@
 
 #include "ntp.h"
 #include "programmer.h"
+#include "common_data.h"
 
 
-#include "configuracion_usuario.h"
+//#include "configuracion_usuario.h"
 
 //#define uint8_t uint8_t_t
 /*

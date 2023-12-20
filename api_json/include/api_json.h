@@ -20,7 +20,7 @@
 
 
 #include "mqtt_client.h"
-#include "configuracion_usuario.h"
+//#include "configuracion_usuario.h"
 #include "esp_err.h"
 #include "esp_log.h"
 #include "comandos_json.h"

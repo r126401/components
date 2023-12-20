@@ -3,7 +3,7 @@ REQUIRES alarmas
 api_json
 comunes
 nvslib
-interfaz_usuario
+user_interface
 configuracion
 espota
 programador

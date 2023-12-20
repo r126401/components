@@ -12,7 +12,7 @@
 #include "logging.h"
 #include "alarmas.h"
 #include "conexiones.h"
-#include "interfaz_usuario.h"
+#include "user_interface.h"
 #include "dialogos_json.h"
 #include "conexiones_mqtt.h"
 

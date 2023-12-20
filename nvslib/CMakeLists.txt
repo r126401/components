@@ -3,7 +3,7 @@ REQUIRES alarmas
 api_json
 comunes
 conexiones
-interfaz_usuario
+user_interface
 configuracion
 espota
 programador

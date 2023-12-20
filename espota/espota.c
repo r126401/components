@@ -13,7 +13,7 @@
 #include "esp_https_ota.h"
 #include "esp_system.h"
 #include "esp_event.h"
-#include "configuracion_usuario.h"
+//#include "configuracion_usuario.h"
 #include <sys/socket.h>
 #include <netdb.h>
 #include "espota.h"

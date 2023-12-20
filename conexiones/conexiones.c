@@ -12,7 +12,7 @@
 #include "freertos/event_groups.h"
 #include "configuracion.h"
 #include "events_device.h"
-#include "interfaz_usuario.h"
+#include "user_interface.h"
 #include "smartconfig_ack.h"
 #include "esp_smartconfig.h"
 

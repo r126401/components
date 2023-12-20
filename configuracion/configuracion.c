@@ -8,10 +8,10 @@
 
 #include <errores_proyecto.h>
 #include "dialogos_json.h"
-#include "interfaz_usuario.h"
+#include "user_interface.h"
 #include "esp_log.h"
 #include "esp_err.h"
-#include "configuracion_usuario.h"
+//#include "configuracion_usuario.h"
 #include "conexiones.h"
 #include "cJSON.h"
 #include "nvs_flash.h"

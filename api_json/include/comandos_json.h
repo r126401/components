@@ -7,7 +7,7 @@
 
 
 #include "cJSON.h"
-#include "configuracion_usuario.h"
+//#include "configuracion_usuario.h"
 
 #ifndef COMPONENTS_API_JSON_INCLUDE_COMANDOS_JSON_H_
 #define COMPONENTS_API_JSON_INCLUDE_COMANDOS_JSON_H_

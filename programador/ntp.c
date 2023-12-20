@@ -11,7 +11,7 @@
 #include "esp_log.h"
 #include "esp_err.h"
 #include "ntp.h"
-#include "configuracion_usuario.h"
+//#include "configuracion_usuario.h"
 #include "programmer.h"
 #include "time.h"
 #include "esp_sntp.h"

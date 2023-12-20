@@ -6,13 +6,13 @@
 
 #include <errores_proyecto.h>
 #include "programmer.h"
-#include "configuracion_usuario.h"
+//#include "configuracion_usuario.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "esp_log.h"
 #include "esp_err.h"
-#include "interfaz_usuario.h"
+#include "user_interface.h"
 #include "esp_timer.h"
 #include "events_device.h"
 

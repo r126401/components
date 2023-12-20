@@ -19,7 +19,8 @@
 #include "sys/types.h"
 #include "esp_err.h"
 #include "esp_log.h"
-#include "configuracion_usuario.h"
+#include "common_data.h"
+//#include "configuracion_usuario.h"
 #include "local_events_device.h"
 
 

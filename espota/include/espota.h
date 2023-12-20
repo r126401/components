@@ -7,7 +7,7 @@
 
 #ifndef COMPONENTS_ESPOTA_INCLUDE_ESPOTA_H_
 #define COMPONENTS_ESPOTA_INCLUDE_ESPOTA_H_
-#include "configuracion_usuario.h"
+//#include "configuracion_usuario.h"
 
 #ifndef CONFIG_IDF_TARGET_ESP8266
 
