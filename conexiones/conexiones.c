@@ -240,7 +240,7 @@ inline static void conectar_wifi() {
 }
 
 
-static void on_wifi_scan_done(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data) {
+void on_wifi_scan_done(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data) {
 
 
 	wifi_ap_record_t ap_info[CONFIG_DEFAULT_SCAN_LIST_SIZE];
@@ -303,6 +303,7 @@ inline static void inicializar_wifi() {
     ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &on_wifi_disconnect, NULL));
     ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &on_got_ip, NULL));
     ESP_ERROR_CHECK(esp_event_handler_register(SC_EVENT, ESP_EVENT_ANY_ID, &manejador_eventos_smart, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_SCAN_DONE, &on_wifi_scan_done, NULL));
 #endif
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     esp_wifi_init(&cfg);
