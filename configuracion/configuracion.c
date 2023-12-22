@@ -632,8 +632,10 @@ esp_err_t is_factory() {
 
 
 	wifi_config_t conf_wifi = {0};
+#ifndef CONFIG_IDF_TARGET_ESP8266
 	wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
 	esp_wifi_init(&cfg);
+#endif
 	esp_wifi_get_config(WIFI_IF_STA, &conf_wifi);
 	int i;
 	for (i=0;i<32;i++) {
