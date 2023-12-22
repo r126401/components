@@ -169,11 +169,11 @@ esp_err_t cargar_configuracion_defecto(DATOS_APLICACION *datosApp) {
 
 	esp_err_t error;
 	ESP_LOGI(TAG, ""TRAZAR"Se cargan parametros comunes de defecto", INFOTRAZA);
-
+#ifdef CONFIG_IDF_TARGET_ESP8266
 	tcpip_adapter_init();
 	esp_netif_init();
 	esp_event_loop_create_default();
-
+#endif
 
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
