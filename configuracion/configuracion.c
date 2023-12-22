@@ -290,12 +290,7 @@ esp_err_t init_application(DATOS_APLICACION *datosApp, bool forzado) {
 
 	esp_err_t error;
 
-	error = inicializar_nvs(CONFIG_NAMESPACE, &datosApp->handle);
-	if (error != ESP_OK) {
-		ESP_LOGW(TAG, ""TRAZAR" ERROR AL INICIALIZAR NVS", INFOTRAZA);
-		return ESP_FAIL;
 
-	}
 
 	char datos[CONFIG_TAMANO_BUFFER_LECTURA];
 #ifndef CONFIG_IDF_TARGET_ESP8266
@@ -308,7 +303,15 @@ esp_err_t init_application(DATOS_APLICACION *datosApp, bool forzado) {
     ESP_LOGE(TAG, ""TRAZAR" VERSION DE LA APLICACION (1)", INFOTRAZA);
     ESP_LOGE(TAG, ""TRAZAR" VERSION DE LA APLICACION %s", INFOTRAZA, datosApp->datosGenerales->ota.swVersion->version);
 
+	error = inicializar_nvs(CONFIG_NAMESPACE, &datosApp->handle);
+	if (error != ESP_OK) {
+		ESP_LOGW(TAG, ""TRAZAR" ERROR AL INICIALIZAR NVS", INFOTRAZA);
+		return ESP_FAIL;
+
+	}
+
 	//inicializacion_registros_alarmas(datosApp);
+    /*
 	if ((error = inicializar_nvs(CONFIG_NAMESPACE, &datosApp->handle))!= ESP_OK) {
 		ESP_LOGE(TAG, ""TRAZAR"ERROR POR FALLO NVS %d", INFOTRAZA, error);
 
@@ -317,7 +320,7 @@ esp_err_t init_application(DATOS_APLICACION *datosApp, bool forzado) {
 	} else {
 		//registrar_alarma(datosApp, NOTIFICACION_ALARMA_NVS, ALARMA_NVS, ALARMA_OFF, false);
 
-	}
+	}*/
 	if (forzado) {
 		error = cargar_configuracion_defecto(datosApp);
 		ESP_LOGI(TAG, ""TRAZAR" Cargada configuracion de defecto", INFOTRAZA);
