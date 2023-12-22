@@ -24,6 +24,9 @@
 #include "esp_app_format.h"
 #include "esp_ota_ops.h"
 
+
+#include "esp_netif.h"
+
 static const char *TAG = "CONFIGURACION";
 
 
@@ -166,14 +169,23 @@ esp_err_t cargar_configuracion_defecto(DATOS_APLICACION *datosApp) {
 
 	esp_err_t error;
 	ESP_LOGI(TAG, ""TRAZAR"Se cargan parametros comunes de defecto", INFOTRAZA);
-    //wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
-    //ESP_ERROR_CHECK(esp_wifi_init(&cfg));
+
+	tcpip_adapter_init();
+	esp_netif_init();
+	esp_event_loop_create_default();
+
+
+    wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+    ESP_ERROR_CHECK(esp_wifi_init(&cfg));
+
     strcpy(datosApp->datosGenerales->parametrosMqtt.broker, CONFIG_BROKER_DEFECTO);
     datosApp->datosGenerales->tipoDispositivo = CONFIG_TIPO_DISPOSITIVO;
     datosApp->datosGenerales->parametrosMqtt.port = CONFIG_PUERTO_DEFECTO;
     strcpy(datosApp->datosGenerales->parametrosMqtt.user, CONFIG_USUARIO_BROKER_DEFECTO);
     strcpy(datosApp->datosGenerales->parametrosMqtt.password, CONFIG_PASSWORD_BROKER_DEFECTO);
+    ESP_LOGE(TAG, ""TRAZAR"Se cargan parametros comunes de defecto antes", INFOTRAZA);
     get_default_topics_config(datosApp);
+    ESP_LOGE(TAG, ""TRAZAR"Se cargan parametros comunes de defecto despues", INFOTRAZA);
     /*
     strcpy(datosApp->datosGenerales->parametrosMqtt.publish, "/pub_");
     strcat(datosApp->datosGenerales->parametrosMqtt.publish, get_my_id());
@@ -631,11 +643,15 @@ esp_err_t json_a_ota(DATOS_APLICACION *datosApp) {
 esp_err_t is_factory() {
 
 
+	ESP_LOGI(TAG, ""TRAZAR"(is_factory)", INFOTRAZA);
 	wifi_config_t conf_wifi = {0};
-#ifndef CONFIG_IDF_TARGET_ESP8266
+#ifdef CONFIG_IDF_TARGET_ESP8266
+	tcpip_adapter_init();
+#else
+
+#endif
 	wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
 	esp_wifi_init(&cfg);
-#endif
 	esp_wifi_get_config(WIFI_IF_STA, &conf_wifi);
 	int i;
 	for (i=0;i<32;i++) {

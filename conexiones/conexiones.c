@@ -146,14 +146,19 @@ static void manejador_eventos_smart(void* arg, esp_event_base_t event_base,
 char * get_my_id(void)
 {
    // Use MAC address for Station as unique ID
-   static char my_id[13];
+   static char my_id[13] = {0};
    static bool my_id_done = false;
    esp_err_t error;
    int8_t i;
    uint8_t x;
+
+
    if (my_id_done)
        return my_id;
+   ESP_LOGI(TAG, ""TRAZAR"A por la mac...", INFOTRAZA);
    //if (!wifi_get_macaddr(STATION_IF, my_id))
+
+   if ((esp_wifi_get_mac(WIFI_IF_STA, (uint8_t*) my_id)) != ESP_OK) return NULL;
 
    if ((error = esp_wifi_get_mac(WIFI_IF_STA, (uint8_t*) my_id)) == ESP_OK) {
    	ESP_LOGI(TAG, ""TRAZAR"Mac extraida correctamente", INFOTRAZA);
@@ -162,8 +167,8 @@ char * get_my_id(void)
    	return NULL;
    }
 
-   //if ((esp_wifi_get_mac(WIFI_IF_STA, (uint8_t*) my_id)) != ESP_OK)
-   //    return NULL;
+
+
    for (i = 5; i >= 0; --i)
    {
        x = my_id[i] & 0x0F;
@@ -174,7 +179,13 @@ char * get_my_id(void)
        my_id[i * 2] = x + '0';
    }
    my_id[12] = '\0';
-   my_id_done = true;
+   if (*my_id == '0') {
+	   ESP_LOGE(TAG, ""TRAZAR"Mac no valida", INFOTRAZA);
+   }else {
+	   ESP_LOGI(TAG, ""TRAZAR"Mac extraida correctamente: %s", INFOTRAZA, my_id);
+	   my_id_done = true;
+   }
+
    return my_id;
 }
 
@@ -280,7 +291,9 @@ inline static void inicializar_wifi() {
 #endif
 
 	ESP_LOGI(TAG, ""TRAZAR" INICIALIZAR_WIFI", INFOTRAZA);
-    //tcpip_adapter_init();
+#ifdef CONFIG_IDF_TARGET_ESP8266
+    tcpip_adapter_init();
+#endif
 	if (datosApp.datosGenerales->estadoApp != FACTORY) {
 		appuser_notify_connecting_wifi(&datosApp);
 	}
