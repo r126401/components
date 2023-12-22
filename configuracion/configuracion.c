@@ -166,8 +166,8 @@ esp_err_t cargar_configuracion_defecto(DATOS_APLICACION *datosApp) {
 
 	esp_err_t error;
 	ESP_LOGI(TAG, ""TRAZAR"Se cargan parametros comunes de defecto", INFOTRAZA);
-    wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
-    ESP_ERROR_CHECK(esp_wifi_init(&cfg));
+    //wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+    //ESP_ERROR_CHECK(esp_wifi_init(&cfg));
     strcpy(datosApp->datosGenerales->parametrosMqtt.broker, CONFIG_BROKER_DEFECTO);
     datosApp->datosGenerales->tipoDispositivo = CONFIG_TIPO_DISPOSITIVO;
     datosApp->datosGenerales->parametrosMqtt.port = CONFIG_PUERTO_DEFECTO;
