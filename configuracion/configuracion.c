@@ -427,7 +427,7 @@ esp_err_t insertar_programa(DATOS_APLICACION *datosApp, char* programas) {
 }
 */
 
-
+/*
 esp_err_t cargar_programas_cronotermostato(TIME_PROGRAM *programa_actual, cJSON *nodo) {
 
 	error_t error;
@@ -482,7 +482,7 @@ esp_err_t cargar_programas_interruptor(TIME_PROGRAM *programa_actual, cJSON *nod
 
 	return ESP_OK;
 }
-
+*/
 esp_err_t cargar_programas(DATOS_APLICACION *datosApp, char *programas) {
 
 	cJSON *array = NULL;
