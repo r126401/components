@@ -207,7 +207,7 @@ void otaesp_task(void *pvParameter)
 
 
 void tarea_upgrade_firmware(DATOS_APLICACION *datosApp) {
-	xTaskCreate(otaesp_task, "ota_example_task", 4096, datosApp, 5, NULL);
+	xTaskCreate(otaesp_task, "ota_example_task", CONFIG_RESOURCE_OTA_TASK, datosApp, 5, NULL);
 
 }
 

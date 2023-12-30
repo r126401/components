@@ -364,7 +364,7 @@ void tarea_smartconfig(void* parm) {
 void task_smartconfig() {
 
 	ESP_LOGI(TAG, "VAMOS A CREAR LA TAREA SMARTCONFIG");
-	xTaskCreate(tarea_smartconfig, "tarea_smart", 4096, (void*)&datosApp, tskIDLE_PRIORITY + 0, NULL);
+	xTaskCreate(tarea_smartconfig, "tarea_smart", CONFIG_RESOURCE_SMARTCONFIG_TASK, (void*)&datosApp, tskIDLE_PRIORITY + 0, NULL);
 	ESP_LOGI(TAG, "TAREA SMARCONFIG CREADA");
 	conectar_wifi();
 

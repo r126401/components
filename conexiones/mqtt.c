@@ -443,7 +443,7 @@ void crear_tarea_mqtt(DATOS_APLICACION *datosApp) {
 
 
 	ESP_LOGE(TAG, ""TRAZAR"crear (1)", INFOTRAZA);
-    xTaskCreate(mqtt_task, "mqtt_task", 8192, (void*) datosApp, 4, &handle);
+    xTaskCreate(mqtt_task, "mqtt_task", CONFIG_RESOURCE_MQTT_TASK, (void*) datosApp, 4, &handle);
     ESP_LOGE(TAG, ""TRAZAR"crear (2)", INFOTRAZA);
     configASSERT(handle);
     ESP_LOGE(TAG, ""TRAZAR"crear (3)", INFOTRAZA);

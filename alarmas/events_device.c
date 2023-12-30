@@ -742,7 +742,7 @@ void create_event_task(DATOS_APLICACION *datosApp) {
 
 
 	init_alarms(datosApp);
-	xTaskCreate(event_task, "event_task", 4096, (void*) datosApp, 4, NULL);
+	xTaskCreate(event_task, "event_task", CONFIG_RESOURCE_EVENT_TASK, (void*) datosApp, 4, NULL);
 	ESP_LOGW(TAG, ""TRAZAR"TAREA DE EVENTOS CREADA", INFOTRAZA);
 	change_status_application(datosApp, STARTING);
 
