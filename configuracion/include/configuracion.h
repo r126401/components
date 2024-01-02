@@ -45,7 +45,7 @@ esp_err_t leer_configuracion(DATOS_APLICACION *datosApp, char* clave, char* valo
  * @param forzado
  * @return
  */
-esp_err_t init_application(DATOS_APLICACION *datosApp, bool forzado);
+esp_err_t init_application(DATOS_APLICACION *datosApp);
 /**
  * @fn esp_err_t cargar_configuracion_defecto(DATOS_APLICACION*)
  * @brief Realiza la carga de configuracion minima que necesita el dispositivo para funcionar.

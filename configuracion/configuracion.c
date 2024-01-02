@@ -297,7 +297,7 @@ esp_err_t leer_configuracion(DATOS_APLICACION *datosApp, char* clave, char* valo
  * @brief Rutina principal que trata la configuracion de arranque del dispositivo.
  *
  */
-esp_err_t init_application(DATOS_APLICACION *datosApp, bool forzado) {
+esp_err_t init_application(DATOS_APLICACION *datosApp) {
 
 
 	esp_err_t error;
@@ -333,11 +333,13 @@ esp_err_t init_application(DATOS_APLICACION *datosApp, bool forzado) {
 		//registrar_alarma(datosApp, NOTIFICACION_ALARMA_NVS, ALARMA_NVS, ALARMA_OFF, false);
 
 	}*/
-	if (forzado) {
+#ifdef CONFIG_FACTORY_DATA
 		error = cargar_configuracion_defecto(datosApp);
 		ESP_LOGI(TAG, ""TRAZAR" Cargada configuracion de defecto", INFOTRAZA);
 		salvar_configuracion_general(datosApp);
-	} else {
+#else
+
+
 		// leemos la configuracion general desde nvs
 		if ((error = leer_configuracion(datosApp, CONFIG_CLAVE_CONFIGURACION_GENERAL, datos)) == ESP_OK) {
 			ESP_LOGI(TAG, ""TRAZAR" Configuracion general leida correctamente",INFOTRAZA);
@@ -362,8 +364,8 @@ esp_err_t init_application(DATOS_APLICACION *datosApp, bool forzado) {
 			ESP_LOGW(TAG, ""TRAZAR"No se ha encontrado programacion en el dispositivo", INFOTRAZA);
 			error = ESP_OK;
 		}
+#endif
 
-	}
 	ESP_LOGE(TAG, ""TRAZAR" ESTADO DE LA APLICACION %d", INFOTRAZA, datosApp->datosGenerales->estadoApp);
 
 
