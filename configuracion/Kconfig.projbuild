@@ -1,5 +1,8 @@
 menu "Configuracion General"
 
+
+menu "Configuracion nvs"
+
 config CLAVE_CONFIGURACION_GENERAL
 	string "Clave nvs para configuracion general"
 	default "general"
@@ -17,6 +20,16 @@ config CLAVE_PROGRAMA_ESTATICO
 	default "programa_estatico_real"
 	help
 		Clave nvs para cargar el programa activo cuando arrancas de 0
+		
+config NAMESPACE
+	string "Espacio de nombre configuracion"
+	default "CONF_DISP"
+	help
+		Espacio de nombres nvs usado para la configuracion general.
+
+endmenu
+
+menu "Configuraciones mqtt"
 
 config BROKER_DEFECTO
 	string "Broker Mqtt"
@@ -53,19 +66,24 @@ config PREFIJO_SUSCRIPCION_DEFECTO
 	default "/"
 	help
 		Los topics de suscripcion y publicacion tendran este prefijo
-
-	
-config NAMESPACE
-	string "Espacio de nombre configuracion"
-	default "CONF_DISP"
-	help
-		Espacio de nombres nvs usado para la configuracion general.
 		
 config TAMANO_BUFFER_LECTURA
 	int "Tamano del buffer de lectura"
 	default 1024
 	help
 		Es el tamano de buffer para leer datos en nvs y enviarlos por mqtt
+
+endmenu
+
+
+
+
+
+
+	
+
+		
+
 		
 
 config NUMERO_ALARMAS_PROVISIONADAS
@@ -75,6 +93,11 @@ config NUMERO_ALARMAS_PROVISIONADAS
 		Indica el numero de alarmas que el dispositivo va a manejar
 		
 
+config DEFAULT_SCAN_LIST_SIZE
+	int "Size scan list wifi"
+	default 10
+	help
+		Define size scan list wifi
 
 
 
