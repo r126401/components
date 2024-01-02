@@ -51,6 +51,7 @@ void inicializar_parametros_ntp(NTP_CLOCK *clock) {
  void notificar_sincronizacion_ntp(struct timeval *tv)
  {
 
+	 ESP_LOGI(TAG, ""TRAZAR"notificar_sincronizacion_ntp...", INFOTRAZA);
 	 switch (sntp_get_sync_status()) {
 
 	 case SNTP_SYNC_STATUS_COMPLETED:
