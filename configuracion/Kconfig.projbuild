@@ -1,4 +1,12 @@
-menu "Configuracion General"
+menu "Configuracion General components"
+
+
+config FACTORY_DATA
+	bool "Forzar carga de configuracion de fabrica"
+	default false
+	help
+		 indica carga desde memoria nvs mientras que 1 indica de fabrica. 
+
 
 
 menu "Configuracion nvs"
@@ -75,23 +83,34 @@ config TAMANO_BUFFER_LECTURA
 
 endmenu
 
+menu "logging format"
 
+config UINT32_FORMAT
+	string "Cadena para el formato de ESP_LOG cuando se formatea un uint32_t"
+	default "%ld"
+	help
+		Define la cadena que se pone	
+	
+config LONG_FORMAT
+	string "Cadena para el formato de ESP_LOG cuando se formatea un long"
+	default "%lld"
+	help
+		Define la cadena que se pone	
+		
+config ULONG_FORMAT
+	string "Cadena para el formato de ESP_LOG cuando se formatea un usigned long"
+	default "%llu"
+	help
+		Define la cadena que se pone	
+		
+endmenu
 
 
 
 
 	
+menu "Wifi Configurations"
 
-		
-
-		
-
-config NUMERO_ALARMAS_PROVISIONADAS
-	int "Numero de alarmas provisionadas"
-	default 4
-	help
-		Indica el numero de alarmas que el dispositivo va a manejar
-		
 
 config DEFAULT_SCAN_LIST_SIZE
 	int "Size scan list wifi"
@@ -99,6 +118,8 @@ config DEFAULT_SCAN_LIST_SIZE
 	help
 		Define size scan list wifi
 
+
+endmenu
 
 
 endmenu
