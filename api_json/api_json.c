@@ -1097,7 +1097,12 @@ esp_err_t notificar_evento_alarma(DATOS_APLICACION *datosApp, int tipo_alarma, c
 	cJSON_AddStringToObject(respuesta, MNEMONIC_REPORT, report_2_mnemonic(ALARM_REPORT));
 	cJSON_AddNumberToObject(respuesta, mnemonico_alarma, datosApp->alarmas[tipo_alarma].estado_alarma);
 	cJSON_AddNumberToObject(respuesta, FECHA_ALARMA, datosApp->alarmas[tipo_alarma].fecha_alarma);
-	publicar_mensaje_json(datosApp, respuesta, NULL);
+	if (datosApp->alarmas[ALARM_MQTT].estado_alarma == ALARM_OFF) {
+		publicar_mensaje_json(datosApp, respuesta, NULL);
+	} else {
+		ESP_LOGW(TAG, ""TRAZAR"No se publica nada porque no esta activa la conexion MQTT", INFOTRAZA);
+	}
+
 	return ESP_OK;
 
 }
