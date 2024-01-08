@@ -491,6 +491,7 @@ void process_unknown_message(DATOS_APLICACION *datosApp, char *message) {
 
 
      cJSON *campo = NULL;
+     ESP_LOGI(TAG, ""TRAZAR"extraer_dato_int", INFOTRAZA);
      campo = cJSON_GetObjectItem(nodo, nombre_campo);
      if((campo != NULL) && (campo->type == cJSON_Number)) {
         *dato = campo->valueint;
@@ -718,15 +719,18 @@ esp_err_t   crear_programas_json(DATOS_APLICACION *datosApp, cJSON *respuesta) {
 	cJSON *array;
 	cJSON *item;
 	int i;
-    char dato[30];
+    char dato[30] = {0};
 
     array = respuesta;
 
 
     for (i=0;i<datosApp->datosGenerales->nProgramacion;i++) {
         cJSON_AddItemToArray(array, item = cJSON_CreateObject());
-        sprintf(dato, "%s%d%d",datosApp->datosGenerales->programacion[i].idPrograma,
+        sprintf(dato, "%s%01d%01d",datosApp->datosGenerales->programacion[i].idPrograma,
                 datosApp->datosGenerales->programacion[i].estadoPrograma,
+                datosApp->datosGenerales->programacion[i].accion);
+
+        ESP_LOGW(TAG, ""TRAZAR"PROGRAMID: %s estado: %d, accion: %01d)", INFOTRAZA, datosApp->datosGenerales->programacion[i].idPrograma, datosApp->datosGenerales->programacion[i].estadoPrograma,
                 datosApp->datosGenerales->programacion[i].accion);
 
         cJSON_AddStringToObject(item, PROGRAM_ID, dato);
@@ -794,8 +798,8 @@ esp_err_t   insertar_nuevo_programa(cJSON *peticion,DATOS_APLICACION *datosApp, 
    extraer_dato_int(nodo, PROGRAM_STATE, (int*) &programaActual->estadoPrograma);
    extraer_dato_int(nodo, PROGRAM_STATE, (int*) &programaActual->activo);
    //datosApp->datosGenerales->estadoApp = NORMAL_AUTO;
-   extraer_dato_int(nodo, PROGRAM_ACTION, &programaActual->accion);
-   extraer_dato_int(nodo, PROGRAM_MASK, (int*)&programaActual->mascara);
+   extraer_dato_uint8(nodo, PROGRAM_ACTION, &programaActual->accion);
+   extraer_dato_uint8(nodo, PROGRAM_MASK, &programaActual->mascara);
    appuser_get_schedule_extra_data(programaActual, nodo);
    generarIdPrograma(programaActual);
    datosApp->datosGenerales->programacion = crearPrograma(programaActual, datosApp->datosGenerales->programacion, &datosApp->datosGenerales->nProgramacion);
@@ -931,7 +935,7 @@ esp_err_t   modificar_programa(cJSON *peticion,struct DATOS_APLICACION *datosApp
     	extraer_dato_int(nodo, WEEKDAY, &datosApp->datosGenerales->programacion[nPrograma].programacion.tm_wday);
     	extraer_dato_int(nodo, PROGRAM_TYPE, (int*) &datosApp->datosGenerales->programacion[nPrograma].tipo);
     	extraer_dato_int(nodo, PROGRAM_STATE, (int*) &datosApp->datosGenerales->programacion[nPrograma].estadoPrograma);
-    	extraer_dato_int(nodo, PROGRAM_ACTION, &datosApp->datosGenerales->programacion[nPrograma].accion);
+    	extraer_dato_uint8(nodo, PROGRAM_ACTION, &datosApp->datosGenerales->programacion[nPrograma].accion);
     	extraer_dato_uint8(nodo, PROGRAM_MASK, &datosApp->datosGenerales->programacion[nPrograma].mascara);
         appuser_modify_schedule_extra_data(&datosApp->datosGenerales->programacion[nPrograma], nodo);
 

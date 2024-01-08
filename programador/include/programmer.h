@@ -96,7 +96,7 @@ typedef struct TIME_PROGRAM {
                 enum TIPO_PROGRAMA tipo; // Indica el tipo de programa
                 time_t programa; // fecha en formato time_t del programa. Tiene sentido cuando es fechado
                 uint8_t activo; // cuando el programa es diario, marca segun la mascara si el programa se ejecutara o no
-                int accion;
+                uint8_t accion;
                 uint8_t mascara; // mascara que mapea los dias activos cuando la programacion es diaria
                 enum ESTADO_PROGAMA estadoPrograma; // Indica si el programa esta activo o inhibido
                 uint32_t duracion;

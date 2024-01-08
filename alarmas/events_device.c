@@ -773,7 +773,10 @@ void send_event_device(const char *func, EVENT_DEVICE event) {
 
 
 
+#ifndef CONFIG_IDF_TARGET_ESP8266
 	ESP_LOGW(TAG, ""TRAZAR"RECIBIDO EVENTO LOCAL %s: %s", INFOTRAZA, func, local_event_2_mnemonic(event));
+#endif
+
 	EVENT_APP event_received;
 	event_received.event_app = EVENT_LOCAL_DEVICE;
 	event_received.event_device = event;
