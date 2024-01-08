@@ -967,7 +967,6 @@ esp_err_t start_schedule(DATOS_APLICACION *datosApp) {
 		ESP_LOGW(TAG, ""TRAZAR"COMIENZA EL PROGRAMA", INFOTRAZA);
 		send_event(__func__,EVENT_START_SCHEDULE);
 	}
-	//appuser_start_schedule(datosApp);
 
 
 
