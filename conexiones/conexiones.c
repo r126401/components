@@ -343,6 +343,7 @@ void tarea_smartconfig(void* parm) {
     smartconfig_start_config_t cfg = SMARTCONFIG_START_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_smartconfig_start(&cfg));
 
+
     while (1) {
         uxBits = xEventGroupWaitBits(grupo_eventos, (CONNECTED_BIT | ESPTOUCH_DONE_BIT), true, false, portMAX_DELAY);
 
@@ -400,6 +401,7 @@ esp_err_t conectar_dispositivo_wifi() {
 	}
 
 	ESP_LOGW(TAG, ""TRAZAR" WIFI NO CONFIGURADA", INFOTRAZA);
+	send_event(__func__, EVENT_FACTORY);
 	task_smartconfig();
 
 	return ESP_OK;
