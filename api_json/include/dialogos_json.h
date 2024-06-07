@@ -30,6 +30,7 @@ Proyecto realizado por Emilio Jimenez Prieto
 #define MAP_MEMORY      "memoryMap"
 #define RTCTIME         "rtcTime"
 #define ADRESS_BIN      "adressBin"
+#define DEVICE_STATUS	"deviceStatus"
 
 
 #define YEAR        "year"

@@ -74,6 +74,7 @@ esp_err_t configuracion_a_json(DATOS_APLICACION *datosApp, cJSON *conf) {
 	cJSON_AddStringToObject(conf, MQTT_PASS, datosApp->datosGenerales->parametrosMqtt.password);
 	cJSON_AddStringToObject(conf, MQTT_SUBSCRIBE, datosApp->datosGenerales->parametrosMqtt.subscribe);
 	cJSON_AddStringToObject(conf, MQTT_PUBLISH, datosApp->datosGenerales->parametrosMqtt.publish);
+	cJSON_AddNumberToObject(conf, DEVICE_STATUS, (uint8_t) datosApp->datosGenerales->status);
 	for (i=0;i<CONFIG_NUM_TOPICS;i++) {
 		if (i == 0) {
 			array_topics = cJSON_CreateArray();
@@ -186,21 +187,15 @@ esp_err_t cargar_configuracion_defecto(DATOS_APLICACION *datosApp) {
     ESP_LOGE(TAG, ""TRAZAR"Se cargan parametros comunes de defecto antes", INFOTRAZA);
     get_default_topics_config(datosApp);
     ESP_LOGE(TAG, ""TRAZAR"Se cargan parametros comunes de defecto despues", INFOTRAZA);
-    /*
-    strcpy(datosApp->datosGenerales->parametrosMqtt.publish, "/pub_");
-    strcat(datosApp->datosGenerales->parametrosMqtt.publish, get_my_id());
-    strcpy(datosApp->datosGenerales->parametrosMqtt.subscribe, "/sub_");
-    strcat(datosApp->datosGenerales->parametrosMqtt.subscribe, get_my_id());
-    */
+
     datosApp->datosGenerales->parametrosMqtt.qos = 0;
     datosApp->datosGenerales->parametrosMqtt.tls = CONFIG_MQTT_TLS;
-    //strcpy(datosApp->datosGenerales->parametrosMqtt.cert, (const char *) mqtt_jajica_pem_start);
-    //datosApp->datosGenerales->parametrosMqtt.cert = (const char *) mqtt_jajica_pem_start;
     ESP_LOGI(TAG, ""TRAZAR"PARAMETROS CARGADOS EN DATOSAPP", INFOTRAZA);
     datosApp->datosGenerales->estadoProgramacion = INVALID_PROG;
     datosApp->datosGenerales->nProgramacion=0;
     datosApp->datosGenerales->nProgramaCandidato = -1;
     datosApp->datosGenerales->programacion = NULL;
+    datosApp->datosGenerales->status = DEVICE_NOT_CONFIGURED;
     appuser_set_default_config(datosApp);
 	ESP_LOGI(TAG, ""TRAZAR" SALVAMOS LA CONFIGURACION GENERAL A NVS...", INFOTRAZA);
 	error = salvar_configuracion_general(datosApp);
@@ -242,6 +237,7 @@ esp_err_t json_a_datos_aplicacion(DATOS_APLICACION *datosApp, char *datos) {
 		extraer_dato_int(nodo, PROGRAM_STATE, (int*) &datosApp->datosGenerales->estadoProgramacion);
 		extraer_dato_int(nodo, DEVICE, &datosApp->datosGenerales->tipoDispositivo );
 		extraer_dato_uint8(nodo, MQTT_TLS, (uint8_t*) &datosApp->datosGenerales->parametrosMqtt.tls);
+		extraer_dato_uint8(nodo, DEVICE_STATUS, (uint8_t*) &datosApp->datosGenerales->status);
 		array_topics = cJSON_GetObjectItem(nodo, MQTT_TOPICS);
 
 		size = cJSON_GetArraySize(array_topics);
@@ -305,6 +301,7 @@ esp_err_t init_application(DATOS_APLICACION *datosApp) {
 
 
 	char datos[CONFIG_TAMANO_BUFFER_LECTURA];
+
 #ifndef CONFIG_IDF_TARGET_ESP8266
     datosApp->datosGenerales->ota.swVersion = esp_app_get_description();
 #else
@@ -322,17 +319,7 @@ esp_err_t init_application(DATOS_APLICACION *datosApp) {
 
 	}
 
-	//inicializacion_registros_alarmas(datosApp);
-    /*
-	if ((error = inicializar_nvs(CONFIG_NAMESPACE, &datosApp->handle))!= ESP_OK) {
-		ESP_LOGE(TAG, ""TRAZAR"ERROR POR FALLO NVS %d", INFOTRAZA, error);
 
-		return error;
-
-	} else {
-		//registrar_alarma(datosApp, NOTIFICACION_ALARMA_NVS, ALARMA_NVS, ALARMA_OFF, false);
-
-	}*/
 #ifdef CONFIG_FACTORY_DATA
 		error = cargar_configuracion_defecto(datosApp);
 		ESP_LOGI(TAG, ""TRAZAR" Cargada configuracion de defecto", INFOTRAZA);

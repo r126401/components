@@ -130,6 +130,17 @@ typedef struct MQTT_PARAM {
 
 } MQTT_PARAM;
 
+typedef enum CONFIGURE_DEVICE {
+
+	DEVICE_NOT_CONFIGURED,
+	WIFI_NOT_CONFIGURED,
+	WIFI_CONFIGURED,
+	MQTT_NOT_CONFIGURED,
+	MQTT_CONFIGURED,
+	DEVICE_CONFIGURED
+
+} CONFIGURE_DEVICE;
+
 
 typedef struct DATOS_GENERALES {
 	enum TIPO_DISPOSITIVO tipoDispositivo;
@@ -144,6 +155,8 @@ typedef struct DATOS_GENERALES {
     bool botonPulsado;
     //Estado de la aplicacion
     enum ESTADO_APP estadoApp;
+    //Determina el estado del dispositivo a nivel de configuracion
+    enum CONFIGURE_DEVICE status;
 
 
 }DATOS_GENERALES;
