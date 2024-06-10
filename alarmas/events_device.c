@@ -15,6 +15,8 @@
 #include "user_interface.h"
 #include "dialogos_json.h"
 #include "conexiones_mqtt.h"
+#include "applib.h"
+#include "configuracion.h"
 
 
 
@@ -251,12 +253,12 @@ void process_event_wifi_ok(DATOS_APLICACION *datosApp) {
 	}
 
 	send_alarm(datosApp, ALARM_WIFI, ALARM_OFF, true);
-	sync_app_by_ntp(datosApp);
+	//sync_app_by_ntp(datosApp);
 	appuser_notify_wifi_connected_ok(datosApp);
 	if (datosApp->handle_mqtt == NULL) {
 		ESP_LOGI(TAG, ""TRAZAR"INICIAMOS LA TAREA MQTT PORQUE NO EXISTE", INFOTRAZA);
-		iniciar_gestion_programacion(datosApp);
-		crear_tarea_mqtt(datosApp);
+		//iniciar_gestion_programacion(datosApp);
+		//crear_tarea_mqtt(datosApp);
 
 	} else {
 		ESP_LOGW(TAG, ""TRAZAR"NO INICIAMOS LA TAREA MQTT PORQUE YA EXISTE", INFOTRAZA);
@@ -417,6 +419,7 @@ void process_event_mqtt_ok(DATOS_APLICACION *datosApp) {
 
 
 
+
 	switch(datosApp->datosGenerales->estadoApp) {
 
 	case STARTING:
@@ -524,6 +527,9 @@ void process_event_smartconfig_start(DATOS_APLICACION *datosApp) {
 
 void process_event_smartconfig_end(DATOS_APLICACION *datosApp) {
 
+	//Ponemos el dispositivo como configurado y salvamos la configuracion.
+	set_app_status_device(datosApp, WIFI_CONFIGURED);
+	salvar_configuracion_general(datosApp);
 	change_status_application(datosApp, STARTING);
 	appuser_notify_smartconfig_end(datosApp);
 
