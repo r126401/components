@@ -35,3 +35,9 @@ void set_app_status_device(DATOS_APLICACION *datosApp, enum CONFIGURE_DEVICE sta
 
 
 #endif /* COMPONENTS_COMUNES_INCLUDE_APPLIB_H_ */
+
+
+char* get_app_publish_topic(DATOS_APLICACION *datosApp, uint8_t index);
+char* get_app_subscribe_topic(DATOS_APLICACION *datosApp, uint8_t index);
+void set_app_publish_topic(DATOS_APLICACION *datosApp, uint8_t index, char* topic);
+void set_app_subscribe_topic(DATOS_APLICACION *datosApp, uint8_t index, char* topic);

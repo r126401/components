@@ -23,6 +23,7 @@
 #include "events_device.h"
 #include "alarmas.h"
 #include "nvslib.h"
+#include "applib.h"
 
 
 
@@ -262,28 +263,16 @@ void process_application_message(DATOS_APLICACION *datosApp, char* peticion) {
 
 	 cJSON *root = NULL;
 	 char *respuesta = NULL;
-	 COLA_MQTT cola;
 
 	 ESP_LOGE(TAG, ""TRAZAR"process_application_message: Memoria libre(1): "CONFIG_UINT32_FORMAT"\n", INFOTRAZA, esp_get_free_heap_size());
-
 	 root = analizar_comando(datosApp, peticion);
-    if (root != NULL) {
-        // 3.- Una vez ejecutado enviamos la respuesta y liberamos recursos.
-
-   	 //publicar_mensaje_json(datosApp, root, NULL);
-        // obtenemos el json de la respuesta para escribir
-        respuesta = cJSON_Print(root);
-        if (respuesta != NULL) {
-       	 strcpy(cola.topic, datosApp->datosGenerales->parametrosMqtt.publish);
-       	 strcpy(cola.buffer, respuesta);
-            // preparamos los datos para el envio
-             //publicar_mensaje(datosApp, respuesta);
-             xQueueSend(cola_mqtt, &cola,0);
-        }
-    }
-    free(respuesta);
-	 free(peticion);
-	 cJSON_Delete(root);
+	 if (root != NULL) {
+		 free(peticion);
+		 publicar_mensaje_json(datosApp, root, get_app_publish_topic(datosApp, 0) );
+		 cJSON_Delete(root);
+	 } else {
+		 ESP_LOGE(TAG, ""TRAZAR"process_application_message: Error al procesar la peticion", INFOTRAZA);
+	 }
 	 ESP_LOGE(TAG, ""TRAZAR"Memoria despues: "CONFIG_UINT32_FORMAT"\n", INFOTRAZA, esp_get_free_heap_size());
 
 

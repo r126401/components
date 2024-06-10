@@ -24,3 +24,27 @@ void set_app_status_device(DATOS_APLICACION *datosApp, enum CONFIGURE_DEVICE sta
 	ESP_LOGI(TAG, ""TRAZAR", Estado del dispositivo cambiado a %d", INFOTRAZA, status);
 
 }
+
+char* get_app_publish_topic(DATOS_APLICACION *datosApp, uint8_t index) {
+
+	ESP_LOGI(TAG, ""TRAZAR" El topic solicitado es :%s", INFOTRAZA, datosApp->datosGenerales->parametrosMqtt.topics[index].publish);
+	return datosApp->datosGenerales->parametrosMqtt.topics[index].publish;
+
+}
+
+
+char* get_app_subscribe_topic(DATOS_APLICACION *datosApp, uint8_t index) {
+
+	return datosApp->datosGenerales->parametrosMqtt.topics[index].subscribe;
+
+}
+
+void set_app_publish_topic(DATOS_APLICACION *datosApp, uint8_t index, char* topic) {
+
+
+}
+
+void set_app_subscribe_topic(DATOS_APLICACION *datosApp, uint8_t index, char* topic) {
+
+
+}

@@ -16,6 +16,8 @@
 #include "dialogos_json.h"
 #include "esp_tls.h"
 #include "conexiones_mqtt.h"
+#include "event_groups.h"
+#include "applib.h"
 
 
 
@@ -26,6 +28,7 @@ static const char *TAG = "MQTT";
 //extern const uint8_t mqtt_jajica_pem_end[]   asm("_binary_mqtt_eclipse_org_pem_end");
 extern const uint8_t mqtt_jajica_pem_start[]   asm("_binary_mqtt_cert_crt_start");
 extern const uint8_t mqtt_jajica_pem_end[]   asm("_binary_mqtt_cert_crt_end");
+
 extern DATOS_APLICACION datosApp;
 
 xQueueHandle cola_mqtt = NULL;
@@ -83,23 +86,25 @@ void mqtt_task(void *arg) {
 
 	//DATOS_APLICACION *datosApp = (DATOS_APLICACION*) arg;
 	COLA_MQTT cola;
-	cola_mqtt = xQueueCreate(10, sizeof(COLA_MQTT));
+
 
 	ESP_LOGI(TAG, ""TRAZAR"COMIENZO MQTT_TASK", INFOTRAZA);
-	establecer_conexion_mqtt(&datosApp);
+	//establecer_conexion_mqtt(&datosApp);
 
+	cola_mqtt = xQueueCreate(10, sizeof(COLA_MQTT));
 
 	for(;;) {
 		 ESP_LOGI(TAG, ""TRAZAR"ESPERANDO MENSAJE...Memoria libre: "CONFIG_UINT32_FORMAT"\n", INFOTRAZA, esp_get_free_heap_size());
 		if (xQueueReceive(cola_mqtt, &cola, portMAX_DELAY) == pdTRUE) {
 			ESP_LOGE(TAG, ""TRAZAR"se va a procesar la peticion", INFOTRAZA);
-			publicar_mensaje(&datosApp, &cola);
+			//publicar_mensaje(&datosApp, &cola);
 
 		} else {
 			ESP_LOGE(TAG, ""TRAZAR"NO SE HA PODIDO PROCESAR LA PETICION", INFOTRAZA);
 		}
 
 	}
+
 	vTaskDelete(NULL);
 
 
@@ -279,6 +284,7 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
             if (datosApp.alarmas[ALARM_MQTT].estado_alarma == ALARM_ON) {
             	//registrar_alarma(&datosApp, NOTIFICACION_ALARMA_MQTT, ALARMA_MQTT, ALARMA_OFF, true);
             	send_event(__func__,EVENT_MQTT_OK);
+
             }
 
             break;
@@ -336,44 +342,12 @@ esp_err_t establecer_conexion_mqtt(DATOS_APLICACION *datosApp) {
         .event_handle = mqtt_event_handler,
 		.username = datosApp->datosGenerales->parametrosMqtt.user,
 		.password = datosApp->datosGenerales->parametrosMqtt.password,
-		//.cert_pem = (const char *) mqtt_jajica_pem_start,
+		.cert_pem = (const char *) mqtt_jajica_pem_start,
     };
 
-    if (datosApp->datosGenerales->parametrosMqtt.tls == true) {
-    	ESP_LOGI(TAG, ""TRAZAR"Añadimos el certificado %s", INFOTRAZA, mqtt_jajica_pem_start);
-
-    	esp_tls_init();
-    	error = esp_tls_init_global_ca_store ();
-    	if (error != ESP_OK) {
-    		ESP_LOGE(TAG, ""TRAZAR"ERROR al inicializar el almacen CA %d", INFOTRAZA, sizeof ((const char*)mqtt_jajica_pem_start));
-    	}
-
-
-    	ESP_LOGE(TAG, ""TRAZAR"CA inicializada %d", INFOTRAZA, strlen ((const char*)mqtt_jajica_pem_start));
-
-    	error = esp_tls_set_global_ca_store (( const  unsigned  char *) mqtt_jajica_pem_start, mqtt_jajica_pem_end - mqtt_jajica_pem_start );
-    	if (error != ESP_OK) {
-    		ESP_LOGE(TAG, ""TRAZAR"ERROR al crear el almacen CA", INFOTRAZA);
-    	}
-    	//mqtt_cfg.cert_pem = (const char *) mqtt_jajica_pem_start;
-    	mqtt_cfg.use_global_ca_store = true;
-    	mqtt_cfg.skip_cert_common_name_check = true;
-
-    } else {
-
-    	ESP_LOGE(TAG, ""TRAZAR"No se ha añadido el certificado para la conexion mqtt", INFOTRAZA);
-    	datosApp->datosGenerales->parametrosMqtt.cert = (char*) mqtt_jajica_pem_start;
-    	//strcpy(datosApp->datosGenerales->parametrosMqtt.cert, (const char*) mqtt_jajica_pem_start);
-    }
-
-
-
-
     ESP_LOGI(TAG, ""TRAZAR"Nos conectamos al broker %s", INFOTRAZA, mqtt_cfg.uri);
-    send_event(__func__, EVENT_CONNECT_MQTT);
+    //send_event(__func__, EVENT_CONNECT_MQTT);
     client = esp_mqtt_client_init(&mqtt_cfg);
-    //esp_mqtt_client_handle_t client = esp_mqtt_client_init(&mqtt_cfg);
-    //esp_mqtt_client_register_event(client, ESP_EVENT_ANY_ID, mqtt_event_handler, client);
     error = esp_mqtt_client_start(client);
 
 
@@ -386,52 +360,43 @@ esp_err_t establecer_conexion_mqtt(DATOS_APLICACION *datosApp) {
 
 
 
-esp_err_t publicar_mensaje(DATOS_APLICACION *datosAppp, COLA_MQTT *cola) {
+esp_err_t publicar_mensaje(DATOS_APLICACION *datosApp, char* topic, char* message) {
 
 	int msg_id = 0;
 
-	//esp_mqtt_client_handle_t client = cliente->client;
-	if (client == NULL) {
-		ESP_LOGE(TAG, ""TRAZAR"NO HAY CONEXION CON EL BROKER Y NO SE PUEDE ENVIAR EL MENSAJE", INFOTRAZA);
-		return ESP_FAIL;
-	}
 
-	if (datosApp.datosGenerales->estadoApp == STARTING) {
-		ESP_LOGW(TAG, "NO SE ENVIA NADA PORQUE EL DISPOSITIVO ESTA AUN EN FASE DE ARRANQUE");
-		return ESP_OK;
-	}
 
 	msg_id = esp_mqtt_client_publish(client,
-			cola->topic,
-			cola->buffer,
+			topic,
+			message,
 			0,
-			datosApp.datosGenerales->parametrosMqtt.qos,
+			datosApp->datosGenerales->parametrosMqtt.qos,
 			0);
-	ESP_LOGI(TAG, ""TRAZAR" MENSAJE %d PUBLICADO.%s \n %s", INFOTRAZA, msg_id, cola->topic, cola->buffer);
+	ESP_LOGI(TAG, ""TRAZAR" MENSAJE %d PUBLICADO.%s \n %s", INFOTRAZA, msg_id, topic, message);
 	return ESP_OK;
 }
 
-esp_err_t publicar_mensaje_json(DATOS_APLICACION *datosAppp, cJSON *mensaje, char *topic) {
+esp_err_t publicar_mensaje_json(DATOS_APLICACION *datosApp, cJSON *mensaje, char *topic) {
 
 	char* texto;
-	COLA_MQTT cola;
-	memset(&cola, 0, sizeof(COLA_MQTT));
+	ESP_LOGW(TAG, ""TRAZAR"publicar_mensaje_json: Nueva peticion", INFOTRAZA);
 	if (client == NULL) {
 		ESP_LOGE(TAG, ""TRAZAR"NO HAY CONEXION CON EL BROKER Y NO SE PUEDE ENVIAR EL MENSAJE", INFOTRAZA);
 		cJSON_Delete(mensaje);
 		return ESP_FAIL;
 	}
+
+
 	texto = cJSON_Print(mensaje);
-	if (topic != NULL) {
-		strcpy(cola.topic, topic);
-	} else {
-		strcpy(cola.topic, datosApp.datosGenerales->parametrosMqtt.publish);
-	}
-	strcpy(cola.buffer, texto);
-	ESP_LOGE(TAG, ""TRAZAR" tamano de cola %d", INFOTRAZA, strlen(cola.topic) + strlen(cola.buffer));
 	if (texto != NULL) {
-		xQueueSend(cola_mqtt, &cola,0);
+		if (topic == NULL) {
+			publicar_mensaje(datosApp, get_app_publish_topic(datosApp, 0), texto);
+		}else {
+			publicar_mensaje(datosApp, topic, texto);
+		}
 		free(texto);
+	} else {
+		ESP_LOGW(TAG, ""TRAZAR"publicar_mensaje_json: No se publica nada porque el json es nulo", INFOTRAZA);
 	}
 	cJSON_Delete(mensaje);
 	return ESP_OK;
@@ -442,11 +407,8 @@ void crear_tarea_mqtt(DATOS_APLICACION *datosApp) {
 
 
 
-	ESP_LOGE(TAG, ""TRAZAR"crear (1)", INFOTRAZA);
-    xTaskCreate(mqtt_task, "mqtt_task", CONFIG_RESOURCE_MQTT_TASK, (void*) datosApp, 4, &handle);
-    ESP_LOGE(TAG, ""TRAZAR"crear (2)", INFOTRAZA);
+    xTaskCreatePinnedToCore(mqtt_task, "mqtt_task", CONFIG_RESOURCE_MQTT_TASK, (void*) datosApp, 4, &handle,2);
     configASSERT(handle);
-    ESP_LOGE(TAG, ""TRAZAR"crear (3)", INFOTRAZA);
 
     if (handle == NULL) {
     	ESP_LOGE(TAG, ""TRAZAR"handle es nulo", INFOTRAZA);

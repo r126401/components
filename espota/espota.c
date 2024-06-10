@@ -178,11 +178,11 @@ void otaesp_task(void *pvParameter)
     esp_err_t ret = esp_https_ota(&config);
 #endif
 
-
+/*
     if (datosApp->datosGenerales->parametrosMqtt.tls == true) {
     	crear_tarea_mqtt(datosApp);
     }
-
+*/
     if (ret == ESP_OK) {
     	if (datosApp->datosGenerales->parametrosMqtt.tls == true) {
     	}
