@@ -23,6 +23,7 @@
 #include "events_device.h"
 #include "esp_app_format.h"
 #include "esp_ota_ops.h"
+#include "applib.h"
 
 
 #include "esp_netif.h"
@@ -75,6 +76,7 @@ esp_err_t configuracion_a_json(DATOS_APLICACION *datosApp, cJSON *conf) {
 	cJSON_AddStringToObject(conf, MQTT_SUBSCRIBE, datosApp->datosGenerales->parametrosMqtt.subscribe);
 	cJSON_AddStringToObject(conf, MQTT_PUBLISH, datosApp->datosGenerales->parametrosMqtt.publish);
 	cJSON_AddNumberToObject(conf, DEVICE_STATUS, (uint8_t) datosApp->datosGenerales->status);
+
 	for (i=0;i<CONFIG_NUM_TOPICS;i++) {
 		if (i == 0) {
 			array_topics = cJSON_CreateArray();
@@ -238,6 +240,8 @@ esp_err_t json_a_datos_aplicacion(DATOS_APLICACION *datosApp, char *datos) {
 		extraer_dato_int(nodo, DEVICE, &datosApp->datosGenerales->tipoDispositivo );
 		extraer_dato_uint8(nodo, MQTT_TLS, (uint8_t*) &datosApp->datosGenerales->parametrosMqtt.tls);
 		extraer_dato_uint8(nodo, DEVICE_STATUS, (uint8_t*) &datosApp->datosGenerales->status);
+
+
 		array_topics = cJSON_GetObjectItem(nodo, MQTT_TOPICS);
 
 		size = cJSON_GetArraySize(array_topics);
@@ -297,7 +301,6 @@ esp_err_t init_application(DATOS_APLICACION *datosApp) {
 
 
 	esp_err_t error;
-
 
 
 	char datos[CONFIG_TAMANO_BUFFER_LECTURA];

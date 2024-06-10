@@ -262,7 +262,7 @@ void process_application_message(DATOS_APLICACION *datosApp, char* peticion) {
 
 
 	 cJSON *root = NULL;
-	 char *respuesta = NULL;
+
 
 	 ESP_LOGE(TAG, ""TRAZAR"process_application_message: Memoria libre(1): "CONFIG_UINT32_FORMAT"\n", INFOTRAZA, esp_get_free_heap_size());
 	 root = analizar_comando(datosApp, peticion);

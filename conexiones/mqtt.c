@@ -203,7 +203,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
 
 
 
-esp_err_t establecer_conexion_mqtt(DATOS_APLICACION *datosApp) {
+esp_err_t init_device_mqtt(DATOS_APLICACION *datosApp) {
 	esp_err_t error;
 
     const esp_mqtt_client_config_t mqtt_cfg = {
@@ -333,7 +333,7 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 
 
 
-esp_err_t establecer_conexion_mqtt(DATOS_APLICACION *datosApp) {
+esp_err_t init_device_mqtt(DATOS_APLICACION *datosApp) {
 	esp_err_t error;
 
     esp_mqtt_client_config_t mqtt_cfg = {

@@ -371,7 +371,7 @@ void task_smartconfig() {
 }
 
 
-esp_err_t conectar_dispositivo_wifi() {
+esp_err_t init_wifi_device() {
 
 	wifi_config_t conf_wifi;
 	int i;
@@ -449,7 +449,7 @@ void wifi_task(void *arg) {
 
 	DATOS_APLICACION *datosApp = (DATOS_APLICACION*) arg;
 	while (1) {
-		conectar_dispositivo_wifi();
+		init_wifi_device();
 		//sync_app_by_ntp(datosApp);
 		//crear_tarea_mqtt(datosApp);
 		iniciar_gestion_programacion(datosApp);

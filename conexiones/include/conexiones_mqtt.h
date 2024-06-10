@@ -17,7 +17,7 @@ typedef struct COLA_MQTT {
 }COLA_MQTT;
 
 
-esp_err_t establecer_conexion_mqtt(DATOS_APLICACION *datosApp);
+esp_err_t init_device_mqtt(DATOS_APLICACION *datosApp);
 esp_err_t unsubscribe_topic(DATOS_APLICACION *datosApp, int index_topic);
 esp_err_t subscribe_topic(DATOS_APLICACION *datosApp, char* topic);
 esp_err_t publicar_mensaje(DATOS_APLICACION *datosApp, char* topic, char* message);

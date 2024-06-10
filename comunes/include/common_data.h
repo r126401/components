@@ -174,6 +174,10 @@ typedef struct DATOS_APLICACION {
     esp_mqtt_event_handle_t handle_mqtt;
     ALARMA alarmas[ALARM_END];
     DATOS_TERMOSTATO termostato;
+    bool wifi;
+    bool mqtt;
+    bool timing;
+    bool schedules;
 
 
 

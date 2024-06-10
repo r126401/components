@@ -31,6 +31,10 @@ Proyecto realizado por Emilio Jimenez Prieto
 #define RTCTIME         "rtcTime"
 #define ADRESS_BIN      "adressBin"
 #define DEVICE_STATUS	"deviceStatus"
+#define WIFI_CONFIG "wifiConfig"
+#define MQTT_CONFIG		"mqttConfig"
+#define TIMING_CONFIG	"timingConfig"
+#define SCHEDULES_CONFIG "schedulesConfig"
 
 
 #define YEAR        "year"
