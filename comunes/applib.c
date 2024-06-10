@@ -10,17 +10,62 @@
 #include "esp_log.h"
 #include "logging.h"
 #include "events_device.h"
+#include "configuracion.h"
+#include "conexiones_mqtt.h"
+#include "conexiones.h"
+#include "applib.h"
 
 static const char *TAG = "applib.c";
 
 
-void init_device(DATOS_APLICACION *datosApp) {
+void init_global_parameters_device(DATOS_APLICACION *datosApp) {
 
+	esp_err_t error;
 
 	DATOS_GENERALES *datosGenerales;
 	datosGenerales = (DATOS_GENERALES*) calloc(1, sizeof(DATOS_GENERALES));
 	datosApp->datosGenerales = datosGenerales;
 	create_event_task(datosApp);
+	error = init_application(datosApp);
+	if (error == ESP_OK) {
+		ESP_LOGI(TAG, ""TRAZAR"INICIALIZACION CORRECTA", INFOTRAZA);
+	} else {
+
+	}
+
+
+}
+
+void init_service_device(DATOS_APLICACION *datosApp) {
+
+
+	if (!get_app_config_wifi(datosApp)) {
+
+		ESP_LOGW(TAG, ""TRAZAR"init_service_device: No se configura wifi por lo que no se configuran el resto de servicios de red", INFOTRAZA);
+		return;
+	}
+
+		init_wifi_device();
+		ESP_LOGW(TAG, ""TRAZAR"init_service_device: Wifi configurado y activo", INFOTRAZA);
+
+	if (get_app_config_timing(datosApp)) {
+		sync_app_by_ntp(datosApp);
+		ESP_LOGW(TAG, ""TRAZAR"init_service_device: ntp configurado y activo", INFOTRAZA);
+
+	}
+	if (get_app_config_manage_schedules(datosApp)) {
+
+		iniciar_gestion_programacion(datosApp);
+		ESP_LOGW(TAG, ""TRAZAR" init_service_device: servicio schedule configurado y activo", INFOTRAZA);
+
+	}
+
+	if (get_app_config_mqtt(datosApp)) {
+		init_device_mqtt(datosApp);
+		ESP_LOGW(TAG, ""TRAZAR" init_service_device: servicio mqtt configurado y activo", INFOTRAZA);
+	}
+
+
 
 
 }
