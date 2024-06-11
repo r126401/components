@@ -24,8 +24,7 @@
 static const char *TAG = "MQTT";
 
 
-//extern const uint8_t mqtt_jajica_pem_start[]   asm("_binary_mqtta_eclipse_org_pem_start");
-//extern const uint8_t mqtt_jajica_pem_end[]   asm("_binary_mqtt_eclipse_org_pem_end");
+
 extern const uint8_t mqtt_jajica_pem_start[]   asm("_binary_mqtt_cert_crt_start");
 extern const uint8_t mqtt_jajica_pem_end[]   asm("_binary_mqtt_cert_crt_end");
 
@@ -343,6 +342,7 @@ esp_err_t init_device_mqtt(DATOS_APLICACION *datosApp) {
 		.username = datosApp->datosGenerales->parametrosMqtt.user,
 		.password = datosApp->datosGenerales->parametrosMqtt.password,
 		.cert_pem = (const char *) mqtt_jajica_pem_start,
+		//.cert_pem = get_certificate(datosApp),
     };
 
     ESP_LOGI(TAG, ""TRAZAR"Nos conectamos al broker %s", INFOTRAZA, mqtt_cfg.uri);
@@ -431,15 +431,6 @@ void eliminar_tarea_mqtt() {
 }
 
 
-esp_err_t obtener_certificado(DATOS_APLICACION *datosApp) {
-
-	datosApp->datosGenerales->parametrosMqtt.cert = (char*) mqtt_jajica_pem_start;
-
-
-
-
-	return ESP_OK;
-}
 
 
 

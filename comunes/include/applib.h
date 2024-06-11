@@ -51,5 +51,9 @@ bool get_app_config_wifi(DATOS_APLICACION *datosApp);
 bool get_app_config_mqtt(DATOS_APLICACION *datosApp);
 bool get_app_config_timing(DATOS_APLICACION *datosApp);
 bool get_app_config_manage_schedules(DATOS_APLICACION *datosApp);
-
+void set_new_certificate(DATOS_APLICACION *datosApp, char* text, int size);
+void set_default_certificate(DATOS_APLICACION *datosApp);
+char* get_certificate(DATOS_APLICACION *datosApp);
+bool get_mqtt_tls(DATOS_APLICACION *datosApp);
+void set_mqtt_tls(DATOS_APLICACION *datosApp, bool tls);
 

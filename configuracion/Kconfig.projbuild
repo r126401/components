@@ -1,6 +1,34 @@
 menu "Configuracion General components"
 
 
+config WIFI_ACTIVE
+	bool "Activar la configuracion wifi"
+	default true
+	help
+		Indica si la aplicacion va a utilizar el servicio wifi
+		
+config CLOCK_ACTIVE
+	bool "Activar la configuracion ntp"
+	default true
+	help
+		Indica si la aplicacion va a utilizar el servicio ntp
+
+config SCHEDULE_ACTIVE
+	bool "Activar la configuracion de schedules"
+	default true
+	help
+		Indica si la aplicacion va a utilizar el servicio schedule
+
+config MQTT_ACTIVE
+	bool "Activar la configuracion mqtt"
+	default true
+	help
+		Indica si la aplicacion va a utilizar el servicio mqtt
+
+
+
+
+
 config FACTORY_DATA
 	bool "Forzar carga de configuracion de fabrica"
 	default false
@@ -64,8 +92,8 @@ config PASSWORD_BROKER_DEFECTO
 		Password de acceso al servidor Mqtt
 
 config MQTT_TLS
-        int "habilita conexion segura"
-        default 0
+        bool "habilita conexion segura"
+        default false
         help
             Habilita conexion segura para el servidor mqtt.
 	

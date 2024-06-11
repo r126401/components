@@ -152,3 +152,48 @@ bool get_app_config_manage_schedules(DATOS_APLICACION *datosApp) {
 }
 
 
+void set_new_certificate(DATOS_APLICACION *datosApp, char* text, int size) {
+
+
+
+
+
+}
+
+char* get_certificate(DATOS_APLICACION *datosApp) {
+
+/*
+	static char datos[CONFIG_TAMANO_BUFFER_LECTURA];
+	leer_configuracion(datosApp, "cert_tls", datos);
+	return datos;
+*/
+	return NULL;
+
+
+}
+
+
+void set_default_certificate(DATOS_APLICACION *datosApp) {
+
+
+
+	extern const uint8_t mqtt_jajica_pem_start[]   asm("_binary_mqtt_cert_crt_start");
+	extern const uint8_t mqtt_jajica_pem_end[]   asm("_binary_mqtt_cert_crt_end");
+	int size = mqtt_jajica_pem_end - mqtt_jajica_pem_start;
+	guardar_configuracion(datosApp, "cert_tls", (char*) mqtt_jajica_pem_start);
+	datosApp->datosGenerales->parametrosMqtt.size_cert = size;
+
+}
+
+bool get_mqtt_tls(DATOS_APLICACION *datosApp) {
+
+	return datosApp->datosGenerales->parametrosMqtt.tls;
+
+}
+
+void set_mqtt_tls(DATOS_APLICACION *datosApp, bool tls) {
+
+	datosApp->datosGenerales->parametrosMqtt.tls = tls;
+}
+
+

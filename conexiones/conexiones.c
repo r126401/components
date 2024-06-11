@@ -229,14 +229,12 @@ static void on_got_ip(void *arg, esp_event_base_t event_base,
     ip_event_got_ip_t *event = (ip_event_got_ip_t *)event_data;
     memcpy(&s_ip_addr, &event->ip_info.ip, sizeof(s_ip_addr));
     xEventGroupSetBits(grupo_eventos, CONNECTED_BIT);
-    //registrar_alarma(&datosApp, NOTIFICACION_ALARMA_WIFI, ALARMA_WIFI, ALARMA_OFF, false);
-    //send_event_application(&datosApp, NOTIFICACION_ALARMA_WIFI, EVENT_WIFI_OK);
     if (get_current_status_application(&datosApp) == FACTORY) {
     	send_event(__func__, EVENT_SMARTCONFIG_END);
-    	//change_status_application(&datosApp, STARTING);
+
     }
     send_event(__func__,EVENT_WIFI_OK);
-    //appuser_notify_wifi_connected_ok(&datosApp);
+
 
 
 }

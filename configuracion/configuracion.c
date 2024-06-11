@@ -39,8 +39,6 @@ esp_err_t crear_programas_defecto(DATOS_APLICACION *datosApp) {
 	int longitud;
 	ESP_LOGI(TAG, ""TRAZAR"CREAMOS EL ARRAY DE EJEMPLO", INFOTRAZA);
 	array = cJSON_CreateArray();
-	//cJSON_AddItemToArray(array, item = cJSON_CreateObject());
-	//cJSON_AddStringToObject(item, PROGRAM_ID, "002359007f10");
 	appuser_load_default_schedules(datosApp, array);
 
 	texto = cJSON_Print(array);
@@ -92,7 +90,6 @@ esp_err_t configuracion_a_json(DATOS_APLICACION *datosApp, cJSON *conf) {
 	cJSON_AddNumberToObject(conf, PROGRAM_STATE, datosApp->datosGenerales->estadoProgramacion);
 	cJSON_AddStringToObject(conf, OTA_SW_VERSION, datosApp->datosGenerales->ota.swVersion->version);
 	cJSON_AddBoolToObject(conf, MQTT_TLS, datosApp->datosGenerales->parametrosMqtt.tls);
-	//cJSON_AddStringToObject(conf, MQTT_CERT_TLS, datosApp->datosGenerales->parametrosMqtt.cert);
     appuser_set_configuration_to_json(datosApp, conf);
 
     	ESP_LOGI(TAG, ""TRAZAR"JSON creado:", INFOTRAZA);
@@ -100,6 +97,10 @@ esp_err_t configuracion_a_json(DATOS_APLICACION *datosApp, cJSON *conf) {
 
 
 }
+
+
+
+
 
 /**
  * se guardaran las configuraciones en las claves que se indiquen
@@ -169,7 +170,6 @@ esp_err_t get_default_topics_config(DATOS_APLICACION *datosApp) {
  */
 esp_err_t cargar_configuracion_defecto(DATOS_APLICACION *datosApp) {
 
-
 	esp_err_t error;
 	ESP_LOGI(TAG, ""TRAZAR"Se cargan parametros comunes de defecto", INFOTRAZA);
 #ifdef CONFIG_IDF_TARGET_ESP8266
@@ -191,7 +191,10 @@ esp_err_t cargar_configuracion_defecto(DATOS_APLICACION *datosApp) {
     ESP_LOGE(TAG, ""TRAZAR"Se cargan parametros comunes de defecto despues", INFOTRAZA);
 
     datosApp->datosGenerales->parametrosMqtt.qos = 0;
-    datosApp->datosGenerales->parametrosMqtt.tls = CONFIG_MQTT_TLS;
+    set_mqtt_tls(datosApp, CONFIG_MQTT_TLS);
+    if (get_mqtt_tls(datosApp)) {
+    	set_default_certificate(datosApp);
+    }
     ESP_LOGI(TAG, ""TRAZAR"PARAMETROS CARGADOS EN DATOSAPP", INFOTRAZA);
     datosApp->datosGenerales->estadoProgramacion = INVALID_PROG;
     datosApp->datosGenerales->nProgramacion=0;
@@ -205,13 +208,7 @@ esp_err_t cargar_configuracion_defecto(DATOS_APLICACION *datosApp) {
 		ESP_LOGE(TAG, ""TRAZAR"ERROR AL SALVAR LA CONFIGURACION", INFOTRAZA);
 		return ERROR_REPORT;
 	}
-/*
-    ESP_LOGI(TAG, ""TRAZAR"fin de Carga de configuracion de defecto...", INFOTRAZA);
-    if ((error = configuracion_a_json(datosApp, configuracion) != JSON_OK)) {
-    	ESP_LOGE(TAG, ""TRAZAR"Error al crear el json de configuracion", INFOTRAZA);
-    	return error;
-    }
-    */
+
     crear_programas_defecto(datosApp);
 	return ESP_OK;
 
@@ -301,9 +298,7 @@ esp_err_t init_application(DATOS_APLICACION *datosApp) {
 
 
 	esp_err_t error;
-
-
-	char datos[CONFIG_TAMANO_BUFFER_LECTURA];
+	char *datos;
 
 #ifndef CONFIG_IDF_TARGET_ESP8266
     datosApp->datosGenerales->ota.swVersion = esp_app_get_description();
@@ -311,8 +306,6 @@ esp_err_t init_application(DATOS_APLICACION *datosApp) {
     datosApp->datosGenerales->ota.swVersion = esp_ota_get_app_description();
 #endif
 
-    //free(aplicacion);
-    ESP_LOGE(TAG, ""TRAZAR" VERSION DE LA APLICACION (1)", INFOTRAZA);
     ESP_LOGE(TAG, ""TRAZAR" VERSION DE LA APLICACION %s", INFOTRAZA, datosApp->datosGenerales->ota.swVersion->version);
 
 	error = inicializar_nvs(CONFIG_NAMESPACE, &datosApp->handle);
@@ -322,6 +315,7 @@ esp_err_t init_application(DATOS_APLICACION *datosApp) {
 
 	}
 
+	datos = calloc(CONFIG_TAMANO_BUFFER_LECTURA, sizeof(char));
 
 #ifdef CONFIG_FACTORY_DATA
 		error = cargar_configuracion_defecto(datosApp);
@@ -341,10 +335,15 @@ esp_err_t init_application(DATOS_APLICACION *datosApp) {
 			cargar_configuracion_defecto(datosApp);
 			if (datosApp->datosGenerales->estadoApp != FACTORY) {
 				send_event(__func__,EVENT_ERROR_APP);
+				free(datos);
 				return error;
 			}
 
 		}
+/*
+		leer_configuracion(datosApp, "cert_tls", datos);
+		set_new_certificate(datosApp, datos, 1461);
+*/
 		// leemos la configuracion de programas desde nvs
 		if ((error = leer_configuracion(datosApp, CONFIG_CLAVE_PROGRAMACION, datos)) == ESP_OK) {
 			ESP_LOGI(TAG, ""TRAZAR"Programas leidos desde nvs", INFOTRAZA);
@@ -359,6 +358,7 @@ esp_err_t init_application(DATOS_APLICACION *datosApp) {
 	ESP_LOGE(TAG, ""TRAZAR" ESTADO DE LA APLICACION %d", INFOTRAZA, datosApp->datosGenerales->estadoApp);
 
 
+	free(datos);
 	return error;
 }
 
@@ -489,6 +489,10 @@ esp_err_t salvar_configuracion_general(DATOS_APLICACION *datosApp) {
 		}
 		cJSON_Delete(configuracion);
 
+	}
+
+	if (get_mqtt_tls(datosApp)) {
+		guardar_configuracion(datosApp, "cert_tls", get_certificate(datosApp));
 	}
 
 

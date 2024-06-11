@@ -164,8 +164,8 @@ void otaesp_task(void *pvParameter)
     	ESP_LOGI(TAG, ""TRAZAR"Usamos el almacen global", INFOTRAZA);
 
     } else {
-    	ESP_LOGI(TAG, ""TRAZAR"El certificado es : %s\n", INFOTRAZA,datosApp->datosGenerales->parametrosMqtt.cert);
-    	config.cert_pem = datosApp->datosGenerales->parametrosMqtt.cert;
+    	//ESP_LOGI(TAG, ""TRAZAR"El certificado es : %s\n", INFOTRAZA,datosApp->datosGenerales->parametrosMqtt.cert);
+    	//config.cert_pem = datosApp->datosGenerales->parametrosMqtt.cert;
     	//config.cert_pem = (const char *)mqtt_jajica_pem_start;
     	config.transport_type = HTTP_TRANSPORT_OVER_SSL;
     	ESP_LOGI(TAG, ""TRAZAR"Usamos el almacen local porque tls es false en mqtt", INFOTRAZA);
