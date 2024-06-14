@@ -47,7 +47,7 @@ void init_service_device(DATOS_APLICACION *datosApp) {
 
 		init_wifi_device();
 		ESP_LOGW(TAG, ""TRAZAR"init_service_device: Wifi configurado y activo", INFOTRAZA);
-
+/*
 	if (get_app_config_timing(datosApp)) {
 		sync_app_by_ntp(datosApp);
 		ESP_LOGW(TAG, ""TRAZAR"init_service_device: ntp configurado y activo", INFOTRAZA);
@@ -59,9 +59,10 @@ void init_service_device(DATOS_APLICACION *datosApp) {
 		ESP_LOGW(TAG, ""TRAZAR" init_service_device: servicio schedule configurado y activo", INFOTRAZA);
 
 	}
-
+*/
 	if (get_app_config_mqtt(datosApp)) {
-		init_device_mqtt(datosApp);
+		//init_device_mqtt(datosApp);
+		crear_tarea_mqtt(datosApp);
 		ESP_LOGW(TAG, ""TRAZAR" init_service_device: servicio mqtt configurado y activo", INFOTRAZA);
 	}
 
@@ -162,12 +163,10 @@ void set_new_certificate(DATOS_APLICACION *datosApp, char* text, int size) {
 
 char* get_certificate(DATOS_APLICACION *datosApp) {
 
-/*
 	static char datos[CONFIG_TAMANO_BUFFER_LECTURA];
 	leer_configuracion(datosApp, "cert_tls", datos);
 	return datos;
-*/
-	return NULL;
+
 
 
 }
@@ -178,10 +177,9 @@ void set_default_certificate(DATOS_APLICACION *datosApp) {
 
 
 	extern const uint8_t mqtt_jajica_pem_start[]   asm("_binary_mqtt_cert_crt_start");
-	extern const uint8_t mqtt_jajica_pem_end[]   asm("_binary_mqtt_cert_crt_end");
-	int size = mqtt_jajica_pem_end - mqtt_jajica_pem_start;
+	//extern const uint8_t mqtt_jajica_pem_end[]   asm("_binary_mqtt_cert_crt_end");
 	guardar_configuracion(datosApp, "cert_tls", (char*) mqtt_jajica_pem_start);
-	datosApp->datosGenerales->parametrosMqtt.size_cert = size;
+
 
 }
 

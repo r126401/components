@@ -245,6 +245,14 @@ void process_event_wifi_ok(DATOS_APLICACION *datosApp) {
 		change_status_application(datosApp, STARTING);
 		break;
 
+	case STARTING:
+		/*
+		if (get_app_config_timing(datosApp)) {
+			sync_app_by_ntp(datosApp);
+		}
+		*/
+		break;
+
 	default:
 
 		break;
@@ -253,7 +261,7 @@ void process_event_wifi_ok(DATOS_APLICACION *datosApp) {
 	}
 
 	send_alarm(datosApp, ALARM_WIFI, ALARM_OFF, true);
-	//sync_app_by_ntp(datosApp);
+
 	appuser_notify_wifi_connected_ok(datosApp);
 	if (datosApp->handle_mqtt == NULL) {
 		ESP_LOGI(TAG, ""TRAZAR"INICIAMOS LA TAREA MQTT PORQUE NO EXISTE", INFOTRAZA);
@@ -312,6 +320,9 @@ void process_event_ntp_ok(DATOS_APLICACION *datosApp) {
 
 	}
 	appuser_notify_sntp_ok(datosApp);
+	if (get_app_config_manage_schedules(datosApp)) {
+		iniciar_gestion_programacion(datosApp);
+	}
 }
 
 void process_event_error_ntp(DATOS_APLICACION *datosApp) {
@@ -423,6 +434,11 @@ void process_event_mqtt_ok(DATOS_APLICACION *datosApp) {
 	switch(datosApp->datosGenerales->estadoApp) {
 
 	case STARTING:
+
+		if (get_app_config_timing(datosApp)) {
+			sync_app_by_ntp(datosApp);
+		}
+
 		change_status_application(datosApp, CHECK_PROGRAMS);
 		appuser_notify_application_started(datosApp);
 		break;

@@ -25,8 +25,8 @@ static const char *TAG = "MQTT";
 
 
 
-extern const uint8_t mqtt_jajica_pem_start[]   asm("_binary_mqtt_cert_crt_start");
-extern const uint8_t mqtt_jajica_pem_end[]   asm("_binary_mqtt_cert_crt_end");
+//extern const uint8_t mqtt_jajica_pem_start[]   asm("_binary_mqtt_cert_crt_start");
+//extern const uint8_t mqtt_jajica_pem_end[]   asm("_binary_mqtt_cert_crt_end");
 
 extern DATOS_APLICACION datosApp;
 
@@ -297,8 +297,6 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
             ESP_LOGI(TAG, ""TRAZAR"MQTT_EVENT_SUBSCRIBED: SUBSCRITOS CON EXITO AL TOPIC :%s msg_id=%d", INFOTRAZA, datosApp.datosGenerales->parametrosMqtt.subscribe, msg_id);
             if (arranque == false ){
             	send_event(__func__,EVENT_MQTT_OK);
-            	//appuser_notify_application_started(&datosApp);
-            	//datosApp.datosGenerales->estadoApp = ESPERA_FIN_ARRANQUE;
             	arranque = true;
             }
             break;
@@ -335,22 +333,27 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 esp_err_t init_device_mqtt(DATOS_APLICACION *datosApp) {
 	esp_err_t error;
 
+	ESP_LOGI(TAG, ""TRAZAR" Comenzamos el init mqtt", INFOTRAZA);
     esp_mqtt_client_config_t mqtt_cfg = {
 		.uri = datosApp->datosGenerales->parametrosMqtt.broker,
 		.port = datosApp->datosGenerales->parametrosMqtt.port,
         .event_handle = mqtt_event_handler,
 		.username = datosApp->datosGenerales->parametrosMqtt.user,
 		.password = datosApp->datosGenerales->parametrosMqtt.password,
-		.cert_pem = (const char *) mqtt_jajica_pem_start,
-		//.cert_pem = get_certificate(datosApp),
+		//.cert_pem = (const char *) mqtt_jajica_pem_start,
+		.cert_pem = get_certificate(datosApp),
     };
+
 
     ESP_LOGI(TAG, ""TRAZAR"Nos conectamos al broker %s", INFOTRAZA, mqtt_cfg.uri);
     //send_event(__func__, EVENT_CONNECT_MQTT);
     client = esp_mqtt_client_init(&mqtt_cfg);
     error = esp_mqtt_client_start(client);
 
+    ESP_LOGI(TAG, ""TRAZAR" antes de retornar init mqtt", INFOTRAZA);
 
+
+    vTaskDelete(NULL);
     return error;
 }
 
@@ -407,7 +410,7 @@ void crear_tarea_mqtt(DATOS_APLICACION *datosApp) {
 
 
 
-    xTaskCreatePinnedToCore(mqtt_task, "mqtt_task", CONFIG_RESOURCE_MQTT_TASK, (void*) datosApp, 4, &handle,2);
+    xTaskCreate(init_device_mqtt, "mqtt_task", CONFIG_RESOURCE_MQTT_TASK, (DATOS_APLICACION*) datosApp, 4, &handle);
     configASSERT(handle);
 
     if (handle == NULL) {
@@ -416,6 +419,8 @@ void crear_tarea_mqtt(DATOS_APLICACION *datosApp) {
     } else {
     	ESP_LOGE(TAG, ""TRAZAR"handle no es nulo", INFOTRAZA);
     }
+
+
 
 
 }

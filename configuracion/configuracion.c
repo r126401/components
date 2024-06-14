@@ -340,10 +340,10 @@ esp_err_t init_application(DATOS_APLICACION *datosApp) {
 			}
 
 		}
-/*
+
 		leer_configuracion(datosApp, "cert_tls", datos);
 		set_new_certificate(datosApp, datos, 1461);
-*/
+
 		// leemos la configuracion de programas desde nvs
 		if ((error = leer_configuracion(datosApp, CONFIG_CLAVE_PROGRAMACION, datos)) == ESP_OK) {
 			ESP_LOGI(TAG, ""TRAZAR"Programas leidos desde nvs", INFOTRAZA);
