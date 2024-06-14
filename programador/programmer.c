@@ -997,17 +997,7 @@ esp_err_t parar_gestion_programacion(DATOS_APLICACION *datosApp) {
 	return ESP_OK;
 }
 
-void change_status_application(DATOS_APLICACION *datosApp, ESTADO_APP new_status) {
 
-
-
-	ESP_LOGW(TAG, ""TRAZAR"ESTADO ANTERIOR %s", INFOTRAZA, status2mnemonic(datosApp->datosGenerales->estadoApp));
-	datosApp->datosGenerales->estadoApp = new_status;
-	ESP_LOGW(TAG, ""TRAZAR"ESTADO POSTERIOR %s", INFOTRAZA, status2mnemonic(new_status));
-	appuser_notify_app_status(datosApp, new_status);
-
-
-}
 
 
 

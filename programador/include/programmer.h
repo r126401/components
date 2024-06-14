@@ -274,6 +274,6 @@ esp_err_t iniciar_gestion_programacion(DATOS_APLICACION *datosApp);
 esp_err_t parar_gestion_programacion(DATOS_APLICACION *datosApp);
 void temporizacion_intermedia(void *arg);
 esp_err_t logica_temporizacion(DATOS_APLICACION *datosApp);
-void change_status_application(DATOS_APLICACION *datosApp, ESTADO_APP new_status);
+
 #endif /* PROGRAMMER_H */
 

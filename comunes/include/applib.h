@@ -41,7 +41,7 @@ char* get_app_publish_topic(DATOS_APLICACION *datosApp, uint8_t index);
 char* get_app_subscribe_topic(DATOS_APLICACION *datosApp, uint8_t index);
 void set_app_publish_topic(DATOS_APLICACION *datosApp, uint8_t index, char* topic);
 void set_app_subscribe_topic(DATOS_APLICACION *datosApp, uint8_t index, char* topic);
-void init_global_parameters_device(DATOS_APLICACION *datosApp);
+esp_err_t init_global_parameters_device(DATOS_APLICACION *datosApp);
 void init_service_device(DATOS_APLICACION *datosApp);
 void set_app_config_wifi(DATOS_APLICACION *datosApp, bool flag);
 void set_app_config_mqtt(DATOS_APLICACION *datosApp, bool flag);
@@ -56,4 +56,4 @@ void set_default_certificate(DATOS_APLICACION *datosApp);
 char* get_certificate(DATOS_APLICACION *datosApp);
 bool get_mqtt_tls(DATOS_APLICACION *datosApp);
 void set_mqtt_tls(DATOS_APLICACION *datosApp, bool tls);
-
+void change_status_application(DATOS_APLICACION *datosApp, ESTADO_APP new_status);

@@ -3,25 +3,28 @@ menu "Configuracion General components"
 
 config WIFI_ACTIVE
 	bool "Activar la configuracion wifi"
-	default true
+	default false
 	help
 		Indica si la aplicacion va a utilizar el servicio wifi
 		
 config CLOCK_ACTIVE
+	depends on WIFI_ACTIVE
 	bool "Activar la configuracion ntp"
-	default true
+	default false
 	help
 		Indica si la aplicacion va a utilizar el servicio ntp
 
 config SCHEDULE_ACTIVE
+	depends on CLOCK_ACTIVE
 	bool "Activar la configuracion de schedules"
-	default true
+	default false
 	help
 		Indica si la aplicacion va a utilizar el servicio schedule
 
 config MQTT_ACTIVE
+	depends on WIFI_ACTIVE
 	bool "Activar la configuracion mqtt"
-	default true
+	default false
 	help
 		Indica si la aplicacion va a utilizar el servicio mqtt
 
@@ -56,6 +59,14 @@ config CLAVE_PROGRAMA_ESTATICO
 	default "programa_estatico_real"
 	help
 		Clave nvs para cargar el programa activo cuando arrancas de 0
+		
+
+config CLAVE_CERTIFICADO_TLS
+	string "Clave nvs para cargar el certificado tls"
+	default "cert_tls"
+	help
+		Clave nvs para cargar el certificado tls
+		
 		
 config NAMESPACE
 	string "Espacio de nombre configuracion"

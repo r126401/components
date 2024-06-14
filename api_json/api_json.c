@@ -31,7 +31,6 @@
 #define DELAY_TIME_RESET 3000 //ms o 3s
 
 static const char *TAG = "API_JSON";
-extern xQueueHandle cola_mqtt;
 esp_timer_handle_t tiempo;
 
 
@@ -400,6 +399,11 @@ void process_unknown_message(DATOS_APLICACION *datosApp, char *message) {
      char fecha[100];
      cJSON *respuesta = NULL;
      char *mac = NULL;
+
+     if (!get_app_config_manage_schedules(datosApp)) {
+    	 ESP_LOGW(TAG, ""TRAZAR" Se actualiza la hora ya que no esta activado el schedule", INFOTRAZA);
+    	 actualizar_hora(&datosApp->datosGenerales->clock);
+     }
 
      sprintf(fecha, "%02d/%02d/%d %02d:%02d:%02d",
         datosApp->datosGenerales->clock.date.tm_mday,datosApp->datosGenerales->clock.date.tm_mon+1, datosApp->datosGenerales->clock.date.tm_year+1900,
@@ -1195,7 +1199,6 @@ esp_err_t send_spontaneous_report(DATOS_APLICACION *datosApp, enum SPONTANEOUS_T
         default:
         	cJSON_AddStringToObject(respuesta, MNEMONIC_REPORT, report_2_mnemonic(tipoInforme));
             codigoRespuesta(respuesta, RESP_NOK);
-            printf("enviarReporte--> Salida no prevista\n");
             break;
     }
 

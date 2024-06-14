@@ -294,7 +294,7 @@ esp_err_t leer_configuracion(DATOS_APLICACION *datosApp, char* clave, char* valo
  * @brief Rutina principal que trata la configuracion de arranque del dispositivo.
  *
  */
-esp_err_t init_application(DATOS_APLICACION *datosApp) {
+esp_err_t init_device(DATOS_APLICACION *datosApp) {
 
 
 	esp_err_t error;
@@ -305,6 +305,10 @@ esp_err_t init_application(DATOS_APLICACION *datosApp) {
 #else
     datosApp->datosGenerales->ota.swVersion = esp_ota_get_app_description();
 #endif
+
+
+
+
 
     ESP_LOGE(TAG, ""TRAZAR" VERSION DE LA APLICACION %s", INFOTRAZA, datosApp->datosGenerales->ota.swVersion->version);
 
@@ -329,7 +333,6 @@ esp_err_t init_application(DATOS_APLICACION *datosApp) {
 			ESP_LOGI(TAG, ""TRAZAR" Configuracion general leida correctamente",INFOTRAZA);
 			// cargamos en la estructura dinamica la configuracion leida
 			error = json_a_datos_aplicacion(datosApp, datos);
-			send_event(__func__,EVENT_APP_OK);
 		} else {
 			ESP_LOGW(TAG, ""TRAZAR"La configuracion no se ha cargado. Se carga la de defecto.", INFOTRAZA);
 			cargar_configuracion_defecto(datosApp);
@@ -341,24 +344,31 @@ esp_err_t init_application(DATOS_APLICACION *datosApp) {
 
 		}
 
-		leer_configuracion(datosApp, "cert_tls", datos);
-		set_new_certificate(datosApp, datos, 1461);
-
-		// leemos la configuracion de programas desde nvs
-		if ((error = leer_configuracion(datosApp, CONFIG_CLAVE_PROGRAMACION, datos)) == ESP_OK) {
-			ESP_LOGI(TAG, ""TRAZAR"Programas leidos desde nvs", INFOTRAZA);
-			// cargamos en la estructura de programacion dinamica la configuracion leida
-			cargar_programas(datosApp, datos);
-		} else {
-			ESP_LOGW(TAG, ""TRAZAR"No se ha encontrado programacion en el dispositivo", INFOTRAZA);
-			error = ESP_OK;
+		if (get_app_config_mqtt(datosApp) && get_mqtt_tls(datosApp)) {
+			leer_configuracion(datosApp, CONFIG_CLAVE_CERTIFICADO_TLS, datos);
+			set_new_certificate(datosApp, datos, 1461);
 		}
+
+		if (get_app_config_manage_schedules(datosApp)) {
+			// leemos la configuracion de programas desde nvs
+			if ((error = leer_configuracion(datosApp, CONFIG_CLAVE_PROGRAMACION, datos)) == ESP_OK) {
+				ESP_LOGI(TAG, ""TRAZAR"Programas leidos desde nvs", INFOTRAZA);
+				// cargamos en la estructura de programacion dinamica la configuracion leida
+				cargar_programas(datosApp, datos);
+			} else {
+				ESP_LOGW(TAG, ""TRAZAR"No se ha encontrado programacion en el dispositivo", INFOTRAZA);
+				error = ESP_OK;
+			}
+		}
+
+
 #endif
 
 	ESP_LOGE(TAG, ""TRAZAR" ESTADO DE LA APLICACION %d", INFOTRAZA, datosApp->datosGenerales->estadoApp);
 
 
 	free(datos);
+	send_event(__func__,EVENT_APP_OK);
 	return error;
 }
 
@@ -492,7 +502,7 @@ esp_err_t salvar_configuracion_general(DATOS_APLICACION *datosApp) {
 	}
 
 	if (get_mqtt_tls(datosApp)) {
-		guardar_configuracion(datosApp, "cert_tls", get_certificate(datosApp));
+		guardar_configuracion(datosApp, CONFIG_CLAVE_CERTIFICADO_TLS, get_certificate(datosApp));
 	}
 
 

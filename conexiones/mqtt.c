@@ -30,7 +30,7 @@ static const char *TAG = "MQTT";
 
 extern DATOS_APLICACION datosApp;
 
-xQueueHandle cola_mqtt = NULL;
+//xQueueHandle cola_mqtt = NULL;
 esp_mqtt_client_handle_t client;
 extern TaskHandle_t handle;
 
@@ -79,7 +79,7 @@ esp_err_t unsubscribe_topic(DATOS_APLICACION *datosApp, int index_topic) {
 
 }
 
-
+/*
 
 void mqtt_task(void *arg) {
 
@@ -108,7 +108,7 @@ void mqtt_task(void *arg) {
 
 
 }
-
+*/
 
 
 #ifndef CONFIG_IDF_TARGET_ESP8266
@@ -271,7 +271,6 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 {
     esp_mqtt_client_handle_t client = event->client;
     int msg_id = -1;
-    // your_context_t *context = event->context;
     datosApp.handle_mqtt = event;
     static bool arranque = false;
 
@@ -367,7 +366,11 @@ esp_err_t publicar_mensaje(DATOS_APLICACION *datosApp, char* topic, char* messag
 
 	int msg_id = 0;
 
+	if (!get_app_config_mqtt(datosApp)) {
+		ESP_LOGW(TAG, ""TRAZAR" No envia nada porque la configuracion mqtt esta desactivada", INFOTRAZA);
+		return ESP_FAIL;
 
+	}
 
 	msg_id = esp_mqtt_client_publish(client,
 			topic,
@@ -382,6 +385,13 @@ esp_err_t publicar_mensaje(DATOS_APLICACION *datosApp, char* topic, char* messag
 esp_err_t publicar_mensaje_json(DATOS_APLICACION *datosApp, cJSON *mensaje, char *topic) {
 
 	char* texto;
+
+	if (!get_app_config_mqtt(datosApp)) {
+		ESP_LOGW(TAG, ""TRAZAR" No envia nada porque la configuracion mqtt esta desactivada", INFOTRAZA);
+		return ESP_FAIL;
+
+	}
+
 	ESP_LOGW(TAG, ""TRAZAR"publicar_mensaje_json: Nueva peticion", INFOTRAZA);
 	if (client == NULL) {
 		ESP_LOGE(TAG, ""TRAZAR"NO HAY CONEXION CON EL BROKER Y NO SE PUEDE ENVIAR EL MENSAJE", INFOTRAZA);
