@@ -427,6 +427,7 @@ typedef enum ANSWER_CODE {
  esp_err_t notificar_evento_alarma(DATOS_APLICACION *datosApp, int tipo_alarma, char* mnemonico_alarma);
  esp_err_t visualizar_alarmas_activas(DATOS_APLICACION *datosApp, cJSON *respuesta);
  void tarea_upgrade_firmware(DATOS_APLICACION *datosApp);
+ void upgrade_ota_esp8266(DATOS_APLICACION *datosApp);
  char* report_2_mnemonic(SPONTANEOUS_TYPE report);
  esp_err_t send_spontaneous_report(DATOS_APLICACION *datosApp, enum SPONTANEOUS_TYPE tipoInforme);
  esp_err_t create_header_report(DATOS_APLICACION *datosApp, cJSON *message, SPONTANEOUS_TYPE spontaneous_type);

@@ -292,6 +292,9 @@ esp_err_t leer_configuracion(DATOS_APLICACION *datosApp, char* clave, char* valo
 
 /**
  * @brief Rutina principal que trata la configuracion de arranque del dispositivo.
+ * Inicializa la libreria nvs
+ * Carga la configuracion datosApp desde nvs o la crea por defecto si no existe
+ * Devuelve el estado de la inicializacion.
  *
  */
 esp_err_t init_device(DATOS_APLICACION *datosApp) {
@@ -509,7 +512,7 @@ esp_err_t salvar_configuracion_general(DATOS_APLICACION *datosApp) {
 	return error;
 }
 
-esp_err_t ota_a_json(DATOS_APLICACION *datosApp) {
+esp_err_t set_upgrade_data(DATOS_APLICACION *datosApp) {
 
 	esp_err_t error;
 	char *texto;
@@ -542,7 +545,7 @@ esp_err_t ota_a_json(DATOS_APLICACION *datosApp) {
 	return error;
 }
 
-esp_err_t json_a_ota(DATOS_APLICACION *datosApp) {
+esp_err_t get_upgrade_data(DATOS_APLICACION *datosApp) {
 
 	esp_err_t error;
 	cJSON *nodo;

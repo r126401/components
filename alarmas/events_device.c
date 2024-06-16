@@ -465,7 +465,7 @@ void process_event_upgrade_firmware(DATOS_APLICACION *datosApp) {
 
 	change_status_application(datosApp, UPGRADING);
 	appuser_notify_start_ota(datosApp);
-	send_spontaneous_report(datosApp, START_UPGRADE_OTA);
+	//send_spontaneous_report(datosApp, START_UPGRADE_OTA);
 }
 
 

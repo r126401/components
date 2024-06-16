@@ -484,7 +484,6 @@ void process_unknown_message(DATOS_APLICACION *datosApp, char *message) {
 
 
      cJSON *campo = NULL;
-     ESP_LOGI(TAG, ""TRAZAR"extraer_dato_int", INFOTRAZA);
      campo = cJSON_GetObjectItem(nodo, nombre_campo);
      if((campo != NULL) && (campo->type == cJSON_Number)) {
         *dato = campo->valueint;
@@ -1034,12 +1033,13 @@ esp_err_t   upgrade_ota(cJSON *peticion, struct DATOS_APLICACION *datosApp, cJSO
    extraer_dato_string(nodo, OTA_SW_VERSION, datosApp->datosGenerales->ota.newVersion);
    extraer_dato_int(nodo, OTA_PORT, &datosApp->datosGenerales->ota.puerto);
    ESP_LOGI(TAG, ""TRAZAR"PUERTO: %d", INFOTRAZA, datosApp->datosGenerales->ota.puerto);
-
+   salvar_configuracion_general(datosApp);
 
 
    if (datosApp->datosGenerales->estadoApp != UPGRADING) {
 	   codigoRespuesta(respuesta, RESP_OK);
 	   if (is_esp8266()) {
+		   set_upgrade_data(datosApp);
 		   ejecutar_reset(datosApp, NULL);
 	   } else {
 		   tarea_upgrade_firmware(datosApp);

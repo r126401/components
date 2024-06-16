@@ -118,8 +118,8 @@ esp_err_t crear_programas_defecto(DATOS_APLICACION *datosApp);
  * @param ota
  *
  */
-esp_err_t ota_a_json(DATOS_APLICACION *datosApp);
-esp_err_t json_a_ota(DATOS_APLICACION *datosApp);
+esp_err_t set_upgrade_data(DATOS_APLICACION *datosApp);
+esp_err_t get_upgrade_data(DATOS_APLICACION *datosApp);
 /**
  * Chequea si la configuracion del dispositivo es de fabrica.
  */

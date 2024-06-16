@@ -23,6 +23,8 @@
 #include "configuracion.h"
 #include "dialogos_json.h"
 #include "events_device.h"
+#include "applib.h"
+#include "nvslib.h"
 
 
 
@@ -124,7 +126,7 @@ void otaesp_task(void *pvParameter)
 #ifndef CONFIG_IDF_TARGET_ESP8266
 	aplicacion = esp_app_get_description();
 #else
-	esp_ota_get_app_description();
+	aplicacion = esp_ota_get_app_description();
 #endif
 
 	ESP_LOGW(TAG, ""TRAZAR"Comienzo upgrade firmware", INFOTRAZA);
@@ -132,7 +134,6 @@ void otaesp_task(void *pvParameter)
     if (ip == NULL) {
     	ESP_LOGE(TAG, "Error al traducir de nombre a ip");
     }
-
 
     sprintf(url, "https://%s:%d/firmware/%s/%s", ip, datosApp->datosGenerales->ota.puerto,
     		aplicacion->project_name,datosApp->datosGenerales->ota.file);
@@ -154,7 +155,11 @@ void otaesp_task(void *pvParameter)
     };
 #endif
 
+    config.transport_type = HTTP_TRANSPORT_OVER_SSL;
+    config.cert_pem = get_certificate(datosApp);
+    config.skip_cert_common_name_check = true;
 
+/*
 
     if (datosApp->datosGenerales->parametrosMqtt.tls == true) {
 
@@ -172,6 +177,7 @@ void otaesp_task(void *pvParameter)
 
     }
     config.skip_cert_common_name_check = true;
+    */
 #ifndef CONFIG_IDF_TARGET_ESP8266
     esp_err_t ret = esp_https_ota(&ota_config);
 #else
@@ -208,6 +214,17 @@ void otaesp_task(void *pvParameter)
 
 void tarea_upgrade_firmware(DATOS_APLICACION *datosApp) {
 	xTaskCreate(otaesp_task, "ota_example_task", CONFIG_RESOURCE_OTA_TASK, datosApp, 5, NULL);
+
+}
+
+
+void upgrade_ota_esp8266(DATOS_APLICACION *datosApp) {
+
+	get_certificate(datosApp);
+	//tarea_upgrade_firmware(datosApp);
+	//borrar_clave(&datosApp->handle, "UPGRADE");
+	borrar_clave(&datosApp->handle, "UPGRADE");
+	otaesp_task(datosApp);
 
 }
 

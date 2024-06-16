@@ -329,8 +329,10 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 
 
 
-esp_err_t init_device_mqtt(DATOS_APLICACION *datosApp) {
+void init_device_mqtt(void *arg) {
 	esp_err_t error;
+
+	DATOS_APLICACION *datosApp = (DATOS_APLICACION*) arg;
 
 	ESP_LOGI(TAG, ""TRAZAR" Comenzamos el init mqtt", INFOTRAZA);
     esp_mqtt_client_config_t mqtt_cfg = {
@@ -353,7 +355,7 @@ esp_err_t init_device_mqtt(DATOS_APLICACION *datosApp) {
 
 
     vTaskDelete(NULL);
-    return error;
+
 }
 
 
@@ -420,7 +422,7 @@ void crear_tarea_mqtt(DATOS_APLICACION *datosApp) {
 
 
 
-    xTaskCreate(init_device_mqtt, "mqtt_task", CONFIG_RESOURCE_MQTT_TASK, (DATOS_APLICACION*) datosApp, 4, &handle);
+    xTaskCreate(init_device_mqtt, "mqtt_task", CONFIG_RESOURCE_MQTT_TASK, datosApp, 4, &handle);
     configASSERT(handle);
 
     if (handle == NULL) {
