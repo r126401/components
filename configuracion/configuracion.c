@@ -297,7 +297,7 @@ esp_err_t leer_configuracion(DATOS_APLICACION *datosApp, char* clave, char* valo
  * Devuelve el estado de la inicializacion.
  *
  */
-esp_err_t init_device(DATOS_APLICACION *datosApp) {
+esp_err_t init_global_parameters(DATOS_APLICACION *datosApp) {
 
 
 	esp_err_t error;
@@ -347,12 +347,17 @@ esp_err_t init_device(DATOS_APLICACION *datosApp) {
 
 		}
 
-		if (get_app_config_mqtt(datosApp) && get_mqtt_tls(datosApp)) {
-			leer_configuracion(datosApp, CONFIG_CLAVE_CERTIFICADO_TLS, datos);
-			set_new_certificate(datosApp, datos, 1461);
+		if (using_mqtt(datosApp) && get_mqtt_tls(datosApp)) {
+			if ((error = leer_configuracion(datosApp, CONFIG_CLAVE_CERTIFICADO_TLS, datos)) == ESP_OK) {
+				set_new_certificate(datosApp, datos, 1461);
+			} else {
+				send_event(__func__, EVENT_ERROR_APP);
+				return error;
+			}
+
 		}
 
-		if (get_app_config_manage_schedules(datosApp)) {
+		if (using_schedules(datosApp)) {
 			// leemos la configuracion de programas desde nvs
 			if ((error = leer_configuracion(datosApp, CONFIG_CLAVE_PROGRAMACION, datos)) == ESP_OK) {
 				ESP_LOGI(TAG, ""TRAZAR"Programas leidos desde nvs", INFOTRAZA);
@@ -371,7 +376,7 @@ esp_err_t init_device(DATOS_APLICACION *datosApp) {
 
 
 	free(datos);
-	send_event(__func__,EVENT_APP_OK);
+	send_event(__func__,EVENT_DEVICE_OK);
 	return error;
 }
 

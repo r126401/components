@@ -133,6 +133,7 @@ void otaesp_task(void *pvParameter)
     ip = name_to_ip(datosApp->datosGenerales->ota.server);
     if (ip == NULL) {
     	ESP_LOGE(TAG, "Error al traducir de nombre a ip");
+    	return;
     }
 
     sprintf(url, "https://%s:%d/firmware/%s/%s", ip, datosApp->datosGenerales->ota.puerto,
@@ -223,7 +224,7 @@ void upgrade_ota_esp8266(DATOS_APLICACION *datosApp) {
 	get_certificate(datosApp);
 	//tarea_upgrade_firmware(datosApp);
 	//borrar_clave(&datosApp->handle, "UPGRADE");
-	borrar_clave(&datosApp->handle, "UPGRADE");
+	delete_key_upgrade(&datosApp->handle, "UPGRADE");
 	otaesp_task(datosApp);
 
 }

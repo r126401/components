@@ -269,7 +269,7 @@ void gestion_programas(void *arg);
 SCHEDULE_SEARCH calcular_programa_activo(DATOS_APLICACION *datosApp, time_t *t_siguiente_intervalo);
 esp_err_t actualizar_programa_real(DATOS_APLICACION *datosApp);
 esp_err_t start_schedule(DATOS_APLICACION *datosApp);
-esp_err_t iniciar_gestion_programacion(DATOS_APLICACION *datosApp);
+esp_err_t init_schedule_service(DATOS_APLICACION *datosApp);
 //int ajustarProgramacion(TIME_PROGRAM *programacion, uint8_t *nProgramacion, NTP_CLOCK *clock);
 esp_err_t parar_gestion_programacion(DATOS_APLICACION *datosApp);
 void temporizacion_intermedia(void *arg);

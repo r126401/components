@@ -64,7 +64,7 @@ esp_err_t escribir_dato_string_nvs(nvs_handle *handle, char* clave, char* valor)
  * @return
  */
 esp_err_t cerrar_nvs(nvs_handle handle);
-esp_err_t borrar_clave(nvs_handle *handle, char* clave);
+esp_err_t delete_key_upgrade(nvs_handle *handle, char* clave);
 
 
 

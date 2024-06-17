@@ -24,7 +24,7 @@ esp_err_t publicar_mensaje(DATOS_APLICACION *datosApp, char* topic, char* messag
 esp_err_t publicar_mensaje_json(DATOS_APLICACION *datosAppp, cJSON *mensaje, char *topic);
 esp_err_t publicar_mensaje_json_generico(DATOS_APLICACION *datosApp, cJSON *mensaje, char* topic);
 void mqtt_task(void *datosApp);
-void crear_tarea_mqtt(DATOS_APLICACION *datosApp);
+void init_mqtt_service(DATOS_APLICACION *datosApp);
 void eliminar_tarea_mqtt();
 esp_err_t obtener_certificado(DATOS_APLICACION *datosApp);
 

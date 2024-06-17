@@ -972,7 +972,9 @@ esp_err_t start_schedule(DATOS_APLICACION *datosApp) {
  * @param datosApp
  * @return
  */
-esp_err_t iniciar_gestion_programacion(DATOS_APLICACION *datosApp) {
+esp_err_t init_schedule_service(DATOS_APLICACION *datosApp) {
+
+
 
     const esp_timer_create_args_t schedules_shot_timer_args = {
             .callback = &gestion_programas,
@@ -983,7 +985,7 @@ esp_err_t iniciar_gestion_programacion(DATOS_APLICACION *datosApp) {
 
     ESP_ERROR_CHECK(esp_timer_create(&schedules_shot_timer_args, &temporizador));
     ESP_ERROR_CHECK(esp_timer_start_periodic(temporizador, 1000000));
-    send_event(__func__,EVENT_CHECK_PROGRAMS);
+    send_event(__func__,EVENT_SCHEDULES_OK);
     //change_status_application(datosApp, CHECK_PROGRAMS);
 
 

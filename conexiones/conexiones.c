@@ -409,7 +409,7 @@ esp_err_t init_wifi_device() {
 }
 
 
-void sync_app_by_ntp(DATOS_APLICACION *datosApp) {
+void init_ntp_service(DATOS_APLICACION *datosApp) {
 
 
 
@@ -450,7 +450,7 @@ void wifi_task(void *arg) {
 		init_wifi_device();
 		//sync_app_by_ntp(datosApp);
 		//crear_tarea_mqtt(datosApp);
-		iniciar_gestion_programacion(datosApp);
+		init_schedule_service(datosApp);
 	}
 
 	vTaskDelete(NULL);

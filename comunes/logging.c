@@ -86,6 +86,10 @@ char* status2mnemonic(ESTADO_APP status) {
 	case RESTARTING:
 		strcpy(mnemonic, "RESTARTING");
 		break;
+	case APP_STARTED:
+		strcpy(mnemonic, "APP_STARTED");
+		break;
+
 
 	}
 	return mnemonic;

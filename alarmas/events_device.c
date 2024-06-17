@@ -146,8 +146,13 @@ char* event2mnemonic(EVENT_TYPE event) {
 	case EVENT_ERROR_UPGRADE:
 		strcpy(mnemonic, "EVENT_END_UPGRADE");
 		break;
+	case EVENT_SCHEDULES_OK:
+		strcpy(mnemonic, "EVENT_SCHEDULES_OK");
+		break;
 
 	}
+
+
 
 
 
@@ -163,10 +168,7 @@ void process_event_warning_device(DATOS_APLICACION *datosApp) {
 }
 
 
-void process_event_error_app(DATOS_APLICACION *datosApp) {
 
-
-}
 
 void process_event_error_nvs(DATOS_APLICACION *datosApp) {
 
@@ -207,6 +209,8 @@ void process_event_error_nvs(DATOS_APLICACION *datosApp) {
 	case SCHEDULING:
 		break;
 	case RESTARTING:
+		break;
+	case APP_STARTED:
 		break;
 
 
@@ -297,6 +301,11 @@ void process_event_ntp_ok(DATOS_APLICACION *datosApp) {
 		send_alarm(datosApp, ALARM_NTP, ALARM_OFF, true);
 		actualizar_hora(&datosApp->datosGenerales->clock);
 		datosApp->datosGenerales->estadoProgramacion = VALID_PROG;
+		if (using_schedules(datosApp)) {
+			init_schedule_service(datosApp);
+		} else {
+			send_event(__func__, EVENT_START_APP);
+		}
 		break;
 
 	default:
@@ -309,9 +318,7 @@ void process_event_ntp_ok(DATOS_APLICACION *datosApp) {
 
 	}
 	appuser_notify_sntp_ok(datosApp);
-	if (get_app_config_manage_schedules(datosApp)) {
-		iniciar_gestion_programacion(datosApp);
-	}
+
 }
 
 void process_event_error_ntp(DATOS_APLICACION *datosApp) {
@@ -424,12 +431,15 @@ void process_event_mqtt_ok(DATOS_APLICACION *datosApp) {
 
 	case STARTING:
 
-		if (get_app_config_timing(datosApp)) {
-			sync_app_by_ntp(datosApp);
+		if (using_ntp(datosApp)) {
+			init_ntp_service(datosApp);
+		} else {
+			send_event(__func__, EVENT_START_APP);
 		}
 
-		change_status_application(datosApp, CHECK_PROGRAMS);
-		appuser_notify_application_started(datosApp);
+
+		//change_status_application(datosApp, CHECK_PROGRAMS);
+		//appuser_notify_application_started(datosApp);
 		break;
 
 	default:
@@ -484,6 +494,10 @@ void process_event_device_ok(DATOS_APLICACION *datosApp) {
 
 	case FACTORY:
 		ESP_LOGW(TAG, ""TRAZAR", NO SE CAMBIA EL ESTADO PORQUE ESTAMOS EN FACTORY", INFOTRAZA);
+		break;
+
+	case STARTING:
+		ESP_LOGI(TAG, ""TRAZAR" process_event_device_ok Inicialización correcta en proceso de STARTING ", INFOTRAZA);
 		break;
 
 
@@ -580,6 +594,41 @@ void process_event_error_device(DATOS_APLICACION *datosApp) {
 
 }
 
+void process_event_error_app(DATOS_APLICACION *datosApp) {
+
+	ESP_LOGE(TAG, ""TRAZAR"RECIBIDO ERROR APP", INFOTRAZA);
+	change_status_application(datosApp, ERROR_APP);
+
+
+}
+
+void process_event_start_app(DATOS_APLICACION *datosApp) {
+
+
+	ESP_LOGE(TAG, ""TRAZAR"RECIBIDO process_event_start_app", INFOTRAZA);
+	if (using_schedules(datosApp)) {
+		change_status_application(datosApp, CHECK_PROGRAMS);
+	} else {
+		change_status_application(datosApp, MANUAL);
+
+	}
+
+
+	appuser_notify_application_started(datosApp);
+
+
+
+}
+
+void process_event_schedules_ok(DATOS_APLICACION *datosApp) {
+
+
+
+	send_event(__func__, EVENT_START_APP);
+
+
+
+}
 
 
 void receive_event(DATOS_APLICACION *datosApp, EVENT_APP event) {
@@ -600,7 +649,8 @@ void receive_event(DATOS_APLICACION *datosApp, EVENT_APP event) {
 			process_event_error_device(datosApp);
 			break;
 		case EVENT_ERROR_APP:
-			ESP_LOGE(TAG, ""TRAZAR"RECIBIDO ERROR APP", INFOTRAZA);
+			process_event_error_app(datosApp);
+
 			break;
 		case EVENT_ERROR_NVS:
 
@@ -641,7 +691,7 @@ void receive_event(DATOS_APLICACION *datosApp, EVENT_APP event) {
 			ESP_LOGE(TAG, ""TRAZAR"RECIBIDO LCD OK", INFOTRAZA);
 			break;
 		case EVENT_GET_NTP:
-			appuser_get_date_sntp(datosApp);
+			appuser_notify_get_date_sntp(datosApp);
 			break;
 
 		case EVENT_NTP_OK:
@@ -707,10 +757,15 @@ void receive_event(DATOS_APLICACION *datosApp, EVENT_APP event) {
 			process_event_smartconfig_end(datosApp);
 			break;
 		case EVENT_START_APP:
+			process_event_start_app(datosApp);
 			break;
 
 		case EVENT_ERROR_SMARTCONFIG:
 			process_event_error_smartconfig(datosApp);
+			break;
+
+		case EVENT_SCHEDULES_OK:
+			process_event_schedules_ok(datosApp);
 			break;
 
 		default:

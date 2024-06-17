@@ -19,7 +19,7 @@
 static const char *TAG = "applib.c";
 
 
-esp_err_t init_global_parameters_device(DATOS_APLICACION *datosApp) {
+esp_err_t init_device(DATOS_APLICACION *datosApp) {
 
 	esp_err_t error;
 
@@ -27,7 +27,7 @@ esp_err_t init_global_parameters_device(DATOS_APLICACION *datosApp) {
 	datosGenerales = (DATOS_GENERALES*) calloc(1, sizeof(DATOS_GENERALES));
 	datosApp->datosGenerales = datosGenerales;
 	create_event_task(datosApp);
-	error = init_device(datosApp);
+	error = init_global_parameters(datosApp);
 	if (error == ESP_OK) {
 		ESP_LOGI(TAG, ""TRAZAR"INICIALIZACION CORRECTA", INFOTRAZA);
 	} else {
@@ -39,7 +39,7 @@ esp_err_t init_global_parameters_device(DATOS_APLICACION *datosApp) {
 
 }
 
-void init_service_device(DATOS_APLICACION *datosApp) {
+esp_err_t init_services_device(DATOS_APLICACION *datosApp) {
 
 	//En primer lugar se inicia la conexion wifi
 
@@ -78,23 +78,25 @@ void init_service_device(DATOS_APLICACION *datosApp) {
 	if (!get_app_config_wifi(datosApp)) {
 
 		ESP_LOGW(TAG, ""TRAZAR"init_service_device: No se configura wifi por lo que no se configuran el resto de servicios de red", INFOTRAZA);
-		return;
+		return ESP_FAIL;
 	}
 
 		init_wifi_device();
 		ESP_LOGW(TAG, ""TRAZAR"init_service_device: Wifi configurado y activo", INFOTRAZA);
 
 		//2.- Se inicia la tarea mqtt si estuviera configurado.
-	if (get_app_config_mqtt(datosApp)) {
-		crear_tarea_mqtt(datosApp);
+	if (using_mqtt(datosApp)) {
+		init_mqtt_service(datosApp);
 		ESP_LOGW(TAG, ""TRAZAR" init_service_device: servicio mqtt configurado y activo", INFOTRAZA);
 	} else {
 		// Si no estuviera configurado, iniciamos la secuencia de activacion del ntp y la programcion si procede
-		if (get_app_config_timing(datosApp)) {
-			sync_app_by_ntp(datosApp);
-			if (get_app_config_manage_schedules(datosApp)) {
-				iniciar_gestion_programacion(datosApp);
+		if (using_ntp(datosApp)) {
+			init_ntp_service(datosApp);
+			if (using_schedules(datosApp)) {
+				init_schedule_service(datosApp);
 			}
+			ESP_LOGW(TAG, ""TRAZAR" VAMOS A ENVIAR EL EVENTO EVENT_START_APP", INFOTRAZA);
+			send_event(__func__, EVENT_START_APP);
 		}
 
 
@@ -102,6 +104,7 @@ void init_service_device(DATOS_APLICACION *datosApp) {
 	}
 
 
+	return ESP_OK;
 
 
 }
@@ -172,19 +175,19 @@ bool get_app_config_wifi(DATOS_APLICACION *datosApp) {
 
 	return datosApp->wifi;
 }
-bool get_app_config_mqtt(DATOS_APLICACION *datosApp) {
+bool using_mqtt(DATOS_APLICACION *datosApp) {
 
 	ESP_LOGW(TAG, ""TRAZAR" El valor de mqtt es %d", INFOTRAZA, datosApp->mqtt);
 
 	return datosApp->mqtt;
 }
 
-bool get_app_config_timing(DATOS_APLICACION *datosApp) {
+bool using_ntp(DATOS_APLICACION *datosApp) {
 
 	return datosApp->timing;
 }
 
-bool get_app_config_manage_schedules(DATOS_APLICACION *datosApp) {
+bool using_schedules(DATOS_APLICACION *datosApp) {
 
 	return datosApp->schedules;
 }

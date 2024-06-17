@@ -95,7 +95,7 @@ esp_err_t cerrar_nvs(nvs_handle handle) {
 	return error;
 }
 
-esp_err_t borrar_clave(nvs_handle *handle, char* clave) {
+esp_err_t delete_key_upgrade(nvs_handle *handle, char* clave) {
 
 	esp_err_t error;
 	error = nvs_erase_key(*handle, clave);

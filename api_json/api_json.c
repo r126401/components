@@ -400,7 +400,7 @@ void process_unknown_message(DATOS_APLICACION *datosApp, char *message) {
      cJSON *respuesta = NULL;
      char *mac = NULL;
 
-     if (!get_app_config_manage_schedules(datosApp)) {
+     if (!using_schedules(datosApp)) {
     	 ESP_LOGW(TAG, ""TRAZAR" Se actualiza la hora ya que no esta activado el schedule", INFOTRAZA);
     	 actualizar_hora(&datosApp->datosGenerales->clock);
      }
@@ -1169,7 +1169,7 @@ esp_err_t send_spontaneous_report(DATOS_APLICACION *datosApp, enum SPONTANEOUS_T
             	extraer_dato_int(upgrade, FIN_UPGRADE, &dato);
             	ESP_LOGI(TAG, ""TRAZAR" ESCRIBIMOS EL FIN DE UPGRADE", INFOTRAZA);
             	cJSON_AddNumberToObject(respuesta, FIN_UPGRADE, dato);
-            	borrar_clave(&datosApp->handle, FIN_UPGRADE);
+            	delete_key_upgrade(&datosApp->handle, FIN_UPGRADE);
             }
                 escribir_programa_actual(datosApp, respuesta);
                 codigoRespuesta(respuesta,RESP_OK);

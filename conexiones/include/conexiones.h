@@ -55,7 +55,7 @@ void tarea_smartconfig(void * parm);
 esp_err_t establecer_conexion_wifi(void);
 esp_err_t restaurar_wifi_fabrica();
 esp_err_t init_wifi_device();
-void sync_app_by_ntp(DATOS_APLICACION *datosApp);
+void init_ntp_service(DATOS_APLICACION *datosApp);
 esp_err_t get_scan_station_list();
 void wifi_task(void *arg);
 void deactivate_wifi();

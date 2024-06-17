@@ -295,7 +295,7 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
         case MQTT_EVENT_SUBSCRIBED:
             ESP_LOGI(TAG, ""TRAZAR"MQTT_EVENT_SUBSCRIBED: SUBSCRITOS CON EXITO AL TOPIC :%s msg_id=%d", INFOTRAZA, datosApp.datosGenerales->parametrosMqtt.subscribe, msg_id);
             if (arranque == false ){
-            	send_event(__func__,EVENT_MQTT_OK);
+            	//send_event(__func__,EVENT_MQTT_OK);
             	arranque = true;
             }
             break;
@@ -368,7 +368,7 @@ esp_err_t publicar_mensaje(DATOS_APLICACION *datosApp, char* topic, char* messag
 
 	int msg_id = 0;
 
-	if (!get_app_config_mqtt(datosApp)) {
+	if (!using_mqtt(datosApp)) {
 		ESP_LOGW(TAG, ""TRAZAR" No envia nada porque la configuracion mqtt esta desactivada", INFOTRAZA);
 		return ESP_FAIL;
 
@@ -388,7 +388,7 @@ esp_err_t publicar_mensaje_json(DATOS_APLICACION *datosApp, cJSON *mensaje, char
 
 	char* texto;
 
-	if (!get_app_config_mqtt(datosApp)) {
+	if (!using_mqtt(datosApp)) {
 		ESP_LOGW(TAG, ""TRAZAR" No envia nada porque la configuracion mqtt esta desactivada", INFOTRAZA);
 		return ESP_FAIL;
 
@@ -418,7 +418,7 @@ esp_err_t publicar_mensaje_json(DATOS_APLICACION *datosApp, cJSON *mensaje, char
 }
 
 
-void crear_tarea_mqtt(DATOS_APLICACION *datosApp) {
+void init_mqtt_service(DATOS_APLICACION *datosApp) {
 
 
 
