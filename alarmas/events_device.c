@@ -91,7 +91,7 @@ char* event2mnemonic(EVENT_TYPE event) {
 		strcpy(mnemonic, "EVENT_CONNECT_MQTT");
 		break;
 
-	case EVENT_CHECK_PROGRAMS:
+	case EVENT_CHECK_SCHEDULES:
 		strcpy(mnemonic, "EVENT_CHECK_PROGRAMS");
 		break;
 	case EVENT_INSERT_SCHEDULE:
@@ -100,7 +100,7 @@ char* event2mnemonic(EVENT_TYPE event) {
 	case EVENT_MODIFY_SCHEDULE:
 		strcpy(mnemonic, "EVENT_MODIFY_SCHEDULE");
 		break;
-	case EVENT_DELETE_SCEDULE:
+	case EVENT_DELETE_SCHEDULE:
 		strcpy(mnemonic, "EVENT_DELETE_SCEDULE");
 		break;
 	case EVENT_START_SCHEDULE:
@@ -149,6 +149,19 @@ char* event2mnemonic(EVENT_TYPE event) {
 	case EVENT_SCHEDULES_OK:
 		strcpy(mnemonic, "EVENT_SCHEDULES_OK");
 		break;
+	case EVENT_NO_SCHEDULE:
+		strcpy(mnemonic, "EVENT_NO_SCHEDULES");
+		break;
+	case EVENT_AUTOMAN:
+		strcpy(mnemonic, "EVENT_AUTOMAN");
+		break;
+	case EVENT_STARTING:
+		strcpy(mnemonic, "EVENT_STARTING");
+		break;
+	case EVENT_RESTART:
+		strcpy(mnemonic, "EVENT_RESTART");
+		break;
+
 
 	}
 
@@ -187,30 +200,30 @@ void process_event_error_nvs(DATOS_APLICACION *datosApp) {
 	case STARTING:
 		esp_restart();
 		break;
+		/*
 	case NO_PROGRAM:
 		esp_restart();
 		break;
+		*/
 	case UPGRADING:
 		break;
-	case SYNCRONIZING:
-		break;
+
 	case WAITING_END_STARTING:
 		break;
 	case FACTORY:
 		break;
-	case NORMAL_FIN_PROGRAMA_ACTIVO:
-		break;
 	case ERROR_APP:
 		break;
-	case DEVICE_ALONE:
-		break;
-	case CHECK_PROGRAMS:
+	case CHECK_SCHEDULES:
 		break;
 	case SCHEDULING:
 		break;
 	case RESTARTING:
 		break;
 	case APP_STARTED:
+		break;
+
+	case ERROR_CHANGE_STATUS:
 		break;
 
 
@@ -269,7 +282,7 @@ void process_event_wifi_ok(DATOS_APLICACION *datosApp) {
 
 void process_event_error_wifi(DATOS_APLICACION *datosApp) {
 
-	ESP_LOGE(TAG, ""TRAZAR" process_event_error_wifi: eeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", INFOTRAZA);
+	ESP_LOGE(TAG, ""TRAZAR" process_event_error_wifi: ", INFOTRAZA);
 
 	switch(datosApp->datosGenerales->estadoApp) {
 
@@ -295,6 +308,8 @@ void process_event_error_wifi(DATOS_APLICACION *datosApp) {
 
 void process_event_ntp_ok(DATOS_APLICACION *datosApp) {
 
+
+
 	switch(datosApp->datosGenerales->estadoApp) {
 
 	case STARTING:
@@ -312,7 +327,7 @@ void process_event_ntp_ok(DATOS_APLICACION *datosApp) {
 		send_alarm(datosApp, ALARM_NTP, ALARM_OFF, true);
 		actualizar_hora(&datosApp->datosGenerales->clock);
 		datosApp->datosGenerales->estadoProgramacion = VALID_PROG;
-		change_status_application(datosApp, CHECK_PROGRAMS);
+		change_status_application(datosApp, CHECK_SCHEDULES);
 		break;
 
 
@@ -328,7 +343,7 @@ void process_event_error_ntp(DATOS_APLICACION *datosApp) {
 
 	case NORMAL_AUTO:
 	case NORMAL_AUTOMAN:
-		change_status_application(datosApp, DEVICE_ALONE);
+		//change_status_application(datosApp, DEVICE_ALONE);
 		send_alarm(datosApp, ALARM_NTP, ALARM_ON, true);
 		datosApp->datosGenerales->estadoProgramacion = INVALID_PROG;
 		break;
@@ -349,14 +364,7 @@ void process_event_error_ntp(DATOS_APLICACION *datosApp) {
 void process_event_none_schedule(DATOS_APLICACION *datosApp) {
 
 
-	if (datosApp->datosGenerales->nProgramacion == 0) {
-		change_status_application(datosApp, NORMAL_AUTO);
-	} else {
-		change_status_application(datosApp, NORMAL_AUTO);
-	}
-
-
-
+	set_status_application(datosApp, EVENT_NONE_SCHEDULE);
 	appuser_notify_event_none_schedule(datosApp);
 
 
@@ -366,7 +374,8 @@ void process_event_none_schedule(DATOS_APLICACION *datosApp) {
 
 void process_event_end_schedule(DATOS_APLICACION *datosApp) {
 
-	change_status_application(datosApp, CHECK_PROGRAMS);
+	set_status_application(datosApp, EVENT_END_SCHEDULE);
+	//change_status_application(datosApp, CHECK_SCHEDULES);
 	appuser_end_schedule(datosApp);
 
 
@@ -385,7 +394,7 @@ void process_event_start_schedule(DATOS_APLICACION *datosApp) {
 
 	break;
 
-	case CHECK_PROGRAMS:
+	case CHECK_SCHEDULES:
 		change_status_application(datosApp, SCHEDULING);
 		start_schedule(datosApp);
 		break;
@@ -399,8 +408,10 @@ void process_event_start_schedule(DATOS_APLICACION *datosApp) {
 
 }
 
-void process_event_check_programs(DATOS_APLICACION *datosApp) {
-	change_status_application(datosApp, CHECK_PROGRAMS);
+void process_event_check_schedules(DATOS_APLICACION *datosApp) {
+
+
+	set_status_application(datosApp, EVENT_CHECK_SCHEDULES);
 }
 
 
@@ -416,36 +427,25 @@ void process_event_app_ok(DATOS_APLICACION *datosApp) {
 
 
 
+
+
 }
 
 void process_event_mqtt_ok(DATOS_APLICACION *datosApp) {
 
 
 	send_alarm(datosApp, ALARM_MQTT, ALARM_OFF, true);
-	appuser_notify_broker_connected_ok(datosApp);
 
-
-
-
-	switch(datosApp->datosGenerales->estadoApp) {
-
-	case STARTING:
-
+	if (get_current_status_application(datosApp) == STARTING) {
 		if (using_ntp(datosApp)) {
 			init_ntp_service(datosApp);
 		} else {
 			send_event(__func__, EVENT_START_APP);
 		}
-
-
-		//change_status_application(datosApp, CHECK_PROGRAMS);
-		//appuser_notify_application_started(datosApp);
-		break;
-
-	default:
-		break;
-
 	}
+
+	appuser_notify_broker_connected_ok(datosApp);
+
 
 
 
@@ -455,25 +455,29 @@ void process_event_mqtt_ok(DATOS_APLICACION *datosApp) {
 void process_event_modify_schedule(DATOS_APLICACION *datosApp) {
 
 
-	change_status_application(datosApp, CHECK_PROGRAMS);
+	set_status_application(datosApp, EVENT_MODIFY_SCHEDULE);
+	//change_status_application(datosApp, CHECK_SCHEDULES);
 
 }
 
 void process_event_delete_schedule(DATOS_APLICACION *datosApp) {
 
-	change_status_application(datosApp, CHECK_PROGRAMS);
+	//change_status_application(datosApp, CHECK_SCHEDULES);
+	set_status_application(datosApp, EVENT_DELETE_SCHEDULE);
 }
 
 
 void process_event_insert_schedule(DATOS_APLICACION *datosApp) {
 
-	change_status_application(datosApp, CHECK_PROGRAMS);
+	//change_status_application(datosApp, CHECK_SCHEDULES);
+	set_status_application(datosApp, EVENT_INSERT_SCHEDULE);
 }
 
 
 void process_event_upgrade_firmware(DATOS_APLICACION *datosApp) {
 
-	change_status_application(datosApp, UPGRADING);
+	//change_status_application(datosApp, UPGRADING);
+	set_status_application(datosApp, EVENT_UPGRADE_FIRMWARE);
 	appuser_notify_start_ota(datosApp);
 	//send_spontaneous_report(datosApp, START_UPGRADE_OTA);
 }
@@ -481,7 +485,8 @@ void process_event_upgrade_firmware(DATOS_APLICACION *datosApp) {
 
 void process_event_factory(DATOS_APLICACION *datosApp) {
 
-	change_status_application(datosApp, FACTORY);
+	//change_status_application(datosApp, FACTORY);
+	set_status_application(datosApp, EVENT_FACTORY);
 	//send_event(__func__, EVENT_SMARTCONFIG);
 	appuser_notify_no_config(datosApp);
 
@@ -490,57 +495,31 @@ void process_event_factory(DATOS_APLICACION *datosApp) {
 
 void process_event_device_ok(DATOS_APLICACION *datosApp) {
 
-	switch (get_current_status_application(datosApp)) {
 
-	case FACTORY:
-		ESP_LOGW(TAG, ""TRAZAR", NO SE CAMBIA EL ESTADO PORQUE ESTAMOS EN FACTORY", INFOTRAZA);
-		break;
-
-	case STARTING:
-		ESP_LOGI(TAG, ""TRAZAR" process_event_device_ok Inicialización correcta en proceso de STARTING ", INFOTRAZA);
-		break;
-
-
-	default:
-		if (datosApp->alarmas[ALARM_DEVICE].estado_alarma == ALARM_ON) {
-			send_alarm(datosApp, ALARM_DEVICE, ALARM_OFF, true);
-			if (datosApp->alarmas[ALARM_NTP].estado_alarma == ALARM_OFF) {
-				change_status_application(datosApp, CHECK_PROGRAMS);
-			} else {
-				change_status_application(datosApp,NORMAL_MANUAL);
-			}
-			appuser_notify_device_ok(datosApp);
-
-
-		} else {
-			ESP_LOGI(TAG, ""TRAZAR"EL DISPOSITIVO YA ESTABA OK", INFOTRAZA);
-		}
-		break;
-
-
+	if (datosApp->alarmas[ALARM_DEVICE].estado_alarma == ALARM_ON) {
+		send_alarm(datosApp, ALARM_DEVICE, ALARM_OFF, true);
 	}
+	set_status_application(datosApp, EVENT_DEVICE_OK);
+	appuser_notify_device_ok(datosApp);
+
 }
 
 
 void process_event_smartconfig_start(DATOS_APLICACION *datosApp) {
 
 
-	switch (get_current_status_application(datosApp)) {
-
-	case FACTORY:
+	if (get_current_status_application(datosApp) == FACTORY) {
 		ESP_LOGI(TAG, ""TRAZAR"SMARTCONFIG START EN MODO FACTORY", INFOTRAZA);
 		init_wifi_device();
-		break;
-	default:
+
+	} else {
 		ESP_LOGI(TAG, ""TRAZAR" RECIBIDO EVENTO SMARTCONFIG EN ESTADO %s", INFOTRAZA, status2mnemonic(get_current_status_application(datosApp)));
-		change_status_application(datosApp, FACTORY);
+		set_status_application(datosApp, EVENT_SMARTCONFIG_START);
 		reinicio_fabrica(datosApp);
 		task_smartconfig();
-		break;
 
 
 	}
-
 
 }
 
@@ -549,7 +528,9 @@ void process_event_smartconfig_end(DATOS_APLICACION *datosApp) {
 	//Ponemos el dispositivo como configurado y salvamos la configuracion.
 	set_app_status_device(datosApp, WIFI_CONFIGURED);
 	salvar_configuracion_general(datosApp);
-	change_status_application(datosApp, STARTING);
+	set_status_application(datosApp, EVENT_SMARTCONFIG_END);
+	send_event(__func__, EVENT_STARTING);
+	//change_status_application(datosApp, STARTING);
 	appuser_notify_smartconfig_end(datosApp);
 
 
@@ -606,14 +587,7 @@ void process_event_start_app(DATOS_APLICACION *datosApp) {
 
 
 	ESP_LOGE(TAG, ""TRAZAR"RECIBIDO process_event_start_app", INFOTRAZA);
-	if (using_schedules(datosApp)) {
-		change_status_application(datosApp, CHECK_PROGRAMS);
-	} else {
-		change_status_application(datosApp, MANUAL);
-
-	}
-
-
+	set_status_application(datosApp, EVENT_START_APP);
 	appuser_notify_application_started(datosApp);
 
 
@@ -625,6 +599,33 @@ void process_event_schedules_ok(DATOS_APLICACION *datosApp) {
 
 
 	send_event(__func__, EVENT_START_APP);
+
+
+
+}
+
+
+void process_event_no_schedule(DATOS_APLICACION *datosApp) {
+
+	set_status_application(datosApp, EVENT_NO_SCHEDULE);
+
+	//change_status_application(datosApp, NORMAL_MANUAL);
+
+}
+
+void process_event_automan(DATOS_APLICACION *datosApp) {
+
+	ESP_LOGI(TAG, ""TRAZAR" process_event_automan", INFOTRAZA);
+}
+
+void process_event_restart(DATOS_APLICACION *datosApp) {
+
+	set_status_application(datosApp, EVENT_RESTART);
+
+
+}
+
+void process_event_starting(DATOS_APLICACION *datosApp) {
 
 
 
@@ -707,7 +708,7 @@ void receive_event(DATOS_APLICACION *datosApp, EVENT_APP event) {
 			appuser_notify_connecting_broker_mqtt(datosApp);
 			break;
 
-		case EVENT_CHECK_PROGRAMS:
+		case EVENT_CHECK_SCHEDULES:
 
 			break;
 		case EVENT_INSERT_SCHEDULE:
@@ -716,7 +717,7 @@ void receive_event(DATOS_APLICACION *datosApp, EVENT_APP event) {
 		case EVENT_MODIFY_SCHEDULE:
 			process_event_modify_schedule(datosApp);
 			break;
-		case EVENT_DELETE_SCEDULE:
+		case EVENT_DELETE_SCHEDULE:
 			process_event_delete_schedule(datosApp);
 			break;
 		case EVENT_START_SCHEDULE:
@@ -768,6 +769,22 @@ void receive_event(DATOS_APLICACION *datosApp, EVENT_APP event) {
 			process_event_schedules_ok(datosApp);
 			break;
 
+		case EVENT_NO_SCHEDULE:
+			process_event_no_schedule(datosApp);
+			break;
+
+		case EVENT_AUTOMAN:
+			process_event_automan(datosApp);
+			break;
+
+		case EVENT_RESTART:
+			process_event_restart(datosApp);
+			break;
+
+		case EVENT_STARTING:
+			process_event_starting(datosApp);
+			break;
+
 		default:
 			ESP_LOGE(TAG, ""TRAZAR"ERROR EN LA RECEPCION DEL EVENTO", INFOTRAZA);
 			break;
@@ -810,7 +827,7 @@ void create_event_task(DATOS_APLICACION *datosApp) {
 	init_alarms(datosApp);
 	xTaskCreate(event_task, "event_task", CONFIG_RESOURCE_EVENT_TASK, (void*) datosApp, 4, NULL);
 	ESP_LOGW(TAG, ""TRAZAR"TAREA DE EVENTOS CREADA", INFOTRAZA);
-	change_status_application(datosApp, STARTING);
+
 
 }
 

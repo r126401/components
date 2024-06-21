@@ -309,7 +309,9 @@ esp_err_t init_global_parameters(DATOS_APLICACION *datosApp) {
     datosApp->datosGenerales->ota.swVersion = esp_ota_get_app_description();
 #endif
 
-
+if (get_app_status_device(datosApp) == DEVICE_NOT_CONFIGURED) {
+	change_status_application(datosApp, FACTORY);
+}
 
 
 

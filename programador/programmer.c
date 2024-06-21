@@ -741,7 +741,7 @@ void gestion_programas(void *arg) {
 
 	switch(datosApp->datosGenerales->estadoApp) {
 
-	case CHECK_PROGRAMS:
+	case CHECK_SCHEDULES:
 		ESP_LOGW(TAG, ""TRAZAR"CHECK_PROGRAMS", INFOTRAZA);
 		if (datosApp->alarmas[ALARM_NTP].estado_alarma == ALARM_ON) {
 			ESP_LOGW(TAG, ""TRAZAR"SIN CALCULO DE PROGRAMA ACTIVO POR FALLO NTP", INFOTRAZA);
@@ -817,10 +817,12 @@ void gestion_programas(void *arg) {
 
 
 		break;
+		/*
 	case NO_PROGRAM:
 		ESP_LOGW(TAG, ""TRAZAR"NORMAL_SIN_PROGRAMACION", INFOTRAZA);
 		break;
-
+		*/
+/*
 	case NORMAL_FIN_PROGRAMA_ACTIVO:
 		ESP_LOGW(TAG, ""TRAZAR"NORMAL_FIN_PROGRAMA_ACTIVO", INFOTRAZA);
 		if (calcular_programa_activo(datosApp, &t_siguiente_intervalo) == ESP_OK) {
@@ -833,7 +835,7 @@ void gestion_programas(void *arg) {
 				}
 
 		break;
-
+*/
 	default:
 		break;
 

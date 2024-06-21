@@ -44,9 +44,7 @@ char* status2mnemonic(ESTADO_APP status) {
 	case ERROR_APP:
 		strcpy(mnemonic, "ERROR_APP");
 		break;
-	case DEVICE_ALONE:
-		strcpy(mnemonic, "DEVICE_ALONE");
-		break;
+
 	case NORMAL_AUTO:
 		strcpy(mnemonic, "NORMAL_AUTO");
 		break;
@@ -59,25 +57,27 @@ char* status2mnemonic(ESTADO_APP status) {
 	case STARTING:
 		strcpy(mnemonic, "STARTING");
 		break;
+		/*
 	case NO_PROGRAM:
 		strcpy(mnemonic, "NORMAL_SIN_PROGRAMACION");
 		break;
+		*/
 	case UPGRADING:
 		strcpy(mnemonic, "UPGRADE_EN_PROGRESO");
 		break;
-	case SYNCRONIZING:
-		strcpy(mnemonic, "NORMAL_SINCRONIZANDO");
-		break;
+
 	case WAITING_END_STARTING:
 		strcpy(mnemonic, "ESPERA_FIN_ARRANQUE");
 		break;
 	case FACTORY:
 		strcpy(mnemonic, "FACTORY");
 		break;
+		/*
 	case NORMAL_FIN_PROGRAMA_ACTIVO:
 		strcpy(mnemonic, "NORMAL_FIN_PROGRAMA_ACTIVO");
 		break;
-	case CHECK_PROGRAMS:
+		*/
+	case CHECK_SCHEDULES:
 		strcpy(mnemonic, "CHECK_PROGRAMS");
 		break;
 	case SCHEDULING:
@@ -89,6 +89,11 @@ char* status2mnemonic(ESTADO_APP status) {
 	case APP_STARTED:
 		strcpy(mnemonic, "APP_STARTED");
 		break;
+	case ERROR_CHANGE_STATUS:
+		strcpy(mnemonic, "ERROR_CHANGE_STATUS");
+		break;
+
+
 
 
 	}

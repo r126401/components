@@ -15,6 +15,7 @@
 #include "conexiones.h"
 #include "applib.h"
 #include "user_interface.h"
+#include "alarmas.h"
 
 static const char *TAG = "applib.c";
 
@@ -26,6 +27,7 @@ esp_err_t init_device(DATOS_APLICACION *datosApp) {
 	DATOS_GENERALES *datosGenerales;
 	datosGenerales = (DATOS_GENERALES*) calloc(1, sizeof(DATOS_GENERALES));
 	datosApp->datosGenerales = datosGenerales;
+	change_status_application(datosApp, STARTING);
 	create_event_task(datosApp);
 	error = init_global_parameters(datosApp);
 	if (error == ESP_OK) {
@@ -237,12 +239,358 @@ void set_mqtt_tls(DATOS_APLICACION *datosApp, bool tls) {
 
 void change_status_application(DATOS_APLICACION *datosApp, ESTADO_APP new_status) {
 
-
-
-	ESP_LOGW(TAG, ""TRAZAR"ESTADO ANTERIOR %s", INFOTRAZA, status2mnemonic(datosApp->datosGenerales->estadoApp));
+	ESTADO_APP current_status = get_current_status_application(datosApp);
+	char *text;
+	text = calloc(25, sizeof(char));
+	strcpy(text, status2mnemonic(current_status));
+	//ESP_LOGW(TAG, ""TRAZAR"ESTADO ANTERIOR %s", INFOTRAZA, status2mnemonic(datosApp->datosGenerales->estadoApp));
 	datosApp->datosGenerales->estadoApp = new_status;
-	ESP_LOGW(TAG, ""TRAZAR"ESTADO POSTERIOR %s", INFOTRAZA, status2mnemonic(new_status));
+	//ESP_LOGW(TAG, ""TRAZAR"ESTADO POSTERIOR %s", INFOTRAZA, status2mnemonic(new_status));
+	ESP_LOGE(TAG, ""TRAZAR" Cambiado estado: %s ------------> %s", INFOTRAZA, text, status2mnemonic(new_status));
+	free(text);
 	appuser_notify_app_status(datosApp, new_status);
 
 
+}
+
+
+void set_status_application(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
+
+
+	ESTADO_APP new_status = ERROR_CHANGE_STATUS;
+
+	switch (get_current_status_application(datosApp)) {
+
+
+	case ERROR_APP:
+		if (event == EVENT_DEVICE_OK) {
+			//change_status_application(datosApp, APP_STARTED);
+			new_status = APP_STARTED;
+			break;
+		}
+
+		if (event == EVENT_SMARTCONFIG_START) {
+			new_status = FACTORY;
+			break;
+		}
+
+		break;
+
+
+	case NORMAL_AUTO:
+		if ((event == EVENT_ERROR_APP) || (event == EVENT_ERROR_DEVICE) || (event == EVENT_ERROR_LCD) || (event == EVENT_ERROR_NVS)) {
+			//change_status_application(datosApp, ERROR_APP);
+			new_status = ERROR_APP;
+			break;
+		}
+		if (event == EVENT_UPGRADE_FIRMWARE) {
+			//change_status_application(datosApp, UPGRADING);
+			new_status = UPGRADING;
+
+			break;
+		}
+		if (event == EVENT_CHECK_SCHEDULES) {
+			//change_status_application(datosApp, CHECK_SCHEDULES);
+			new_status = CHECK_SCHEDULES;
+			break;
+		}
+
+		if (event == EVENT_NONE_SCHEDULE) {
+			//change_status_application(datosApp, NORMAL_MANUAL);
+			new_status = NORMAL_AUTO;
+			break;
+		}
+		if (event == EVENT_NO_SCHEDULE) {
+			//change_status_application(datosApp, NORMAL_MANUAL);
+			new_status = NORMAL_MANUAL;
+			break;
+		}
+
+
+
+		if (event == EVENT_AUTOMAN) {
+			//change_status_application(datosApp, NORMAL_AUTOMAN);
+			new_status = NORMAL_AUTOMAN;
+
+			break;
+		}
+		if (event == EVENT_END_SCHEDULE) {
+			//change_status_application(datosApp, CHECK_SCHEDULES);
+			new_status = CHECK_SCHEDULES;
+
+			break;
+		}
+		if ((event == EVENT_END_SCHEDULE) || (event == EVENT_DELETE_SCHEDULE) || (event == EVENT_MODIFY_SCHEDULE) || (event == EVENT_INSERT_SCHEDULE)){
+			new_status = CHECK_SCHEDULES;
+
+			break;
+		}
+
+		if (event == EVENT_SMARTCONFIG_START) {
+			new_status = FACTORY;
+		}
+		break;
+
+
+
+
+	case NORMAL_AUTOMAN:
+		if ((event == EVENT_ERROR_APP) || (event == EVENT_ERROR_DEVICE) || (event == EVENT_ERROR_LCD) || (event == EVENT_ERROR_NVS)) {
+			//change_status_application(datosApp, ERROR_APP);
+			new_status = ERROR_APP;
+
+			break;
+		}
+		if (event == EVENT_UPGRADE_FIRMWARE) {
+			//change_status_application(datosApp, UPGRADING);
+			new_status = UPGRADING;
+
+			break;
+		}
+		if (event == EVENT_CHECK_SCHEDULES) {
+			//change_status_application(datosApp, CHECK_SCHEDULES);
+			new_status = CHECK_SCHEDULES;
+
+			break;
+		}
+		if (event == EVENT_NONE_SCHEDULE) {
+			//change_status_application(datosApp, NORMAL_MANUAL);
+			new_status = NORMAL_MANUAL;
+
+			break;
+		}
+		if (event == EVENT_END_SCHEDULE) {
+			//change_status_application(datosApp, CHECK_SCHEDULES);
+			new_status = CHECK_SCHEDULES;
+
+			break;
+		}
+		if ((event == EVENT_END_SCHEDULE) || (event == EVENT_DELETE_SCHEDULE) || (event == EVENT_MODIFY_SCHEDULE) || (event == EVENT_INSERT_SCHEDULE)){
+			new_status = CHECK_SCHEDULES;
+
+			break;
+		}
+		if (event == EVENT_SMARTCONFIG_START) {
+			new_status = FACTORY;
+		}
+
+		break;
+
+	case NORMAL_MANUAL:
+		if ((event == EVENT_ERROR_APP) || (event == EVENT_ERROR_DEVICE) || (event == EVENT_ERROR_LCD) || (event == EVENT_ERROR_NVS)) {
+			//change_status_application(datosApp, ERROR_APP);
+			new_status = ERROR_APP;
+
+			break;
+		}
+		if (event == EVENT_UPGRADE_FIRMWARE) {
+			//change_status_application(datosApp, UPGRADING);
+			new_status = UPGRADING;
+
+			break;
+		}
+		if (event == EVENT_CHECK_SCHEDULES) {
+			//change_status_application(datosApp, CHECK_SCHEDULES);
+			new_status = CHECK_SCHEDULES;
+
+			break;
+		}
+
+		if ((event == EVENT_END_SCHEDULE) || (event == EVENT_DELETE_SCHEDULE) || (event == EVENT_MODIFY_SCHEDULE) || (event == EVENT_INSERT_SCHEDULE)){
+			new_status = CHECK_SCHEDULES;
+
+			break;
+		}
+		if (event == EVENT_SMARTCONFIG_START) {
+			new_status = FACTORY;
+		}
+
+		break;
+
+	case STARTING:
+		if ((event == EVENT_ERROR_APP) || (event == EVENT_ERROR_DEVICE) || (event == EVENT_ERROR_LCD) || (event == EVENT_ERROR_NVS)) {
+			//change_status_application(datosApp, ERROR_APP);
+			new_status = ERROR_APP;
+
+			break;
+		}
+		if (event == EVENT_FACTORY) {
+			//change_status_application(datosApp, FACTORY);
+			new_status = FACTORY;
+
+			break;
+		}
+
+		if (event == EVENT_START_APP) {
+			if (using_schedules(datosApp)) {
+				new_status = CHECK_SCHEDULES;
+			} else {
+				new_status = NORMAL_MANUAL;
+
+			}
+
+			break;
+		}
+
+		if (event == EVENT_UPGRADE_FIRMWARE) {
+			//change_status_application(datosApp, UPGRADING);
+			new_status = UPGRADING;
+
+			break;
+		}
+
+		if (event == EVENT_DEVICE_OK) {
+			ESP_LOGW(TAG, ""TRAZAR" cambiando de estado por EVENT_DEVICE_OK", INFOTRAZA);
+			new_status = STARTING;
+			break;
+
+		}
+		if (event == EVENT_SMARTCONFIG_START) {
+			new_status = FACTORY;
+		}
+		if (event == EVENT_SMARTCONFIG_END) {
+			new_status = STARTING;
+		}
+
+
+
+		break;
+
+	case UPGRADING:
+		if (event == EVENT_END_UPGRADE) {
+			//change_status_application(datosApp, RESTARTING);
+			new_status = RESTARTING;
+			break;
+		}
+		break;
+
+	case WAITING_END_STARTING:
+		break;
+
+	case FACTORY:
+		if (event == EVENT_SMARTCONFIG_END) {
+			//change_status_application(datosApp, STARTING);
+			new_status = STARTING;
+
+			break;
+		}
+
+		if ((event == EVENT_FACTORY) || (event == EVENT_DEVICE_OK)){
+			new_status = FACTORY;
+			break;
+		}
+
+
+
+		break;
+
+	case CHECK_SCHEDULES:
+		if ((event == EVENT_ERROR_APP) || (event == EVENT_ERROR_DEVICE) || (event == EVENT_ERROR_LCD) || (event == EVENT_ERROR_NVS)) {
+			//change_status_application(datosApp, ERROR_APP);
+			new_status = ERROR_APP;
+
+			break;
+		}
+		if (event == EVENT_UPGRADE_FIRMWARE) {
+			//change_status_application(datosApp, UPGRADING);
+			new_status = UPGRADING;
+
+			break;
+		}
+		if (event == EVENT_NONE_SCHEDULE) {
+			//change_status_application(datosApp, NORMAL_AUTO);
+			new_status = NORMAL_AUTO;
+
+			break;
+		}
+		if (event == EVENT_START_SCHEDULE) {
+			//change_status_application(datosApp, SCHEDULING);
+			new_status = SCHEDULING;
+
+			break;
+		}
+
+		if ((event == EVENT_END_SCHEDULE) || (event == EVENT_DELETE_SCHEDULE) || (event == EVENT_MODIFY_SCHEDULE) || (event == EVENT_INSERT_SCHEDULE)){
+			new_status = CHECK_SCHEDULES;
+
+			break;
+		}
+
+		break;
+
+	case SCHEDULING:
+		if ((event == EVENT_ERROR_APP) || (event == EVENT_ERROR_DEVICE) || (event == EVENT_ERROR_LCD) || (event == EVENT_ERROR_NVS)) {
+			//change_status_application(datosApp, ERROR_APP);
+			new_status = ERROR_APP;
+
+			break;
+		}
+		if (event == EVENT_UPGRADE_FIRMWARE) {
+			//change_status_application(datosApp, UPGRADING);
+			new_status = UPGRADING;
+
+			break;
+		}
+
+		if ((event == EVENT_END_SCHEDULE) || (event == EVENT_DELETE_SCHEDULE) || (event == EVENT_MODIFY_SCHEDULE) || (event == EVENT_INSERT_SCHEDULE)){
+			new_status = CHECK_SCHEDULES;
+
+			break;
+		}
+		if (event == EVENT_SMARTCONFIG_START) {
+			new_status = FACTORY;
+		}
+
+		break;
+
+	case RESTARTING:
+		break;
+
+	case APP_STARTED:
+		if (event == EVENT_CHECK_SCHEDULES) {
+			//change_status_application(datosApp, CHECK_SCHEDULES);
+			new_status = CHECK_SCHEDULES;
+
+			break;
+		}
+		if (event == EVENT_NO_SCHEDULE) {
+			//change_status_application(datosApp, NORMAL_MANUAL);
+			new_status = NORMAL_MANUAL;
+
+			break;
+		}
+		if (event == EVENT_ERROR_DEVICE) {
+			//change_status_application(datosApp, ERROR_APP);
+			new_status = ERROR_APP;
+
+			break;
+		}
+
+		if (event == EVENT_UPGRADE_FIRMWARE) {
+			//change_status_application(datosApp, UPGRADING);
+			new_status = UPGRADING;
+
+			break;
+		}
+		if (event == EVENT_SMARTCONFIG_START) {
+			new_status = FACTORY;
+		}
+
+		break;
+
+	default:
+		ESP_LOGW(TAG, ""TRAZAR" ERROR DE CONSISTENCIA AL CAMBIAR EL ESTADO DE LA APLICACION DESDE %s --> %s",
+				INFOTRAZA, status2mnemonic(get_current_status_application(datosApp)), event2mnemonic(event));
+		break;
+
+
+	}
+
+	change_status_application(datosApp, new_status);
+
+
+
+
+
+	return;
 }

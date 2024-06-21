@@ -57,3 +57,4 @@ char* get_certificate(DATOS_APLICACION *datosApp);
 bool get_mqtt_tls(DATOS_APLICACION *datosApp);
 void set_mqtt_tls(DATOS_APLICACION *datosApp, bool tls);
 void change_status_application(DATOS_APLICACION *datosApp, ESTADO_APP new_status);
+void set_status_application(DATOS_APLICACION *datosApp, EVENT_TYPE event);

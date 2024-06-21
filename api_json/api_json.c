@@ -861,13 +861,14 @@ esp_err_t   borrar_programa(cJSON *peticion,struct DATOS_APLICACION *datosApp, c
        datosApp->datosGenerales->programacion = borrarPrograma(datosApp->datosGenerales->programacion, &datosApp->datosGenerales->nProgramacion, nPrograma);
        if (datosApp->datosGenerales->nProgramacion == 0) {
            //datosApp->datosGenerales->estadoApp = NORMAL_SIN_PROGRAMACION;
-           appuser_notify_app_status(datosApp, NO_PROGRAM);
+           //appuser_notify_app_status(datosApp, NO_PROGRAM);
+           send_event(__func__, EVENT_NONE_SCHEDULE);
        }
        cJSON_AddNumberToObject(respuesta, DEVICE_STATE, datosApp->datosGenerales->estadoApp);
        cJSON_AddNumberToObject(respuesta, PROGRAMMER_STATE, datosApp->datosGenerales->estadoProgramacion);
        printf("idprograma borrado:%s\n", idPrograma);
        cJSON_AddStringToObject(respuesta, PROGRAM_ID, idPrograma);
-       send_event(__func__,EVENT_DELETE_SCEDULE);
+       send_event(__func__,EVENT_DELETE_SCHEDULE);
        //datosApp->datosGenerales->estadoApp = NORMAL_SINCRONIZANDO;
        //appuser_notify_app_status(datosApp, NORMAL_SINCRONIZANDO);
        //gestion_programas(datosApp);
@@ -987,6 +988,7 @@ esp_err_t   ejecutar_reset(DATOS_APLICACION *datosApp, cJSON *respuesta) {
     if (respuesta != NULL) {
     	codigoRespuesta(respuesta, RESP_OK);
     }
+
     change_status_application(datosApp, RESTARTING);
 
 
