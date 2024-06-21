@@ -41,9 +41,8 @@ esp_err_t init_device(DATOS_APLICACION *datosApp) {
 
 }
 
-esp_err_t init_services_device(DATOS_APLICACION *datosApp) {
 
-	//En primer lugar se inicia la conexion wifi
+void config_default_services_device(DATOS_APLICACION *datosApp) {
 
 #ifdef CONFIG_WIFI_ACTIVE
 
@@ -75,6 +74,13 @@ esp_err_t init_services_device(DATOS_APLICACION *datosApp) {
 #endif
 
 
+}
+
+esp_err_t init_services_device(DATOS_APLICACION *datosApp) {
+
+	//En primer lugar se inicia la conexion wifi
+
+	config_default_services_device(datosApp);
 
 
 	if (!get_app_config_wifi(datosApp)) {

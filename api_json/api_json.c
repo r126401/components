@@ -1065,6 +1065,8 @@ esp_err_t reinicio_fabrica(DATOS_APLICACION *datosApp) {
 	esp_wifi_set_config(WIFI_IF_STA, &conf_wifi);
 	//resetar nvs
 	nvs_erase_all(datosApp->handle);
+	set_app_status_device(datosApp, DEVICE_NOT_CONFIGURED);
+	salvar_configuracion_general(datosApp);
 	change_status_application(datosApp, FACTORY);
 	//nvs_flash_erase();
 

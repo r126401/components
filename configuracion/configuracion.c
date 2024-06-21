@@ -201,6 +201,7 @@ esp_err_t cargar_configuracion_defecto(DATOS_APLICACION *datosApp) {
     datosApp->datosGenerales->nProgramaCandidato = -1;
     datosApp->datosGenerales->programacion = NULL;
     datosApp->datosGenerales->status = DEVICE_NOT_CONFIGURED;
+    config_default_services_device(datosApp);
     appuser_set_default_config(datosApp);
 	ESP_LOGI(TAG, ""TRAZAR" SALVAMOS LA CONFIGURACION GENERAL A NVS...", INFOTRAZA);
 	error = salvar_configuracion_general(datosApp);
@@ -374,7 +375,7 @@ if (get_app_status_device(datosApp) == DEVICE_NOT_CONFIGURED) {
 
 #endif
 
-	ESP_LOGE(TAG, ""TRAZAR" ESTADO DE LA APLICACION %d", INFOTRAZA, datosApp->datosGenerales->estadoApp);
+	ESP_LOGE(TAG, ""TRAZAR" ESTADO DE LA APLICACION %s", INFOTRAZA, status2mnemonic(get_current_status_application(datosApp)));
 
 
 	free(datos);

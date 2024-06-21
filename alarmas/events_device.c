@@ -526,13 +526,11 @@ void process_event_smartconfig_start(DATOS_APLICACION *datosApp) {
 void process_event_smartconfig_end(DATOS_APLICACION *datosApp) {
 
 	//Ponemos el dispositivo como configurado y salvamos la configuracion.
-	set_app_status_device(datosApp, WIFI_CONFIGURED);
+	set_app_status_device(datosApp, DEVICE_CONFIGURED);
 	salvar_configuracion_general(datosApp);
 	set_status_application(datosApp, EVENT_SMARTCONFIG_END);
 	send_event(__func__, EVENT_STARTING);
-	//change_status_application(datosApp, STARTING);
 	appuser_notify_smartconfig_end(datosApp);
-
 
 }
 
