@@ -320,9 +320,9 @@ void set_status_application(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 
 			break;
 		}
-		if (event == EVENT_END_SCHEDULE) {
+		if (event == EVENT_START_SCHEDULE) {
 			//change_status_application(datosApp, CHECK_SCHEDULES);
-			new_status = CHECK_SCHEDULES;
+			new_status = SCHEDULING;
 
 			break;
 		}
@@ -365,9 +365,9 @@ void set_status_application(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 
 			break;
 		}
-		if (event == EVENT_END_SCHEDULE) {
+		if (event == EVENT_START_SCHEDULE) {
 			//change_status_application(datosApp, CHECK_SCHEDULES);
-			new_status = CHECK_SCHEDULES;
+			new_status = SCHEDULING;
 
 			break;
 		}
@@ -398,6 +398,12 @@ void set_status_application(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 		if (event == EVENT_CHECK_SCHEDULES) {
 			//change_status_application(datosApp, CHECK_SCHEDULES);
 			new_status = CHECK_SCHEDULES;
+
+			break;
+		}
+		if (event == EVENT_START_SCHEDULE) {
+			//change_status_application(datosApp, CHECK_SCHEDULES);
+			new_status = SCHEDULING;
 
 			break;
 		}

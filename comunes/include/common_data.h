@@ -77,8 +77,8 @@ typedef struct EVENT_APP {
 
 typedef enum ESTADO_APP {
 
-	ERROR_CHANGE_STATUS = -3,
-	ERROR_APP = -2,
+	ERROR_CHANGE_STATUS = -2,
+	ERROR_APP = -1,
     NORMAL_AUTO,
     NORMAL_AUTOMAN,
     NORMAL_MANUAL,

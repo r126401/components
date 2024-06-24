@@ -309,7 +309,22 @@ void process_event_error_wifi(DATOS_APLICACION *datosApp) {
 void process_event_ntp_ok(DATOS_APLICACION *datosApp) {
 
 
+	send_alarm(datosApp, ALARM_NTP, ALARM_OFF, true);
+	actualizar_hora(&datosApp->datosGenerales->clock);
+	datosApp->datosGenerales->estadoProgramacion = VALID_PROG;
 
+	if (get_current_status_application(datosApp) == STARTING) {
+
+		if (using_schedules(datosApp)) {
+			init_schedule_service(datosApp);
+		} else {
+			send_event(__func__, EVENT_START_APP);
+		}
+
+
+	}
+	appuser_notify_sntp_ok(datosApp);
+/*
 	switch(datosApp->datosGenerales->estadoApp) {
 
 	case STARTING:
@@ -333,7 +348,7 @@ void process_event_ntp_ok(DATOS_APLICACION *datosApp) {
 
 	}
 	appuser_notify_sntp_ok(datosApp);
-
+*/
 }
 
 void process_event_error_ntp(DATOS_APLICACION *datosApp) {
@@ -375,7 +390,6 @@ void process_event_none_schedule(DATOS_APLICACION *datosApp) {
 void process_event_end_schedule(DATOS_APLICACION *datosApp) {
 
 	set_status_application(datosApp, EVENT_END_SCHEDULE);
-	//change_status_application(datosApp, CHECK_SCHEDULES);
 	appuser_end_schedule(datosApp);
 
 
@@ -384,26 +398,9 @@ void process_event_end_schedule(DATOS_APLICACION *datosApp) {
 void process_event_start_schedule(DATOS_APLICACION *datosApp) {
 
 
-	switch(datosApp->datosGenerales->estadoApp) {
-
-	case NORMAL_AUTO:
-	case NORMAL_AUTOMAN:
-	case SCHEDULING:
-		change_status_application(datosApp, SCHEDULING);
-		appuser_start_schedule(datosApp);
-
-	break;
-
-	case CHECK_SCHEDULES:
-		change_status_application(datosApp, SCHEDULING);
-		start_schedule(datosApp);
-		break;
-
-
-	default:
-		break;
-
-	}
+	set_status_application(datosApp, EVENT_START_SCHEDULE);
+	start_schedule(datosApp);
+	appuser_start_schedule(datosApp);
 
 
 }
@@ -456,38 +453,38 @@ void process_event_modify_schedule(DATOS_APLICACION *datosApp) {
 
 
 	set_status_application(datosApp, EVENT_MODIFY_SCHEDULE);
-	//change_status_application(datosApp, CHECK_SCHEDULES);
+
 
 }
 
 void process_event_delete_schedule(DATOS_APLICACION *datosApp) {
 
-	//change_status_application(datosApp, CHECK_SCHEDULES);
+
 	set_status_application(datosApp, EVENT_DELETE_SCHEDULE);
 }
 
 
 void process_event_insert_schedule(DATOS_APLICACION *datosApp) {
 
-	//change_status_application(datosApp, CHECK_SCHEDULES);
+
 	set_status_application(datosApp, EVENT_INSERT_SCHEDULE);
 }
 
 
 void process_event_upgrade_firmware(DATOS_APLICACION *datosApp) {
 
-	//change_status_application(datosApp, UPGRADING);
+
 	set_status_application(datosApp, EVENT_UPGRADE_FIRMWARE);
 	appuser_notify_start_ota(datosApp);
-	//send_spontaneous_report(datosApp, START_UPGRADE_OTA);
+
 }
 
 
 void process_event_factory(DATOS_APLICACION *datosApp) {
 
-	//change_status_application(datosApp, FACTORY);
+
 	set_status_application(datosApp, EVENT_FACTORY);
-	//send_event(__func__, EVENT_SMARTCONFIG);
+
 	appuser_notify_no_config(datosApp);
 
 

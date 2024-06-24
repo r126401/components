@@ -760,6 +760,7 @@ void gestion_programas(void *arg) {
 					break;
 				case ACTIVE_SCHEDULE:
 					ESP_LOGI(TAG, ""TRAZAR"ENCONTRADA PROGRAMACION ACTIVA", INFOTRAZA);
+					//start_schedule(datosApp);
 					send_event(__func__,EVENT_START_SCHEDULE);
 					//change_status_application(datosApp, NORMAL_AUTO);
 					break;
@@ -801,7 +802,7 @@ void gestion_programas(void *arg) {
 				break;
 			case ACTIVE_SCHEDULE:
 				ESP_LOGI(TAG, ""TRAZAR"ENCONTRADA PROGRAMACION ACTIVA", INFOTRAZA);
-				start_schedule(datosApp);
+				//start_schedule(datosApp);
 				send_event(__func__,EVENT_START_SCHEDULE);
 				//change_status_application(datosApp, NORMAL_AUTO);
 				break;
@@ -958,7 +959,7 @@ esp_err_t start_schedule(DATOS_APLICACION *datosApp) {
 	ESP_LOGW(TAG, ""TRAZAR"start_schedule", INFOTRAZA);
 	if (logica_temporizacion(datosApp) == ESP_OK) {
 		ESP_LOGW(TAG, ""TRAZAR"COMIENZA EL PROGRAMA", INFOTRAZA);
-		send_event(__func__,EVENT_START_SCHEDULE);
+		//send_event(__func__,EVENT_START_SCHEDULE);
 	}
 
 
