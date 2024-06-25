@@ -89,7 +89,7 @@ char* status2mnemonic(ESTADO_APP status) {
 	case APP_STARTED:
 		strcpy(mnemonic, "APP_STARTED");
 		break;
-	case ERROR_CHANGE_STATUS:
+	case UNKNOWN_STATUS:
 		strcpy(mnemonic, "ERROR_CHANGE_STATUS");
 		break;
 

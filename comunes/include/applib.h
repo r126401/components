@@ -42,6 +42,7 @@ char* get_app_subscribe_topic(DATOS_APLICACION *datosApp, uint8_t index);
 void set_app_publish_topic(DATOS_APLICACION *datosApp, uint8_t index, char* topic);
 void set_app_subscribe_topic(DATOS_APLICACION *datosApp, uint8_t index, char* topic);
 esp_err_t init_device(DATOS_APLICACION *datosApp);
+esp_err_t init_data_app(DATOS_APLICACION *datosApp);
 esp_err_t init_services_device(DATOS_APLICACION *datosApp);
 void config_default_services_device(DATOS_APLICACION *datosApp);
 void set_app_config_wifi(DATOS_APLICACION *datosApp, bool flag);

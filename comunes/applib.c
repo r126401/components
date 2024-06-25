@@ -20,15 +20,24 @@
 static const char *TAG = "applib.c";
 
 
-esp_err_t init_device(DATOS_APLICACION *datosApp) {
-
-	esp_err_t error;
+esp_err_t init_data_app(DATOS_APLICACION *datosApp) {
 
 	DATOS_GENERALES *datosGenerales;
 	datosGenerales = (DATOS_GENERALES*) calloc(1, sizeof(DATOS_GENERALES));
 	datosApp->datosGenerales = datosGenerales;
-	change_status_application(datosApp, STARTING);
+	change_status_application(datosApp, UNKNOWN_STATUS);
+
+	return ESP_OK;
+}
+
+
+esp_err_t init_device(DATOS_APLICACION *datosApp) {
+
+	esp_err_t error;
+
+
 	create_event_task(datosApp);
+	send_event(__func__, EVENT_STARTING);
 	error = init_global_parameters(datosApp);
 	if (error == ESP_OK) {
 		ESP_LOGI(TAG, ""TRAZAR"INICIALIZACION CORRECTA", INFOTRAZA);
@@ -263,7 +272,22 @@ void change_status_application(DATOS_APLICACION *datosApp, ESTADO_APP new_status
 void set_status_application(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 
 
-	ESTADO_APP new_status = ERROR_CHANGE_STATUS;
+	ESTADO_APP new_status = UNKNOWN_STATUS;
+
+	if (event == EVENT_RESTART) {
+		new_status = RESTARTING;
+		change_status_application(datosApp, new_status);
+		return;
+	}
+
+	if (event == EVENT_FACTORY) {
+		new_status = FACTORY;
+		change_status_application(datosApp, new_status);
+		return;
+
+	}
+
+
 
 	switch (get_current_status_application(datosApp)) {
 
@@ -336,7 +360,6 @@ void set_status_application(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 			new_status = FACTORY;
 		}
 		break;
-
 
 
 
@@ -426,12 +449,7 @@ void set_status_application(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 
 			break;
 		}
-		if (event == EVENT_FACTORY) {
-			//change_status_application(datosApp, FACTORY);
-			new_status = FACTORY;
 
-			break;
-		}
 
 		if (event == EVENT_START_APP) {
 			if (using_schedules(datosApp)) {
@@ -451,7 +469,7 @@ void set_status_application(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 			break;
 		}
 
-		if (event == EVENT_DEVICE_OK) {
+		if ((event == EVENT_DEVICE_OK) || (event == EVENT_WIFI_OK) || (event == EVENT_SMARTCONFIG_END)){
 			ESP_LOGW(TAG, ""TRAZAR" cambiando de estado por EVENT_DEVICE_OK", INFOTRAZA);
 			new_status = STARTING;
 			break;
@@ -460,12 +478,6 @@ void set_status_application(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 		if (event == EVENT_SMARTCONFIG_START) {
 			new_status = FACTORY;
 		}
-		if (event == EVENT_SMARTCONFIG_END) {
-			new_status = STARTING;
-		}
-
-
-
 		break;
 
 	case UPGRADING:
@@ -487,9 +499,13 @@ void set_status_application(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 			break;
 		}
 
-		if ((event == EVENT_FACTORY) || (event == EVENT_DEVICE_OK)){
+		if (event == EVENT_DEVICE_OK){
 			new_status = FACTORY;
 			break;
+		}
+
+		if (event == EVENT_WIFI_OK) {
+			new_status = STARTING;
 		}
 
 
@@ -588,6 +604,13 @@ void set_status_application(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 			new_status = FACTORY;
 		}
 
+		break;
+
+	case UNKNOWN_STATUS:
+		if (event == EVENT_STARTING) {
+			new_status = STARTING;
+			break;
+		}
 		break;
 
 	default:

@@ -989,7 +989,8 @@ esp_err_t   ejecutar_reset(DATOS_APLICACION *datosApp, cJSON *respuesta) {
     	codigoRespuesta(respuesta, RESP_OK);
     }
 
-    change_status_application(datosApp, RESTARTING);
+    set_status_application(datosApp, EVENT_RESTART);
+
 
 
     return ESP_OK;
@@ -1067,7 +1068,8 @@ esp_err_t reinicio_fabrica(DATOS_APLICACION *datosApp) {
 	nvs_erase_all(datosApp->handle);
 	set_app_status_device(datosApp, DEVICE_NOT_CONFIGURED);
 	salvar_configuracion_general(datosApp);
-	change_status_application(datosApp, FACTORY);
+	set_status_application(datosApp, EVENT_FACTORY);
+	//change_status_application(datosApp, FACTORY);
 	//nvs_flash_erase();
 
 

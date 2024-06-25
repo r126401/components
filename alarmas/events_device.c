@@ -223,7 +223,7 @@ void process_event_error_nvs(DATOS_APLICACION *datosApp) {
 	case APP_STARTED:
 		break;
 
-	case ERROR_CHANGE_STATUS:
+	case UNKNOWN_STATUS:
 		break;
 
 
@@ -256,6 +256,9 @@ void process_event_nvs_ok(DATOS_APLICACION *datosApp) {
 
 void process_event_wifi_ok(DATOS_APLICACION *datosApp) {
 
+
+	set_status_application(datosApp, EVENT_WIFI_OK);
+/*
 	switch(datosApp->datosGenerales->estadoApp) {
 
 	case FACTORY:
@@ -272,7 +275,7 @@ void process_event_wifi_ok(DATOS_APLICACION *datosApp) {
 
 
 	}
-
+*/
 	send_alarm(datosApp, ALARM_WIFI, ALARM_OFF, true);
 
 	appuser_notify_wifi_connected_ok(datosApp);
@@ -622,7 +625,7 @@ void process_event_restart(DATOS_APLICACION *datosApp) {
 
 void process_event_starting(DATOS_APLICACION *datosApp) {
 
-
+	set_status_application(datosApp, EVENT_STARTING);
 
 }
 

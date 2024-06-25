@@ -310,9 +310,6 @@ esp_err_t init_global_parameters(DATOS_APLICACION *datosApp) {
     datosApp->datosGenerales->ota.swVersion = esp_ota_get_app_description();
 #endif
 
-if (get_app_status_device(datosApp) == DEVICE_NOT_CONFIGURED) {
-	change_status_application(datosApp, FACTORY);
-}
 
 
 
@@ -347,8 +344,13 @@ if (get_app_status_device(datosApp) == DEVICE_NOT_CONFIGURED) {
 				free(datos);
 				return error;
 			}
-
 		}
+
+		if (get_app_status_device(datosApp) == DEVICE_NOT_CONFIGURED) {
+			ESP_LOGW(TAG, ""TRAZAR" Dispositivo no configurado, pasamos a Factory", INFOTRAZA);
+			set_status_application(datosApp, EVENT_FACTORY);
+		}
+
 
 		if (using_mqtt(datosApp) && get_mqtt_tls(datosApp)) {
 			if ((error = leer_configuracion(datosApp, CONFIG_CLAVE_CERTIFICADO_TLS, datos)) == ESP_OK) {
