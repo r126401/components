@@ -862,7 +862,7 @@ esp_err_t   borrar_programa(cJSON *peticion,struct DATOS_APLICACION *datosApp, c
        if (datosApp->datosGenerales->nProgramacion == 0) {
            //datosApp->datosGenerales->estadoApp = NORMAL_SIN_PROGRAMACION;
            //appuser_notify_app_status(datosApp, NO_PROGRAM);
-           send_event(__func__, EVENT_NONE_SCHEDULE);
+           send_event(__func__, EVENT_NO_ACTIVE_SCHEDULE);
        }
        cJSON_AddNumberToObject(respuesta, DEVICE_STATE, datosApp->datosGenerales->estadoApp);
        cJSON_AddNumberToObject(respuesta, PROGRAMMER_STATE, datosApp->datosGenerales->estadoProgramacion);

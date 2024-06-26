@@ -325,7 +325,7 @@ void set_status_application(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 			break;
 		}
 
-		if (event == EVENT_NONE_SCHEDULE) {
+		if (event == EVENT_NO_ACTIVE_SCHEDULE) {
 			//change_status_application(datosApp, NORMAL_MANUAL);
 			new_status = NORMAL_AUTO;
 			break;
@@ -382,9 +382,9 @@ void set_status_application(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 
 			break;
 		}
-		if (event == EVENT_NONE_SCHEDULE) {
+		if (event == EVENT_NO_ACTIVE_SCHEDULE) {
 			//change_status_application(datosApp, NORMAL_MANUAL);
-			new_status = NORMAL_MANUAL;
+			new_status = NORMAL_AUTO;
 
 			break;
 		}
@@ -525,7 +525,7 @@ void set_status_application(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 
 			break;
 		}
-		if (event == EVENT_NONE_SCHEDULE) {
+		if (event == EVENT_NO_ACTIVE_SCHEDULE) {
 			//change_status_application(datosApp, NORMAL_AUTO);
 			new_status = NORMAL_AUTO;
 

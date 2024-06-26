@@ -152,10 +152,10 @@ esp_err_t ordenarListaProgramas(TIME_PROGRAM *listaProgramas, int nElementos, st
                 listaProgramas[i].programacion.tm_wday = clock.tm_wday;
                 if (calcularMascara(clock.tm_wday, listaProgramas[i].mascara) == true) {
                     listaProgramas[i].activo = 1;
-                    ESP_LOGW(TAG, ""TRAZAR" PROGRAMA CON MASCARA ACTIVA", INFOTRAZA);
+                    //ESP_LOGW(TAG, ""TRAZAR" PROGRAMA CON MASCARA ACTIVA", INFOTRAZA);
                 } else {
                     listaProgramas[i].activo = 0;
-                    ESP_LOGW(TAG, ""TRAZAR" PROGRAMA CON MASCARA INACTIVA", INFOTRAZA);
+                    //ESP_LOGW(TAG, ""TRAZAR" PROGRAMA CON MASCARA INACTIVA", INFOTRAZA);
                 }
                 
                 listaProgramas[i].programacion.tm_yday = clock.tm_yday;
@@ -286,24 +286,7 @@ struct TIME_PROGRAM * borrarPrograma(struct TIME_PROGRAM *listProgram, uint8_t *
     uint8_t i;
     struct TIME_PROGRAM *list = NULL;
     
-    /*
-    uint8_t nProgramas=0;
-    //printf("tamaño antes: %d\n", sizeof(*listProgram));
-    printf("borrarPrograma-->posicion encontrada:%d, totalElementos:%d\n", element, *elements);
-    for (i=0;i<*elements;i++) {
-        if (i != element) {
-            list = crearPrograma(listProgram[i], list, &nProgramas);
-        } else {
-            printf("borrarPrograma-->elemento %d borrado\n", i);
-            
-        }
-    }
-    *elements = nProgramas;
-    free(listProgram);
-    return list;
-    
-    
-   */
+
     
     for (i=element; i< *elements - 1; i++) {
         memcpy(listProgram+i, listProgram+i+1, sizeof(*listProgram));
@@ -348,17 +331,7 @@ bool buscarProgramaDuplicado(char* idPrograma, struct TIME_PROGRAM *program, uin
         //printf("buscarProgramaDuplicado--> Registro %s duplicado. No se inserta\n", idPrograma);
         return true;
     }
-/*
-    uint8_t i;
-    
-    for(i=0;i<elements;i++) {
-        printf("idPrograma: %s, idProgramaInsertado:%s\n", idPrograma, program[i].idPrograma);
-        if (strcmp(idPrograma, program[i].idPrograma) == 0) {
-            printf("buscarProgramaDuplicado:Registro %s duplicado. No se inserta\n", idPrograma);
-            return false;
-        }
-    }
-*/    
+
     return true;
 }
 
@@ -466,24 +439,7 @@ int localizarProgramaPorId(char *idPrograma, struct TIME_PROGRAM *program, uint8
     return -1;
     
     
-    
-/*
 
-    for(i=0;i<elements;i++) {
-        strcpy(cadena2, program[i].idPrograma);
-         printf("localizarProgramaPorId--> comparamos %s con %s\n", cadena1, cadena2);
-        if (strcmp(cadena1, cadena2) == 0) {
-            free(cadena1);
-            free(cadena2);
-            printf("localizarProgramaPorId--> registro duplicado\n");
-            return i;
-        }
-    }
-    printf("localizarProgramaPorId--> registro no localizado\n");
-    free(cadena1);
-    free(cadena2);
-    return -1;
-*/
     
 }
 
@@ -494,82 +450,7 @@ void chequear_ejecucion_programa(NTP_CLOCK *clock, TIME_PROGRAM *programs) {
 
 }
 
-/*
-void accionTemporizada(DATOS_APLICACION *datosApp) {
 
-    int tiempo;
-    uint32_t temporizacion;
-    int programaActual= -1000;
-    time_t now;
-    struct tm clock;
-
-    time(&now);
-    localtime_r(&now, &clock);
-
-    ordenarListaProgramas(datosApp->datosGenerales->programacion, datosApp->datosGenerales->nProgramacion, clock);
-    //buscarPrograma(datosApp, &programaActual);
-    //buscarprogramaActivo(datosApp->datosGenerales->nProgramacion, &datosApp->datosGenerales->nProgramaCandidato, &datosApp->datosGenerales->clock, datosApp->datosGenerales->programacion, &programaActual);
-    // Es el tiempo que se ha de poner al intervalo total.
-    tiempo = (datosApp->datosGenerales->programacion[programaActual].programa +
-                datosApp->datosGenerales->programacion[programaActual].duracion ) -
-                datosApp->datosGenerales->clock.time;
-
-    ESP_LOGI(TAG, ""TRAZAR"accionTemporizada--> La duracion propuesta es de %d\n", INFOTRAZA, datosApp->datosGenerales->programacion[programaActual].duracion);
-
-    if (datosApp->datosGenerales->programacion[programaActual].duracion > 0)  {
-
-
-        if (tiempo > 0 ) {
-
-            if (tiempo >= INTERVALO) {
-                temporizacion = INTERVALO;
-                ESP_LOGI(TAG, ""TRAZAR"accionTemporizada--> La duracion es de %d\n", INFOTRAZA, temporizacion);
-                ets_timer_disarm(&timerDuracion);
-                ets_timer_setfn(&timerDuracion, (ETSTimerFunc*)accionTemporizada, datosApp);
-                ets_timer_arm(&timerDuracion, temporizacion*1000, false);
-
-            } else {
-                temporizacion = tiempo;
-                //CreamosTemporizador para reposar el rele tras ese tiempo.
-                ESP_LOGI(TAG,"accionTemporizada--> La duracion es de %d\n", temporizacion);
-                ets_timer_disarm(&timerDuracion);
-                ets_timer_setfn(&timerDuracion, (ETSTimerFunc*)appuser_ejecucion_accion_temporizada, datosApp);
-                ets_timer_arm(&timerDuracion, temporizacion*1000, false);
-
-            }
-        } else {
-            ESP_LOGI(TAG,"accionTemporizada--> Ya paso el intervalo de duracion\n");
-            appuser_ejecucion_accion_temporizada(datosApp);
-        }
-    }
-}
-*/
-/*
-int ajustarProgramacion(TIME_PROGRAM *programacion, uint8_t *nProgramacion, NTP_CLOCK *clock) {
-
-    bool res = false;
-    int actual= -1;
-
-    ESP_LOGI(TAG,"ajustarProgramacion--> inicio\n");
-    ordenarListaProgramas(programacion, nProgramacion, clock);
-    ESP_LOGI(TAG,"ajustarProgramacion-->voy a buscar programa\n");
-    buscarprogramaActivo(nProgramacion, nProgramaCandidato, clock, programacion, &actual);
-    ESP_LOGI(TAG,"ajustarProgramacion-->he buscado el programa\n");
-    ESP_LOGI(TAG,"ajustarProgramacion: actual %d, futuro %u\n", actual, ProgramaCandidato);
-
-    if (res == true) {
-        appUser_ejecutarAccionPrograma(datosApp, actual);
-        accionTemporizada(datosApp);
-
-    } else {
-        appUser_ejecutarAccionProgramaDefecto(datosApp);
-    }
-
-    return datosApp->datosGenerales->nProgramaCandidato;
-
-}
-
-*/
 
 
 SCHEDULE_SEARCH buscar_programa(TIME_PROGRAM *programas, int elementos, int *programa_actual, time_t *t_tiempo_siguiente) {
@@ -677,45 +558,7 @@ SCHEDULE_SEARCH calcular_programa_activo(DATOS_APLICACION *datosApp, time_t *t_s
 
 	ESP_LOGW(TAG, ""TRAZAR"RESULTADO CALCULAR_PROGRAMA_ACTIVO: %d", INFOTRAZA, error);
 
-/*
 
-	if ((error = buscar_programa(datosApp->datosGenerales->programacion,
-			datosApp->datosGenerales->nProgramacion,
-			&datosApp->datosGenerales->nProgramaCandidato,
-			t_siguiente_intervalo)) == ACTIVE_SCHEDULE) {
-
-		ESP_LOGI(TAG, ""TRAZAR"El elemento seleccionado es %d", INFOTRAZA, datosApp->datosGenerales->nProgramaCandidato);
-		visualizartiempo(datosApp->datosGenerales->programacion[datosApp->datosGenerales->nProgramaCandidato].programacion);
-		ESP_LOGI(TAG, ""TRAZAR"START_SCHEDULE", INFOTRAZA);
-
-
-	} else {
-		error = INTERVALO_SIN_PROGRAMACION;
-		ESP_LOGW(TAG, ""TRAZAR"No hay programacion o programa activo en este momento", INFOTRAZA);
-
-	}
-*/
-/*
-	error = buscar_programa(datosApp->datosGenerales->programacion,
-			datosApp->datosGenerales->nProgramacion,
-			&datosApp->datosGenerales->nProgramaCandidato,
-			t_siguiente_intervalo);
-
-
-	if (error == ESP_OK) {
-		ESP_LOGI(TAG, ""TRAZAR"El elemento seleccionado es %d", INFOTRAZA, datosApp->datosGenerales->nProgramaCandidato);
-		visualizartiempo(datosApp->datosGenerales->programacion[datosApp->datosGenerales->nProgramaCandidato].programacion);
-		ESP_LOGI(TAG, ""TRAZAR"START_SCHEDULE", INFOTRAZA);
-		//change_status_application(datosApp, NORMAL_AUTO);
-		//send_event(__func__,EVENT_START_SCHEDULE);
-		//start_schedule(datosApp);
-
-	} else {
-		error = INTERVALO_SIN_PROGRAMACION;
-		ESP_LOGW(TAG, ""TRAZAR"No hay programacion o programa activo en este momento", INFOTRAZA);
-		//send_event(__func__,EVENT_NONE_SCHEDULE);
-	}
-*/
 	return error;
 
 }
@@ -747,7 +590,7 @@ void gestion_programas(void *arg) {
 			ESP_LOGW(TAG, ""TRAZAR"SIN CALCULO DE PROGRAMA ACTIVO POR FALLO NTP", INFOTRAZA);
 		} else {
 			if (datosApp->datosGenerales->nProgramacion == 0) {
-				send_event(__func__,EVENT_NONE_SCHEDULE);
+				send_event(__func__,EVENT_NO_ACTIVE_SCHEDULE);
 				//change_status_application(datosApp, NORMAL_SIN_PROGRAMACION);
 			} else {
 				ESP_LOGI(TAG, ""TRAZAR"CALCULAMOS EL PROGRAMA ACTIVO EN CHECK_PROGRAMS", INFOTRAZA);
@@ -756,7 +599,7 @@ void gestion_programas(void *arg) {
 				case NO_ACTIVE_SCHEDULE:
 				case NO_SCHEDULE:
 					ESP_LOGI(TAG, ""TRAZAR"INTERVALO SIN PROGRAMACION ACTIVA", INFOTRAZA);
-					send_event(__func__,EVENT_NONE_SCHEDULE);
+					send_event(__func__,EVENT_NO_ACTIVE_SCHEDULE);
 					break;
 				case ACTIVE_SCHEDULE:
 					ESP_LOGI(TAG, ""TRAZAR"ENCONTRADA PROGRAMACION ACTIVA", INFOTRAZA);
@@ -798,7 +641,7 @@ void gestion_programas(void *arg) {
 			case NO_ACTIVE_SCHEDULE:
 			case NO_SCHEDULE:
 				ESP_LOGI(TAG, ""TRAZAR"INTERVALO SIN PROGRAMACION ACTIVA", INFOTRAZA);
-				send_event(__func__,EVENT_NONE_SCHEDULE);
+				send_event(__func__,EVENT_NO_ACTIVE_SCHEDULE);
 				break;
 			case ACTIVE_SCHEDULE:
 				ESP_LOGI(TAG, ""TRAZAR"ENCONTRADA PROGRAMACION ACTIVA", INFOTRAZA);

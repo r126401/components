@@ -109,8 +109,8 @@ char* event2mnemonic(EVENT_TYPE event) {
 	case EVENT_END_SCHEDULE:
 		strcpy(mnemonic, "EVENT_END_SCHEDULE");
 		break;
-	case EVENT_NONE_SCHEDULE:
-		strcpy(mnemonic, "EVENT_NONE_SCHEDULE");
+	case EVENT_NO_ACTIVE_SCHEDULE:
+		strcpy(mnemonic, "EVENT_NO_ACTIVE_SCHEDULE");
 		break;
 	case EVENT_FACTORY:
 		strcpy(mnemonic, "EVENT_FACTORY");
@@ -235,6 +235,7 @@ void process_event_error_nvs(DATOS_APLICACION *datosApp) {
 void process_event_nvs_ok(DATOS_APLICACION *datosApp) {
 
 
+	ESP_LOGW(TAG, ""TRAZAR"Procesando evento nvs", INFOTRAZA);
 	switch(datosApp->datosGenerales->estadoApp) {
 
 
@@ -256,6 +257,7 @@ void process_event_nvs_ok(DATOS_APLICACION *datosApp) {
 
 void process_event_wifi_ok(DATOS_APLICACION *datosApp) {
 
+	ESP_LOGW(TAG, ""TRAZAR"Procesando evento EVENT_WIFI_OK", INFOTRAZA);
 
 	set_status_application(datosApp, EVENT_WIFI_OK);
 /*
@@ -285,7 +287,8 @@ void process_event_wifi_ok(DATOS_APLICACION *datosApp) {
 
 void process_event_error_wifi(DATOS_APLICACION *datosApp) {
 
-	ESP_LOGE(TAG, ""TRAZAR" process_event_error_wifi: ", INFOTRAZA);
+	ESP_LOGW(TAG, ""TRAZAR"Procesando evento EVENT_ERROR_WIFI", INFOTRAZA);
+
 
 	switch(datosApp->datosGenerales->estadoApp) {
 
@@ -311,6 +314,7 @@ void process_event_error_wifi(DATOS_APLICACION *datosApp) {
 
 void process_event_ntp_ok(DATOS_APLICACION *datosApp) {
 
+	ESP_LOGW(TAG, ""TRAZAR"Procesando evento EVENT_NTP_OK", INFOTRAZA);
 
 	send_alarm(datosApp, ALARM_NTP, ALARM_OFF, true);
 	actualizar_hora(&datosApp->datosGenerales->clock);
@@ -357,6 +361,8 @@ void process_event_ntp_ok(DATOS_APLICACION *datosApp) {
 void process_event_error_ntp(DATOS_APLICACION *datosApp) {
 
 
+	ESP_LOGW(TAG, ""TRAZAR"Procesando evento EVENT_ERROR_NTP", INFOTRAZA);
+
 	switch(datosApp->datosGenerales->estadoApp) {
 
 	case NORMAL_AUTO:
@@ -379,11 +385,13 @@ void process_event_error_ntp(DATOS_APLICACION *datosApp) {
 }
 
 
-void process_event_none_schedule(DATOS_APLICACION *datosApp) {
+void process_event_no_active_schedule(DATOS_APLICACION *datosApp) {
 
 
-	set_status_application(datosApp, EVENT_NONE_SCHEDULE);
-	appuser_notify_event_none_schedule(datosApp);
+	ESP_LOGW(TAG, ""TRAZAR"Procesando evento EVENT_NO_ACTIVE_SCHEDULE", INFOTRAZA);
+
+	set_status_application(datosApp, EVENT_NO_ACTIVE_SCHEDULE);
+	appuser_notify_event_no_active_schedule(datosApp);
 
 
 
@@ -391,6 +399,8 @@ void process_event_none_schedule(DATOS_APLICACION *datosApp) {
 }
 
 void process_event_end_schedule(DATOS_APLICACION *datosApp) {
+
+	ESP_LOGW(TAG, ""TRAZAR"Procesando evento EVENT_END_SCHEDULE", INFOTRAZA);
 
 	set_status_application(datosApp, EVENT_END_SCHEDULE);
 	appuser_end_schedule(datosApp);
@@ -401,6 +411,8 @@ void process_event_end_schedule(DATOS_APLICACION *datosApp) {
 void process_event_start_schedule(DATOS_APLICACION *datosApp) {
 
 
+	ESP_LOGW(TAG, ""TRAZAR"Procesando evento EVENT_START_SCHEDULE", INFOTRAZA);
+
 	set_status_application(datosApp, EVENT_START_SCHEDULE);
 	start_schedule(datosApp);
 	appuser_start_schedule(datosApp);
@@ -410,6 +422,7 @@ void process_event_start_schedule(DATOS_APLICACION *datosApp) {
 
 void process_event_check_schedules(DATOS_APLICACION *datosApp) {
 
+	ESP_LOGW(TAG, ""TRAZAR"Procesando evento EVENT_CHECK_SCHEDULES", INFOTRAZA);
 
 	set_status_application(datosApp, EVENT_CHECK_SCHEDULES);
 }
@@ -424,6 +437,7 @@ void process_event_check_schedules(DATOS_APLICACION *datosApp) {
 void process_event_app_ok(DATOS_APLICACION *datosApp) {
 
 
+	ESP_LOGW(TAG, ""TRAZAR"Procesando evento EVENT_APP_OK", INFOTRAZA);
 
 
 
@@ -433,6 +447,8 @@ void process_event_app_ok(DATOS_APLICACION *datosApp) {
 
 void process_event_mqtt_ok(DATOS_APLICACION *datosApp) {
 
+
+	ESP_LOGW(TAG, ""TRAZAR"Procesando evento EVENT_MQTT_OK", INFOTRAZA);
 
 	send_alarm(datosApp, ALARM_MQTT, ALARM_OFF, true);
 
@@ -455,6 +471,8 @@ void process_event_mqtt_ok(DATOS_APLICACION *datosApp) {
 void process_event_modify_schedule(DATOS_APLICACION *datosApp) {
 
 
+	ESP_LOGW(TAG, ""TRAZAR"Procesando evento EVENT_MODIFY_SCHEDULE", INFOTRAZA);
+
 	set_status_application(datosApp, EVENT_MODIFY_SCHEDULE);
 
 
@@ -462,6 +480,7 @@ void process_event_modify_schedule(DATOS_APLICACION *datosApp) {
 
 void process_event_delete_schedule(DATOS_APLICACION *datosApp) {
 
+	ESP_LOGW(TAG, ""TRAZAR"Procesando evento EVENT_DELETE_SCHEDULE", INFOTRAZA);
 
 	set_status_application(datosApp, EVENT_DELETE_SCHEDULE);
 }
@@ -469,6 +488,7 @@ void process_event_delete_schedule(DATOS_APLICACION *datosApp) {
 
 void process_event_insert_schedule(DATOS_APLICACION *datosApp) {
 
+	ESP_LOGW(TAG, ""TRAZAR"Procesando evento EVENT_INSERT_SCHEDULE", INFOTRAZA);
 
 	set_status_application(datosApp, EVENT_INSERT_SCHEDULE);
 }
@@ -476,6 +496,7 @@ void process_event_insert_schedule(DATOS_APLICACION *datosApp) {
 
 void process_event_upgrade_firmware(DATOS_APLICACION *datosApp) {
 
+	ESP_LOGW(TAG, ""TRAZAR"Procesando evento EVENT_UPGRADE_FIRMWARE", INFOTRAZA);
 
 	set_status_application(datosApp, EVENT_UPGRADE_FIRMWARE);
 	appuser_notify_start_ota(datosApp);
@@ -486,6 +507,7 @@ void process_event_upgrade_firmware(DATOS_APLICACION *datosApp) {
 void process_event_factory(DATOS_APLICACION *datosApp) {
 
 
+	ESP_LOGW(TAG, ""TRAZAR"Procesando evento EVENT_FACTORY", INFOTRAZA);
 	set_status_application(datosApp, EVENT_FACTORY);
 
 	appuser_notify_no_config(datosApp);
@@ -495,6 +517,7 @@ void process_event_factory(DATOS_APLICACION *datosApp) {
 
 void process_event_device_ok(DATOS_APLICACION *datosApp) {
 
+	ESP_LOGW(TAG, ""TRAZAR"Procesando evento EVENT_DEVICE_OK", INFOTRAZA);
 
 	if (datosApp->alarmas[ALARM_DEVICE].estado_alarma == ALARM_ON) {
 		send_alarm(datosApp, ALARM_DEVICE, ALARM_OFF, true);
@@ -507,6 +530,7 @@ void process_event_device_ok(DATOS_APLICACION *datosApp) {
 
 void process_event_smartconfig_start(DATOS_APLICACION *datosApp) {
 
+	ESP_LOGW(TAG, ""TRAZAR"Procesando evento EVENT_SMARTCONFIG_START", INFOTRAZA);
 
 	if (get_current_status_application(datosApp) == FACTORY) {
 		ESP_LOGI(TAG, ""TRAZAR"SMARTCONFIG START EN MODO FACTORY", INFOTRAZA);
@@ -525,6 +549,9 @@ void process_event_smartconfig_start(DATOS_APLICACION *datosApp) {
 
 void process_event_smartconfig_end(DATOS_APLICACION *datosApp) {
 
+
+	ESP_LOGW(TAG, ""TRAZAR"Procesando evento EVENT_SMARTCONFIG_END", INFOTRAZA);
+
 	//Ponemos el dispositivo como configurado y salvamos la configuracion.
 	set_app_status_device(datosApp, DEVICE_CONFIGURED);
 	salvar_configuracion_general(datosApp);
@@ -536,12 +563,16 @@ void process_event_smartconfig_end(DATOS_APLICACION *datosApp) {
 
 void process_event_error_smartconfig(DATOS_APLICACION *datosApp) {
 
+	ESP_LOGW(TAG, ""TRAZAR"Procesando evento EVENT_ERROR_SMARTCONFIG", INFOTRAZA);
+
 	appuser_notify_error_smartconfig(datosApp);
 }
 
 void process_event_end_upgrade(DATOS_APLICACION *datosApp) {
 
 	//notificar_evento_ota(datosApp, OTA_UPGRADE_FINALIZADO);
+	ESP_LOGW(TAG, ""TRAZAR"Procesando evento EVENT_END_UPGRADE", INFOTRAZA);
+
 	send_spontaneous_report(datosApp, END_UPGRADE_OTA);
 	esp_restart();
 
@@ -550,6 +581,8 @@ void process_event_end_upgrade(DATOS_APLICACION *datosApp) {
 
 void process_event_error_upgrade(DATOS_APLICACION *datosApp) {
 
+	ESP_LOGW(TAG, ""TRAZAR"Procesando evento EVENT_ERROR_UPGRADE", INFOTRAZA);
+
 	send_spontaneous_report(datosApp, ERROR_UPGRADE_OTA);
 	esp_restart();
 
@@ -557,12 +590,16 @@ void process_event_error_upgrade(DATOS_APLICACION *datosApp) {
 
 void process_event_error_mqtt(DATOS_APLICACION *datosApp) {
 
+	ESP_LOGW(TAG, ""TRAZAR"Procesando evento EVENT_ERROR_MQTT", INFOTRAZA);
+
 	send_alarm(datosApp, ALARM_MQTT, ALARM_ON, false);
 	appuser_notify_broker_disconnected(datosApp);
 
 }
 
 void process_event_error_device(DATOS_APLICACION *datosApp) {
+
+	ESP_LOGW(TAG, ""TRAZAR"Procesando evento EVENT_ERROR_DEVICE", INFOTRAZA);
 
 	if (datosApp->alarmas[ALARM_DEVICE].estado_alarma == ALARM_OFF) {
 		send_alarm(datosApp, ALARM_DEVICE, ALARM_ON, true);
@@ -575,6 +612,8 @@ void process_event_error_device(DATOS_APLICACION *datosApp) {
 
 void process_event_error_app(DATOS_APLICACION *datosApp) {
 
+	ESP_LOGW(TAG, ""TRAZAR"Procesando evento EVENT_ERROR_APP", INFOTRAZA);
+
 	ESP_LOGE(TAG, ""TRAZAR"RECIBIDO ERROR APP", INFOTRAZA);
 	change_status_application(datosApp, ERROR_APP);
 
@@ -584,7 +623,7 @@ void process_event_error_app(DATOS_APLICACION *datosApp) {
 void process_event_start_app(DATOS_APLICACION *datosApp) {
 
 
-	ESP_LOGE(TAG, ""TRAZAR"RECIBIDO process_event_start_app", INFOTRAZA);
+	ESP_LOGW(TAG, ""TRAZAR"Procesando evento EVENT_START_APP", INFOTRAZA);
 	set_status_application(datosApp, EVENT_START_APP);
 	appuser_notify_application_started(datosApp);
 
@@ -595,6 +634,7 @@ void process_event_start_app(DATOS_APLICACION *datosApp) {
 void process_event_schedules_ok(DATOS_APLICACION *datosApp) {
 
 
+	ESP_LOGW(TAG, ""TRAZAR"Procesando evento EVENT_SCHEDULES_OK", INFOTRAZA);
 
 	send_event(__func__, EVENT_START_APP);
 
@@ -605,6 +645,8 @@ void process_event_schedules_ok(DATOS_APLICACION *datosApp) {
 
 void process_event_no_schedule(DATOS_APLICACION *datosApp) {
 
+	ESP_LOGW(TAG, ""TRAZAR"Procesando evento EVENT_NO_SCHEDULE", INFOTRAZA);
+
 	set_status_application(datosApp, EVENT_NO_SCHEDULE);
 
 	//change_status_application(datosApp, NORMAL_MANUAL);
@@ -613,10 +655,15 @@ void process_event_no_schedule(DATOS_APLICACION *datosApp) {
 
 void process_event_automan(DATOS_APLICACION *datosApp) {
 
+
+	ESP_LOGW(TAG, ""TRAZAR"Procesando evento EVENT_AUTOMAN", INFOTRAZA);
+
 	ESP_LOGI(TAG, ""TRAZAR" process_event_automan", INFOTRAZA);
 }
 
 void process_event_restart(DATOS_APLICACION *datosApp) {
+
+	ESP_LOGW(TAG, ""TRAZAR"Procesando evento EVENT_RESTART", INFOTRAZA);
 
 	set_status_application(datosApp, EVENT_RESTART);
 
@@ -624,6 +671,9 @@ void process_event_restart(DATOS_APLICACION *datosApp) {
 }
 
 void process_event_starting(DATOS_APLICACION *datosApp) {
+
+
+	ESP_LOGW(TAG, ""TRAZAR"Procesando evento EVENT_STARTING", INFOTRAZA);
 
 	set_status_application(datosApp, EVENT_STARTING);
 
@@ -724,8 +774,8 @@ void receive_event(DATOS_APLICACION *datosApp, EVENT_APP event) {
 		case EVENT_END_SCHEDULE:
 			process_event_end_schedule(datosApp);
 			break;
-		case EVENT_NONE_SCHEDULE:
-			process_event_none_schedule(datosApp);
+		case EVENT_NO_ACTIVE_SCHEDULE:
+			process_event_no_active_schedule(datosApp);
 			break;
 		case EVENT_FACTORY:
 			process_event_factory(datosApp);
@@ -803,9 +853,9 @@ void event_task(void *arg) {
 	for(;;) {
 		 ESP_LOGI(TAG, ""TRAZAR"ESPERANDO EVENTO...Memoria libre: "CONFIG_UINT32_FORMAT"\n", INFOTRAZA, esp_get_free_heap_size());
 		if (xQueueReceive(event_queue, &event, portMAX_DELAY) == pdTRUE) {
-			ESP_LOGE(TAG, ""TRAZAR"event_task:Recibido evento app %s, evento device:%s. Estado App: %s", INFOTRAZA,
-					event2mnemonic(event.event_app), local_event_2_mnemonic(event.event_device),
-							status2mnemonic(datosApp->datosGenerales->estadoApp));
+			//ESP_LOGE(TAG, ""TRAZAR"event_task:Recibido evento app %s, evento device:%s. Estado App: %s", INFOTRAZA,
+				//	event2mnemonic(event.event_app), local_event_2_mnemonic(event.event_device),
+					//		status2mnemonic(datosApp->datosGenerales->estadoApp));
 			receive_event(datosApp, event);
 
 
@@ -836,7 +886,7 @@ void send_event(const char *func, EVENT_TYPE event) {
 	event_received.event_app = event;
 	event_received.event_device = EVENT_NONE;
 
-	ESP_LOGW(TAG, ""TRAZAR" %s: %s", INFOTRAZA, func, event2mnemonic(event));
+	ESP_LOGW(TAG, ""TRAZAR" envio de evento: funcion: %s: evento: %s", INFOTRAZA, func, event2mnemonic(event));
 	xQueueSend(event_queue, &event_received,0);
 
 }

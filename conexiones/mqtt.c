@@ -79,36 +79,7 @@ esp_err_t unsubscribe_topic(DATOS_APLICACION *datosApp, int index_topic) {
 
 }
 
-/*
 
-void mqtt_task(void *arg) {
-
-	//DATOS_APLICACION *datosApp = (DATOS_APLICACION*) arg;
-	COLA_MQTT cola;
-
-
-	ESP_LOGI(TAG, ""TRAZAR"COMIENZO MQTT_TASK", INFOTRAZA);
-	//establecer_conexion_mqtt(&datosApp);
-
-	cola_mqtt = xQueueCreate(10, sizeof(COLA_MQTT));
-
-	for(;;) {
-		 ESP_LOGI(TAG, ""TRAZAR"ESPERANDO MENSAJE...Memoria libre: "CONFIG_UINT32_FORMAT"\n", INFOTRAZA, esp_get_free_heap_size());
-		if (xQueueReceive(cola_mqtt, &cola, portMAX_DELAY) == pdTRUE) {
-			ESP_LOGE(TAG, ""TRAZAR"se va a procesar la peticion", INFOTRAZA);
-			//publicar_mensaje(&datosApp, &cola);
-
-		} else {
-			ESP_LOGE(TAG, ""TRAZAR"NO SE HA PODIDO PROCESAR LA PETICION", INFOTRAZA);
-		}
-
-	}
-
-	vTaskDelete(NULL);
-
-
-}
-*/
 
 
 #ifndef CONFIG_IDF_TARGET_ESP8266
@@ -330,7 +301,7 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 
 
 void init_device_mqtt(void *arg) {
-	esp_err_t error;
+
 
 	DATOS_APLICACION *datosApp = (DATOS_APLICACION*) arg;
 
@@ -349,9 +320,10 @@ void init_device_mqtt(void *arg) {
     ESP_LOGI(TAG, ""TRAZAR"Nos conectamos al broker %s", INFOTRAZA, mqtt_cfg.uri);
     //send_event(__func__, EVENT_CONNECT_MQTT);
     client = esp_mqtt_client_init(&mqtt_cfg);
-    error = esp_mqtt_client_start(client);
+    esp_mqtt_client_start(client);
 
     ESP_LOGI(TAG, ""TRAZAR" antes de retornar init mqtt", INFOTRAZA);
+    send_event(__func__, EVENT_CONNECT_MQTT);
 
 
     vTaskDelete(NULL);
