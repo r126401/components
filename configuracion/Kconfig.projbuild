@@ -3,28 +3,28 @@ menu "Configuracion General components"
 
 config WIFI_ACTIVE
 	bool "Activar la configuracion wifi"
-	default false
+	default true
 	help
 		Indica si la aplicacion va a utilizar el servicio wifi
 		
 config CLOCK_ACTIVE
 	depends on WIFI_ACTIVE
 	bool "Activar la configuracion ntp"
-	default false
+	default true
 	help
 		Indica si la aplicacion va a utilizar el servicio ntp
 
 config SCHEDULE_ACTIVE
 	depends on CLOCK_ACTIVE
 	bool "Activar la configuracion de schedules"
-	default false
+	default true
 	help
 		Indica si la aplicacion va a utilizar el servicio schedule
 
 config MQTT_ACTIVE
 	depends on WIFI_ACTIVE
 	bool "Activar la configuracion mqtt"
-	default false
+	default true
 	help
 		Indica si la aplicacion va a utilizar el servicio mqtt
 
