@@ -46,8 +46,8 @@ static const int ESPTOUCH_DONE_BIT = BIT1;
 
 static EventGroupHandle_t grupo_eventos;
  ip4_addr_t s_ip_addr;
-static const char *TAG = "CONEXIONES";
-extern DATOS_APLICACION datosApp;
+static const char *TAG = "conexiones.c";
+//extern DATOS_APLICACION datosApp;
 
 
 
@@ -97,7 +97,7 @@ void volcar_datos_conexion(void * event_data){
     if (wifi_config.sta.bssid_set == true) {
         memcpy(wifi_config.sta.bssid, evt->bssid, sizeof(wifi_config.sta.bssid));
     }
-    appuser_notify_connecting_wifi(&datosApp);
+    appuser_notify_connecting_wifi(event_data);
     ESP_ERROR_CHECK(esp_wifi_disconnect());
     ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config));
     ESP_ERROR_CHECK(esp_wifi_connect());
@@ -198,19 +198,20 @@ static void on_wifi_disconnect(void *arg, esp_event_base_t event_base,
                                int32_t event_id, void *event_data)
 {
 
+	DATOS_APLICACION *datosApp = (DATOS_APLICACION *) event_data;
 
     ESP_LOGW(TAG, ""TRAZAR"Wi-Fi desconectado, se intenta la reconexion...", INFOTRAZA);
 
-    if (get_current_status_application(&datosApp) == RESTARTING){
+    if (get_current_status_application(datosApp) == RESTARTING){
     	return;
     }
-    if (get_current_status_application(&datosApp) == FACTORY) {
+    if (get_current_status_application(datosApp) == FACTORY) {
     	 ESP_LOGW(TAG, ""TRAZAR"Wi-Fi desconectado, estamos en factory", INFOTRAZA);
-    	 appuser_notify_error_smartconfig(&datosApp);
+    	 appuser_notify_error_smartconfig(datosApp);
     }
 
-    if (datosApp.datosGenerales->estadoApp != UPGRADING) {
-    	//registrar_alarma(&datosApp, NOTIFICACION_ALARMA_WIFI, ALARMA_WIFI, ALARMA_ON, false);
+    if (datosApp->datosGenerales->estadoApp != UPGRADING) {
+    	//registrar_alarma(datosApp, NOTIFICACION_ALARMA_WIFI, ALARMA_WIFI, ALARMA_ON, false);
     	send_event(__func__,EVENT_ERROR_WIFI);
     	esp_wifi_connect();
     	xEventGroupClearBits(grupo_eventos, CONNECTED_BIT);
@@ -229,10 +230,12 @@ static void on_got_ip(void *arg, esp_event_base_t event_base,
     ip_event_got_ip_t *event = (ip_event_got_ip_t *)event_data;
     memcpy(&s_ip_addr, &event->ip_info.ip, sizeof(s_ip_addr));
     xEventGroupSetBits(grupo_eventos, CONNECTED_BIT);
-    if (get_current_status_application(&datosApp) == FACTORY) {
+    /*
+    if (get_current_status_application(datosApp) == FACTORY) {
     	send_event(__func__, EVENT_SMARTCONFIG_END);
 
     }
+    */
     send_event(__func__,EVENT_WIFI_OK);
 
 
@@ -257,6 +260,7 @@ void on_wifi_scan_done(void *arg, esp_event_base_t event_base, int32_t event_id,
 	wifi_ap_record_t ap_info[CONFIG_DEFAULT_SCAN_LIST_SIZE];
 	uint16_t number = CONFIG_DEFAULT_SCAN_LIST_SIZE;
 	uint16_t ap_count = 0;
+	DATOS_APLICACION *datosApp = (DATOS_APLICACION *) datosApp;
 	memset(ap_info, 0, sizeof(ap_info));
 
 
@@ -273,7 +277,7 @@ void on_wifi_scan_done(void *arg, esp_event_base_t event_base, int32_t event_id,
 
     ESP_LOGI(TAG, ""TRAZAR"RECIBIDO SCANDONE 4", INFOTRAZA);
 	esp_wifi_scan_stop();
-	appuser_notify_scan_done(&datosApp, ap_info, &ap_count);
+	appuser_notify_scan_done(datosApp, ap_info, &ap_count);
 
 
 
@@ -282,7 +286,7 @@ void on_wifi_scan_done(void *arg, esp_event_base_t event_base, int32_t event_id,
 
 
 
-inline static void inicializar_wifi() {
+inline static void inicializar_wifi(DATOS_APLICACION *datosApp) {
 
 #if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32S3)
     esp_event_handler_instance_t instance_any_id;
@@ -294,8 +298,8 @@ inline static void inicializar_wifi() {
 #ifdef CONFIG_IDF_TARGET_ESP8266
     tcpip_adapter_init();
 #endif
-	if (datosApp.datosGenerales->estadoApp != FACTORY) {
-		appuser_notify_connecting_wifi(&datosApp);
+	if (datosApp->datosGenerales->estadoApp != FACTORY) {
+		appuser_notify_connecting_wifi(datosApp);
 	}
 
     grupo_eventos = xEventGroupCreate();
@@ -308,15 +312,15 @@ inline static void inicializar_wifi() {
 
     //ESP_ERROR_CHECK(esp_wifi_set_ps(WIFI_PS_NONE));
 #if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32S3)
-    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &on_wifi_disconnect, &instance_any_id));
+    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &on_wifi_disconnect, datosApp));
     ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &on_got_ip, &instance_got_ip));
     ESP_ERROR_CHECK(esp_event_handler_register(SC_EVENT, ESP_EVENT_ANY_ID, &manejador_eventos_smart, NULL));
-    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_SCAN_DONE, &on_wifi_scan_done, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_SCAN_DONE, &on_wifi_scan_done, datosApp));
 #else
-    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &on_wifi_disconnect, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &on_wifi_disconnect, datosApp));
     ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &on_got_ip, NULL));
-    ESP_ERROR_CHECK(esp_event_handler_register(SC_EVENT, ESP_EVENT_ANY_ID, &manejador_eventos_smart, NULL));
-    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_SCAN_DONE, &on_wifi_scan_done, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_register(SC_EVENT, ESP_EVENT_ANY_ID, &manejador_eventos_smart, datosApp));
+    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_SCAN_DONE, &on_wifi_scan_done, datosApp));
 #endif
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     esp_wifi_init(&cfg);
@@ -358,10 +362,10 @@ void tarea_smartconfig(void* parm) {
 
 
 
-void task_smartconfig() {
+void task_smartconfig(DATOS_APLICACION *datosApp) {
 
 	ESP_LOGI(TAG, "VAMOS A CREAR LA TAREA SMARTCONFIG");
-	xTaskCreate(tarea_smartconfig, "tarea_smart", CONFIG_RESOURCE_SMARTCONFIG_TASK, (void*)&datosApp, tskIDLE_PRIORITY + 0, NULL);
+	xTaskCreate(tarea_smartconfig, "tarea_smart", CONFIG_RESOURCE_SMARTCONFIG_TASK, (void*)datosApp, tskIDLE_PRIORITY + 0, NULL);
 	ESP_LOGI(TAG, "TAREA SMARCONFIG CREADA");
 	conectar_wifi();
 
@@ -369,14 +373,14 @@ void task_smartconfig() {
 }
 
 
-esp_err_t init_wifi_device() {
+esp_err_t init_wifi_device(DATOS_APLICACION *datosApp) {
 
 	wifi_config_t conf_wifi;
 	int i;
 	static bool inicializado = false;
 	if (!inicializado) {
 		ESP_LOGW(TAG, ""TRAZAR" INICIALIZAMOS", INFOTRAZA);
-		inicializar_wifi();
+		inicializar_wifi(datosApp);
 		inicializado = true;
 	} else {
 		ESP_LOGW(TAG, ""TRAZAR" YA INICIALIZADO", INFOTRAZA);
@@ -387,11 +391,11 @@ esp_err_t init_wifi_device() {
     esp_wifi_set_mode(WIFI_MODE_STA);
     esp_wifi_set_config(ESP_IF_WIFI_STA, &conf_wifi);
 
-    if (get_app_status_device(&datosApp) == DEVICE_NOT_CONFIGURED) {
+    if (get_app_status_device(datosApp) == DEVICE_NOT_CONFIGURED) {
 
     	ESP_LOGW(TAG, ""TRAZAR" WIFI NO CONFIGURADA", INFOTRAZA);
     	//send_event(__func__, EVENT_FACTORY);
-    	task_smartconfig();
+    	task_smartconfig(datosApp);
 
     } else {
     	for (i=0;i<32;i++) {
@@ -447,7 +451,7 @@ void wifi_task(void *arg) {
 
 	DATOS_APLICACION *datosApp = (DATOS_APLICACION*) arg;
 	while (1) {
-		init_wifi_device();
+		init_wifi_device(datosApp);
 		//sync_app_by_ntp(datosApp);
 		//crear_tarea_mqtt(datosApp);
 		init_schedule_service(datosApp);

@@ -17,7 +17,7 @@
 #include "events_device.h"
 
 
-static const char *TAG = "NVS";
+static const char *TAG = "nvslib.c";
 
 esp_err_t inicializar_nvs(char* namespace, nvs_handle *handle) {
 

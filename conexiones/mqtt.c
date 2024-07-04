@@ -21,18 +21,18 @@
 
 
 
-static const char *TAG = "MQTT";
+static const char *TAG = "mqtt.c";
 
 
 
 //extern const uint8_t mqtt_jajica_pem_start[]   asm("_binary_mqtt_cert_crt_start");
 //extern const uint8_t mqtt_jajica_pem_end[]   asm("_binary_mqtt_cert_crt_end");
 
-extern DATOS_APLICACION datosApp;
+//extern DATOS_APLICACION datosApp;
 
 //xQueueHandle cola_mqtt = NULL;
 esp_mqtt_client_handle_t client;
-extern TaskHandle_t handle;
+//extern TaskHandle_t handle;
 
 
 esp_err_t subscribe_topic(DATOS_APLICACION *datosApp, char* topic) {
@@ -91,7 +91,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
     ESP_LOGI(TAG, "Event dispatched from event loop base=%s, event_id="CONFIG_UINT32_FORMAT"", base, event_id);
     esp_mqtt_event_handle_t event = event_data;
     esp_mqtt_client_handle_t client = event->client;
-    datosApp.handle_mqtt = event;
+    //datosApp.handle_mqtt = event;
     int msg_id = 0;
     switch ((esp_mqtt_event_id_t)event_id) {
     case MQTT_EVENT_CONNECTED:
@@ -242,15 +242,18 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 {
     esp_mqtt_client_handle_t client = event->client;
     int msg_id = -1;
-    datosApp.handle_mqtt = event;
+    //datosApp.handle_mqtt = event;
+    DATOS_APLICACION *datosApp = event->user_context;
+    datosApp->handle_mqtt = event;
     static bool arranque = false;
 
     switch (event->event_id) {
         case MQTT_EVENT_CONNECTED:
             ESP_LOGI(TAG, ""TRAZAR"MQTT_EVENT_CONNECTED: CONECTADO AL BROKER", INFOTRAZA);
-            msg_id = esp_mqtt_client_subscribe(client, datosApp.datosGenerales->parametrosMqtt.subscribe,datosApp.datosGenerales->parametrosMqtt.qos);
-            ESP_LOGI(TAG, ""TRAZAR"ACCION PARA SUBSCRIBIR AL TOPIC :%s msg_id=%d", INFOTRAZA, datosApp.datosGenerales->parametrosMqtt.subscribe, msg_id);
-            if (datosApp.alarmas[ALARM_MQTT].estado_alarma == ALARM_ON) {
+            msg_id = esp_mqtt_client_subscribe(client, datosApp->datosGenerales->parametrosMqtt.subscribe,datosApp->datosGenerales->parametrosMqtt.qos);
+
+            ESP_LOGI(TAG, ""TRAZAR"ACCION PARA SUBSCRIBIR AL TOPIC :%s msg_id=%d", INFOTRAZA, datosApp->datosGenerales->parametrosMqtt.subscribe, msg_id);
+            if (datosApp->alarmas[ALARM_MQTT].estado_alarma == ALARM_ON) {
             	//registrar_alarma(&datosApp, NOTIFICACION_ALARMA_MQTT, ALARMA_MQTT, ALARMA_OFF, true);
             	send_event(__func__,EVENT_MQTT_OK);
 
@@ -259,22 +262,22 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
             break;
 
         case MQTT_EVENT_DISCONNECTED:
-            ESP_LOGW(TAG, ""TRAZAR"MQTT_EVENT_DISCONNECTED: Desconectado del broker :%s msg_id=%d", INFOTRAZA, datosApp.datosGenerales->parametrosMqtt.broker, msg_id);
+            ESP_LOGW(TAG, ""TRAZAR"MQTT_EVENT_DISCONNECTED: Desconectado del broker :%s msg_id=%d", INFOTRAZA, datosApp->datosGenerales->parametrosMqtt.broker, msg_id);
             send_event(__func__,EVENT_ERROR_MQTT);
             break;
 
         case MQTT_EVENT_SUBSCRIBED:
-            ESP_LOGI(TAG, ""TRAZAR"MQTT_EVENT_SUBSCRIBED: SUBSCRITOS CON EXITO AL TOPIC :%s msg_id=%d", INFOTRAZA, datosApp.datosGenerales->parametrosMqtt.subscribe, msg_id);
+            ESP_LOGI(TAG, ""TRAZAR"MQTT_EVENT_SUBSCRIBED: SUBSCRITOS CON EXITO AL TOPIC :%s msg_id=%d", INFOTRAZA, datosApp->datosGenerales->parametrosMqtt.subscribe, msg_id);
             if (arranque == false ){
             	//send_event(__func__,EVENT_MQTT_OK);
             	arranque = true;
             }
             break;
         case MQTT_EVENT_UNSUBSCRIBED:
-            ESP_LOGW(TAG, ""TRAZAR"MQTT_EVENT_UNSUBSCRIBED: YA NO ESTAS SUBSCRITO AL TOPIC :%s msg_id=%d", INFOTRAZA, datosApp.datosGenerales->parametrosMqtt.subscribe, msg_id);
+            ESP_LOGW(TAG, ""TRAZAR"MQTT_EVENT_UNSUBSCRIBED: YA NO ESTAS SUBSCRITO AL TOPIC :%s msg_id=%d", INFOTRAZA, datosApp->datosGenerales->parametrosMqtt.subscribe, msg_id);
             break;
         case MQTT_EVENT_PUBLISHED:
-            ESP_LOGI(TAG, ""TRAZAR"MQTT_EVENT_PUBLISHED: CONFIRMACION DE EVENTO PUBLICADO. TOPIC :%s msg_id=%d", INFOTRAZA, datosApp.datosGenerales->parametrosMqtt.subscribe, msg_id);
+            ESP_LOGI(TAG, ""TRAZAR"MQTT_EVENT_PUBLISHED: CONFIRMACION DE EVENTO PUBLICADO. TOPIC :%s msg_id=%d", INFOTRAZA, datosApp->datosGenerales->parametrosMqtt.subscribe, msg_id);
 
             break;
         case MQTT_EVENT_DATA:
@@ -282,7 +285,7 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 
             char topic[55] = {0};
             strncpy(topic, event->topic, event->topic_len);
-            message_application_received(&datosApp, topic);
+            message_application_received(datosApp, topic);
             break;
         case MQTT_EVENT_ERROR:
             ESP_LOGE(TAG, ""TRAZAR"MQTT_EVENT_ERROR", INFOTRAZA);
@@ -306,19 +309,33 @@ void init_device_mqtt(void *arg) {
 	DATOS_APLICACION *datosApp = (DATOS_APLICACION*) arg;
 
 	ESP_LOGI(TAG, ""TRAZAR" Comenzamos el init mqtt", INFOTRAZA);
+
+
     esp_mqtt_client_config_t mqtt_cfg = {
 		.uri = datosApp->datosGenerales->parametrosMqtt.broker,
 		.port = datosApp->datosGenerales->parametrosMqtt.port,
+		.user_context = datosApp,
         .event_handle = mqtt_event_handler,
 		.username = datosApp->datosGenerales->parametrosMqtt.user,
 		.password = datosApp->datosGenerales->parametrosMqtt.password,
-		//.cert_pem = (const char *) mqtt_jajica_pem_start,
-		.cert_pem = get_certificate(datosApp),
     };
+
+#ifndef CONFIG_IDF_TARGET_ESP8266
+
+    if (get_mqtt_tls(datosApp)) {
+    	mqtt_cfg.verification.certificate = get_certificate(datosApp);
+    }
+#else
+
+
+    if (get_mqtt_tls(datosApp)) {
+    	mqtt_cfg.cert_pem = get_certificate(datosApp);
+    }
+
+#endif
 
 
     ESP_LOGI(TAG, ""TRAZAR"Nos conectamos al broker %s", INFOTRAZA, mqtt_cfg.uri);
-    //send_event(__func__, EVENT_CONNECT_MQTT);
     client = esp_mqtt_client_init(&mqtt_cfg);
     esp_mqtt_client_start(client);
 
@@ -394,15 +411,9 @@ void init_mqtt_service(DATOS_APLICACION *datosApp) {
 
 
 
-    xTaskCreate(init_device_mqtt, "mqtt_task", CONFIG_RESOURCE_MQTT_TASK, datosApp, 4, &handle);
-    configASSERT(handle);
+    xTaskCreate(init_device_mqtt, "mqtt_task", CONFIG_RESOURCE_MQTT_TASK, datosApp, 4, NULL);
 
-    if (handle == NULL) {
-    	ESP_LOGE(TAG, ""TRAZAR"handle es nulo", INFOTRAZA);
 
-    } else {
-    	ESP_LOGE(TAG, ""TRAZAR"handle no es nulo", INFOTRAZA);
-    }
 
 
 
@@ -410,14 +421,7 @@ void init_mqtt_service(DATOS_APLICACION *datosApp) {
 }
 
 
-void eliminar_tarea_mqtt() {
 
-	esp_mqtt_client_destroy(datosApp.handle_mqtt->client);
-	vTaskDelete(handle);
-
-
-
-}
 
 
 

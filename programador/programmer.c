@@ -17,7 +17,7 @@
 #include "events_device.h"
 
 //static ETSTimer timerDuracion;
-static const char *TAG = "PROGRAMADOR";
+static const char *TAG = "programmer.c";
 static esp_timer_handle_t temporizador_duracion;
 
 #define TEMPORIZADOR_MAXIMO_EN_SEGUNDOS 428

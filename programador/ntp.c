@@ -29,7 +29,7 @@
 #define ZONA_HORARIA "CET-1CEST,M3.5.0,M10.5.0/3"
 
 
-static const char *TAG = "NTP";
+static const char *TAG = "ntp.c";
 
 
 void inicializar_parametros_ntp(NTP_CLOCK *clock) {

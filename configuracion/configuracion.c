@@ -28,7 +28,7 @@
 
 #include "esp_netif.h"
 
-static const char *TAG = "CONFIGURACION";
+static const char *TAG = "configuracion.c";
 
 
 

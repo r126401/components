@@ -98,7 +98,7 @@ esp_err_t init_services_device(DATOS_APLICACION *datosApp) {
 		return ESP_FAIL;
 	}
 
-		init_wifi_device();
+		init_wifi_device(datosApp);
 		ESP_LOGW(TAG, ""TRAZAR"init_service_device: Wifi configurado y activo", INFOTRAZA);
 
 		//2.- Se inicia la tarea mqtt si estuviera configurado.

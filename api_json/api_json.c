@@ -30,7 +30,7 @@
 
 #define DELAY_TIME_RESET 3000 //ms o 3s
 
-static const char *TAG = "API_JSON";
+static const char *TAG = "api_json.c";
 esp_timer_handle_t tiempo;
 
 

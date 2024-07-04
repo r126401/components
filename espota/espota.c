@@ -32,7 +32,7 @@
 
 
 
-static const char *TAG = "OTAESP";
+static const char *TAG = "espota.c";
 //extern const uint8_t server_cert_pem_start[] asm("_binary_ca_cert_pem_start");
 //extern const uint8_t server_cert_pem_end[] asm("_binary_ca_cert_pem_end");
 

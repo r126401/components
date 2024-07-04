@@ -22,7 +22,7 @@
 
 
 
-static const char *TAG = "EVENTS";
+static const char *TAG = "events_device.c";
 xQueueHandle event_queue;
 
 
@@ -534,13 +534,13 @@ void process_event_smartconfig_start(DATOS_APLICACION *datosApp) {
 
 	if (get_current_status_application(datosApp) == FACTORY) {
 		ESP_LOGI(TAG, ""TRAZAR"SMARTCONFIG START EN MODO FACTORY", INFOTRAZA);
-		init_wifi_device();
+		init_wifi_device(datosApp);
 
 	} else {
 		ESP_LOGI(TAG, ""TRAZAR" RECIBIDO EVENTO SMARTCONFIG EN ESTADO %s", INFOTRAZA, status2mnemonic(get_current_status_application(datosApp)));
 		set_status_application(datosApp, EVENT_SMARTCONFIG_START);
 		reinicio_fabrica(datosApp);
-		task_smartconfig();
+		task_smartconfig(datosApp);
 
 
 	}

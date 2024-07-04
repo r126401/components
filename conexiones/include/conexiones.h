@@ -54,12 +54,12 @@ char * get_my_id(void);
 void tarea_smartconfig(void * parm);
 esp_err_t establecer_conexion_wifi(void);
 esp_err_t restaurar_wifi_fabrica();
-esp_err_t init_wifi_device();
+esp_err_t init_wifi_device(DATOS_APLICACION *datosApp);
 void init_ntp_service(DATOS_APLICACION *datosApp);
 esp_err_t get_scan_station_list();
 void wifi_task(void *arg);
 void deactivate_wifi();
-void task_smartconfig();
+void task_smartconfig(DATOS_APLICACION *datosApp);
 
 
 #ifdef __cplusplus
