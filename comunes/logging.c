@@ -90,7 +90,7 @@ char* status2mnemonic(ESTADO_APP status) {
 		strcpy(mnemonic, "APP_STARTED");
 		break;
 	case UNKNOWN_STATUS:
-		strcpy(mnemonic, "ERROR_CHANGE_STATUS");
+		strcpy(mnemonic, "UNKNOWN_STATUS");
 		break;
 
 

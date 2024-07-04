@@ -47,7 +47,7 @@ static const int ESPTOUCH_DONE_BIT = BIT1;
 static EventGroupHandle_t grupo_eventos;
  ip4_addr_t s_ip_addr;
 static const char *TAG = "conexiones.c";
-//extern DATOS_APLICACION datosApp;
+extern DATOS_APLICACION datosApp;
 
 
 
@@ -198,26 +198,22 @@ static void on_wifi_disconnect(void *arg, esp_event_base_t event_base,
                                int32_t event_id, void *event_data)
 {
 
-	DATOS_APLICACION *datosApp = (DATOS_APLICACION *) event_data;
+	//DATOS_APLICACION *datosApp = (DATOS_APLICACION *) event_data;
 
     ESP_LOGW(TAG, ""TRAZAR"Wi-Fi desconectado, se intenta la reconexion...", INFOTRAZA);
+    send_event(__func__,EVENT_ERROR_WIFI);
+	esp_wifi_connect();
+	xEventGroupClearBits(grupo_eventos, CONNECTED_BIT);
 
-    if (get_current_status_application(datosApp) == RESTARTING){
-    	return;
-    }
-    if (get_current_status_application(datosApp) == FACTORY) {
-    	 ESP_LOGW(TAG, ""TRAZAR"Wi-Fi desconectado, estamos en factory", INFOTRAZA);
-    	 appuser_notify_error_smartconfig(datosApp);
-    }
-
-    if (datosApp->datosGenerales->estadoApp != UPGRADING) {
+/*
+    if (get_current_status_application(&datosApp) != UPGRADING) {
     	//registrar_alarma(datosApp, NOTIFICACION_ALARMA_WIFI, ALARMA_WIFI, ALARMA_ON, false);
     	send_event(__func__,EVENT_ERROR_WIFI);
     	esp_wifi_connect();
     	xEventGroupClearBits(grupo_eventos, CONNECTED_BIT);
     }
 
-
+*/
 
 
 
@@ -447,18 +443,5 @@ esp_err_t get_scan_station_list() {
 }
 
 
-void wifi_task(void *arg) {
 
-	DATOS_APLICACION *datosApp = (DATOS_APLICACION*) arg;
-	while (1) {
-		init_wifi_device(datosApp);
-		//sync_app_by_ntp(datosApp);
-		//crear_tarea_mqtt(datosApp);
-		init_schedule_service(datosApp);
-	}
-
-	vTaskDelete(NULL);
-
-
-}
 

@@ -26,6 +26,7 @@ esp_err_t init_data_app(DATOS_APLICACION *datosApp) {
 	datosGenerales = (DATOS_GENERALES*) calloc(1, sizeof(DATOS_GENERALES));
 	datosApp->datosGenerales = datosGenerales;
 	change_status_application(datosApp, UNKNOWN_STATUS);
+	ESP_LOGI(TAG, ""TRAZAR" Estructura de datos creada", INFOTRAZA);
 
 	return ESP_OK;
 }
@@ -282,6 +283,12 @@ void set_status_application(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 
 	if (event == EVENT_FACTORY) {
 		new_status = FACTORY;
+		change_status_application(datosApp, new_status);
+		return;
+
+	}
+	if (event == EVENT_STARTING) {
+		new_status = STARTING;
 		change_status_application(datosApp, new_status);
 		return;
 

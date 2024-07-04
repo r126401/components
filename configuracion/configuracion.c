@@ -210,7 +210,10 @@ esp_err_t cargar_configuracion_defecto(DATOS_APLICACION *datosApp) {
 		return ERROR_REPORT;
 	}
 
-    crear_programas_defecto(datosApp);
+    if (using_schedules(datosApp)) {
+
+    	crear_programas_defecto(datosApp);
+    }
 	return ESP_OK;
 
 }
@@ -313,11 +316,11 @@ esp_err_t init_global_parameters(DATOS_APLICACION *datosApp) {
 
 
 
-    ESP_LOGE(TAG, ""TRAZAR" VERSION DE LA APLICACION %s", INFOTRAZA, datosApp->datosGenerales->ota.swVersion->version);
+    ESP_LOGI(TAG, ""TRAZAR"Version de la aplicacion: %s", INFOTRAZA, datosApp->datosGenerales->ota.swVersion->version);
 
 	error = inicializar_nvs(CONFIG_NAMESPACE, &datosApp->handle);
 	if (error != ESP_OK) {
-		ESP_LOGW(TAG, ""TRAZAR" ERROR AL INICIALIZAR NVS", INFOTRAZA);
+		ESP_LOGE(TAG, ""TRAZAR" Error al inicializar nvs", INFOTRAZA);
 		return ESP_FAIL;
 
 	}
@@ -338,16 +341,19 @@ esp_err_t init_global_parameters(DATOS_APLICACION *datosApp) {
 			error = json_a_datos_aplicacion(datosApp, datos);
 		} else {
 			ESP_LOGW(TAG, ""TRAZAR"La configuracion no se ha cargado. Se carga la de defecto.", INFOTRAZA);
-			cargar_configuracion_defecto(datosApp);
-			if (datosApp->datosGenerales->estadoApp != FACTORY) {
+			error = cargar_configuracion_defecto(datosApp);
+
+			if (error != ESP_OK) {
 				send_event(__func__,EVENT_ERROR_APP);
 				free(datos);
+				ESP_LOGE(TAG, ""TRAZAR"Error al cargar la configuracion de defecto!!!!!!!!!!!!!!!!.", INFOTRAZA);
 				return error;
+
 			}
+
 		}
 
 		if (get_app_status_device(datosApp) == DEVICE_NOT_CONFIGURED) {
-			ESP_LOGW(TAG, ""TRAZAR" Dispositivo no configurado, pasamos a Factory", INFOTRAZA);
 			set_status_application(datosApp, EVENT_FACTORY);
 		}
 
@@ -377,12 +383,10 @@ esp_err_t init_global_parameters(DATOS_APLICACION *datosApp) {
 
 #endif
 
-	ESP_LOGE(TAG, ""TRAZAR" ESTADO DE LA APLICACION %s", INFOTRAZA, status2mnemonic(get_current_status_application(datosApp)));
-
 
 	free(datos);
 	send_event(__func__,EVENT_DEVICE_OK);
-	return error;
+	return ESP_OK;
 }
 
 esp_err_t guardar_programas(DATOS_APLICACION *datosApp, char* clave) {

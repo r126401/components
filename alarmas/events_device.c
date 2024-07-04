@@ -894,7 +894,15 @@ void send_event(const char *func, EVENT_TYPE event) {
 
 ESTADO_APP get_current_status_application(DATOS_APLICACION *datosApp) {
 
-	return datosApp->datosGenerales->estadoApp;
+	if (datosApp != NULL) {
+		ESP_LOGE(TAG, ""TRAZAR" Se devuelve el estado: %s", INFOTRAZA, status2mnemonic(datosApp->datosGenerales->estadoApp));
+		return datosApp->datosGenerales->estadoApp;
+	} else {
+		ESP_LOGE(TAG, ""TRAZAR" Se devuelve UNKNOWN_STATUS porque datosApp es nulo", INFOTRAZA);
+		return UNKNOWN_STATUS;
+	}
+
+
 }
 
 
