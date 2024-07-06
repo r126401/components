@@ -191,10 +191,13 @@ esp_err_t cargar_configuracion_defecto(DATOS_APLICACION *datosApp) {
     ESP_LOGE(TAG, ""TRAZAR"Se cargan parametros comunes de defecto despues", INFOTRAZA);
 
     datosApp->datosGenerales->parametrosMqtt.qos = 0;
+#ifdef CONFIG_MQTT_TLS
     set_mqtt_tls(datosApp, CONFIG_MQTT_TLS);
     if (get_mqtt_tls(datosApp)) {
     	set_default_certificate(datosApp);
     }
+#endif
+
     ESP_LOGI(TAG, ""TRAZAR"PARAMETROS CARGADOS EN DATOSAPP", INFOTRAZA);
     datosApp->datosGenerales->estadoProgramacion = INVALID_PROG;
     datosApp->datosGenerales->nProgramacion=0;
@@ -385,7 +388,7 @@ esp_err_t init_global_parameters(DATOS_APLICACION *datosApp) {
 
 
 	free(datos);
-	send_event(__func__,EVENT_DEVICE_OK);
+	send_event(__func__,EVENT_DEVICE_READY);
 	return ESP_OK;
 }
 

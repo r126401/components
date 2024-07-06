@@ -610,15 +610,7 @@ void gestion_programas(void *arg) {
 
 
 				}
-				/*
-				if (calcular_programa_activo(datosApp, &t_siguiente_intervalo) == NO_ACTIVE_SCHEDULE) {
-					ESP_LOGI(TAG, ""TRAZAR"INTERVALO SIN PROGRAMACION ACTIVA", INFOTRAZA);
-					send_event(__func__,EVENT_NONE_SCHEDULE);
-				} else {
-					ESP_LOGI(TAG, ""TRAZAR"ENCONTRADA PROGRAMACION ACTIVA", INFOTRAZA);
-					(datosApp);
-					change_status_application(datosApp, NORMAL_AUTO);
-				}*/
+
 			}
 		}
 

@@ -78,7 +78,7 @@ char* status2mnemonic(ESTADO_APP status) {
 		break;
 		*/
 	case CHECK_SCHEDULES:
-		strcpy(mnemonic, "CHECK_PROGRAMS");
+		strcpy(mnemonic, "CHECK_SCHEDULES");
 		break;
 	case SCHEDULING:
 		strcpy(mnemonic, "SCHEDULING");
@@ -86,12 +86,14 @@ char* status2mnemonic(ESTADO_APP status) {
 	case RESTARTING:
 		strcpy(mnemonic, "RESTARTING");
 		break;
-	case APP_STARTED:
-		strcpy(mnemonic, "APP_STARTED");
+	case DEVICE_READY:
+		strcpy(mnemonic, "DEVICE_READY");
 		break;
 	case UNKNOWN_STATUS:
 		strcpy(mnemonic, "UNKNOWN_STATUS");
 		break;
+	case RECOVERING:
+		strcpy(mnemonic, "RECOVERING");
 
 
 

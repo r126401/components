@@ -115,6 +115,8 @@ esp_err_t init_services_device(DATOS_APLICACION *datosApp) {
 			}
 			ESP_LOGW(TAG, ""TRAZAR" VAMOS A ENVIAR EL EVENTO EVENT_START_APP", INFOTRAZA);
 			send_event(__func__, EVENT_START_APP);
+		} else {
+			send_event(__func__, EVENT_START_APP);
 		}
 
 
@@ -275,6 +277,9 @@ void set_status_application(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 
 	ESTADO_APP new_status = UNKNOWN_STATUS;
 
+	ESP_LOGW(TAG, ""TRAZAR" estado: %s, evento: %s", INFOTRAZA, status2mnemonic(get_current_status_application(datosApp)), event2mnemonic(event));
+
+
 	if (event == EVENT_RESTART) {
 		new_status = RESTARTING;
 		change_status_application(datosApp, new_status);
@@ -294,15 +299,23 @@ void set_status_application(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 
 	}
 
+	if ((event == EVENT_ERROR_APP) || (event == EVENT_ERROR_DEVICE) || (event == EVENT_ERROR_LCD) || (event == EVENT_ERROR_NVS)) {
+		//change_status_application(datosApp, ERROR_APP);
+		new_status = ERROR_APP;
+		change_status_application(datosApp, new_status);
+		return;
+	}
+
+
 
 
 	switch (get_current_status_application(datosApp)) {
 
 
 	case ERROR_APP:
-		if (event == EVENT_DEVICE_OK) {
+		if (event == EVENT_DEVICE_READY) {
 			//change_status_application(datosApp, APP_STARTED);
-			new_status = APP_STARTED;
+			new_status = DEVICE_READY;
 			break;
 		}
 
@@ -310,12 +323,33 @@ void set_status_application(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 			new_status = FACTORY;
 			break;
 		}
+		if ((event == EVENT_ERROR_APP) || (event == EVENT_ERROR_DEVICE) || (event == EVENT_ERROR_LCD) || (event == EVENT_ERROR_NVS)|| (event == EVENT_ERROR_MQTT)|| (event == EVENT_ERROR_NTP)) {
+			//change_status_application(datosApp, ERROR_APP);
+			new_status = ERROR_APP;
+			break;
+		}
+
+		if (event == EVENT_MQTT_OK) {
+			new_status = CHECK_SCHEDULES;
+			break;
+		}
+
+		if (event == EVENT_WIFI_OK) {
+			new_status = RECOVERING;
+			break;
+		}
+		if (event == EVENT_ERROR_WIFI) {
+			new_status = ERROR_APP;
+			break;
+		}
 
 		break;
 
 
+
+
 	case NORMAL_AUTO:
-		if ((event == EVENT_ERROR_APP) || (event == EVENT_ERROR_DEVICE) || (event == EVENT_ERROR_LCD) || (event == EVENT_ERROR_NVS)) {
+		if ((event == EVENT_ERROR_APP) || (event == EVENT_ERROR_DEVICE) || (event == EVENT_ERROR_LCD) || (event == EVENT_ERROR_NVS)|| (event == EVENT_ERROR_MQTT)) {
 			//change_status_application(datosApp, ERROR_APP);
 			new_status = ERROR_APP;
 			break;
@@ -366,11 +400,23 @@ void set_status_application(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 		if (event == EVENT_SMARTCONFIG_START) {
 			new_status = FACTORY;
 		}
+
+		if (event == EVENT_ERROR_WIFI) {
+			new_status = ERROR_APP;
+			break;
+		}
 		break;
 
 
 
+
 	case NORMAL_AUTOMAN:
+
+		if (event == EVENT_ERROR_WIFI) {
+			new_status = ERROR_APP;
+			break;
+		}
+
 		if ((event == EVENT_ERROR_APP) || (event == EVENT_ERROR_DEVICE) || (event == EVENT_ERROR_LCD) || (event == EVENT_ERROR_NVS)) {
 			//change_status_application(datosApp, ERROR_APP);
 			new_status = ERROR_APP;
@@ -410,7 +456,10 @@ void set_status_application(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 			new_status = FACTORY;
 		}
 
+
 		break;
+
+
 
 	case NORMAL_MANUAL:
 		if ((event == EVENT_ERROR_APP) || (event == EVENT_ERROR_DEVICE) || (event == EVENT_ERROR_LCD) || (event == EVENT_ERROR_NVS)) {
@@ -446,6 +495,16 @@ void set_status_application(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 		if (event == EVENT_SMARTCONFIG_START) {
 			new_status = FACTORY;
 		}
+		if ((event == EVENT_ERROR_APP) || (event == EVENT_ERROR_DEVICE) || (event == EVENT_ERROR_LCD) || (event == EVENT_ERROR_NVS)|| (event == EVENT_ERROR_MQTT)) {
+			//change_status_application(datosApp, ERROR_APP);
+			new_status = ERROR_APP;
+			break;
+		}
+
+		if (event == EVENT_ERROR_WIFI) {
+			new_status = ERROR_APP;
+			break;
+		}
 
 		break;
 
@@ -476,7 +535,7 @@ void set_status_application(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 			break;
 		}
 
-		if ((event == EVENT_DEVICE_OK) || (event == EVENT_WIFI_OK) || (event == EVENT_SMARTCONFIG_END)){
+		if ((event == EVENT_DEVICE_READY) || (event == EVENT_WIFI_OK) || (event == EVENT_SMARTCONFIG_END)|| (event == EVENT_MQTT_OK)|| (event == EVENT_ERROR_WIFI)){
 			ESP_LOGW(TAG, ""TRAZAR" cambiando de estado por EVENT_DEVICE_OK", INFOTRAZA);
 			new_status = STARTING;
 			break;
@@ -486,6 +545,7 @@ void set_status_application(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 			new_status = FACTORY;
 		}
 		break;
+
 
 	case UPGRADING:
 		if (event == EVENT_END_UPGRADE) {
@@ -506,21 +566,18 @@ void set_status_application(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 			break;
 		}
 
-		if (event == EVENT_DEVICE_OK){
+		if (event == EVENT_DEVICE_READY){
 			new_status = FACTORY;
 			break;
 		}
 
-		if (event == EVENT_WIFI_OK) {
-			new_status = STARTING;
-		}
 
 
 
 		break;
 
 	case CHECK_SCHEDULES:
-		if ((event == EVENT_ERROR_APP) || (event == EVENT_ERROR_DEVICE) || (event == EVENT_ERROR_LCD) || (event == EVENT_ERROR_NVS)) {
+		if ((event == EVENT_ERROR_APP) || (event == EVENT_ERROR_DEVICE) || (event == EVENT_ERROR_LCD) || (event == EVENT_ERROR_NVS)|| (event == EVENT_ERROR_WIFI)) {
 			//change_status_application(datosApp, ERROR_APP);
 			new_status = ERROR_APP;
 
@@ -545,7 +602,7 @@ void set_status_application(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 			break;
 		}
 
-		if ((event == EVENT_END_SCHEDULE) || (event == EVENT_DELETE_SCHEDULE) || (event == EVENT_MODIFY_SCHEDULE) || (event == EVENT_INSERT_SCHEDULE)){
+		if ((event == EVENT_END_SCHEDULE) || (event == EVENT_DELETE_SCHEDULE) || (event == EVENT_MODIFY_SCHEDULE) || (event == EVENT_INSERT_SCHEDULE)|| (event == EVENT_DEVICE_READY)){
 			new_status = CHECK_SCHEDULES;
 
 			break;
@@ -554,34 +611,36 @@ void set_status_application(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 		break;
 
 	case SCHEDULING:
-		if ((event == EVENT_ERROR_APP) || (event == EVENT_ERROR_DEVICE) || (event == EVENT_ERROR_LCD) || (event == EVENT_ERROR_NVS)) {
+		if ((event == EVENT_ERROR_APP) || (event == EVENT_ERROR_DEVICE) || (event == EVENT_ERROR_LCD) || (event == EVENT_ERROR_NVS) || (event == EVENT_ERROR_MQTT)) {
 			//change_status_application(datosApp, ERROR_APP);
 			new_status = ERROR_APP;
-
 			break;
 		}
 		if (event == EVENT_UPGRADE_FIRMWARE) {
 			//change_status_application(datosApp, UPGRADING);
 			new_status = UPGRADING;
-
 			break;
 		}
 
 		if ((event == EVENT_END_SCHEDULE) || (event == EVENT_DELETE_SCHEDULE) || (event == EVENT_MODIFY_SCHEDULE) || (event == EVENT_INSERT_SCHEDULE)){
 			new_status = CHECK_SCHEDULES;
-
 			break;
 		}
 		if (event == EVENT_SMARTCONFIG_START) {
 			new_status = FACTORY;
+			break;
 		}
 
+		if (event == EVENT_ERROR_WIFI) {
+			new_status = ERROR_APP;
+			break;
+		}
 		break;
 
 	case RESTARTING:
 		break;
 
-	case APP_STARTED:
+	case DEVICE_READY:
 		if (event == EVENT_CHECK_SCHEDULES) {
 			//change_status_application(datosApp, CHECK_SCHEDULES);
 			new_status = CHECK_SCHEDULES;
@@ -611,12 +670,28 @@ void set_status_application(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 			new_status = FACTORY;
 		}
 
+		if (event == EVENT_ERROR_WIFI) {
+			new_status = ERROR_APP;
+			break;
+		}
 		break;
+
+
 
 	case UNKNOWN_STATUS:
 		if (event == EVENT_STARTING) {
 			new_status = STARTING;
 			break;
+		}
+		break;
+
+
+	case RECOVERING:
+
+		if (event == EVENT_MQTT_OK) {
+			new_status = DEVICE_READY;
+		} else {
+			new_status = RECOVERING;
 		}
 		break;
 
@@ -627,6 +702,7 @@ void set_status_application(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 
 
 	}
+
 
 	change_status_application(datosApp, new_status);
 

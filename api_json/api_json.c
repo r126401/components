@@ -90,6 +90,9 @@ char* report_2_mnemonic(SPONTANEOUS_TYPE report) {
 	case ERROR_UPGRADE_OTA:
 		strcpy(mnemonic, "ERROR UPGRADE OTA");
 		break;
+	case DEVICE_RECOVERED:
+		strcpy(mnemonic, "ERROR DEVICE_RECOVERED");
+		break;
 
 
 
@@ -1201,6 +1204,11 @@ esp_err_t send_spontaneous_report(DATOS_APLICACION *datosApp, enum SPONTANEOUS_T
         case ERROR_UPGRADE_OTA:
         	codigoRespuesta(respuesta,RESP_NOK);
         	break;
+
+        case DEVICE_RECOVERED:
+        	codigoRespuesta(respuesta,RESP_OK);
+        	break;
+
 
         default:
         	cJSON_AddStringToObject(respuesta, MNEMONIC_REPORT, report_2_mnemonic(tipoInforme));

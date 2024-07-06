@@ -57,8 +57,8 @@ char* event2mnemonic(EVENT_TYPE event) {
 	case EVENT_ERROR_MQTT:
 		strcpy(mnemonic, "EVENT_ERROR_MQTT");
 		break;
-	case EVENT_DEVICE_OK:
-		strcpy(mnemonic, "EVENT_DEVICE_OK");
+	case EVENT_DEVICE_READY:
+		strcpy(mnemonic, "EVENT_DEVICE_READY");
 		break;
 	case EVENT_REMOTE_DEVICE_OK:
 		strcpy(mnemonic, "EVENT_REMOTE_DEVICE_OK");
@@ -162,6 +162,10 @@ char* event2mnemonic(EVENT_TYPE event) {
 		strcpy(mnemonic, "EVENT_RESTART");
 		break;
 
+	case EVENT_MQTT_SUBSCRIBED:
+		strcpy(mnemonic, "EVENT_MQTT_SUBSCRIBED");
+		break;
+
 
 	}
 
@@ -220,10 +224,12 @@ void process_event_error_nvs(DATOS_APLICACION *datosApp) {
 		break;
 	case RESTARTING:
 		break;
-	case APP_STARTED:
+	case DEVICE_READY:
 		break;
 
 	case UNKNOWN_STATUS:
+		break;
+	case RECOVERING:
 		break;
 
 
@@ -259,25 +265,10 @@ void process_event_wifi_ok(DATOS_APLICACION *datosApp) {
 
 	ESP_LOGW(TAG, ""TRAZAR"Procesando evento EVENT_WIFI_OK", INFOTRAZA);
 
+
 	set_status_application(datosApp, EVENT_WIFI_OK);
-/*
-	switch(datosApp->datosGenerales->estadoApp) {
-
-	case FACTORY:
-		change_status_application(datosApp, STARTING);
-		break;
-
-	case STARTING:
-
-		break;
-
-	default:
-
-		break;
 
 
-	}
-*/
 	send_alarm(datosApp, ALARM_WIFI, ALARM_OFF, true);
 
 	appuser_notify_wifi_connected_ok(datosApp);
@@ -289,6 +280,7 @@ void process_event_error_wifi(DATOS_APLICACION *datosApp) {
 
 	ESP_LOGW(TAG, ""TRAZAR"Procesando evento EVENT_ERROR_WIFI", INFOTRAZA);
 
+	set_status_application(datosApp, EVENT_ERROR_WIFI);
 
 	switch(datosApp->datosGenerales->estadoApp) {
 
@@ -308,6 +300,7 @@ void process_event_error_wifi(DATOS_APLICACION *datosApp) {
 	}
 
 	appuser_notify_error_wifi_connection(datosApp);
+
 
 
 }
@@ -449,16 +442,27 @@ void process_event_mqtt_ok(DATOS_APLICACION *datosApp) {
 
 
 	ESP_LOGW(TAG, ""TRAZAR"Procesando evento EVENT_MQTT_OK", INFOTRAZA);
+	set_status_application(datosApp, EVENT_MQTT_OK);
 
 	send_alarm(datosApp, ALARM_MQTT, ALARM_OFF, true);
 
-	if (get_current_status_application(datosApp) == STARTING) {
+	switch (get_current_status_application(datosApp)) {
+
+	case STARTING:
 		if (using_ntp(datosApp)) {
 			init_ntp_service(datosApp);
 		} else {
 			send_event(__func__, EVENT_START_APP);
 		}
+		break;
+
+
+	default:
+		send_event(__func__, EVENT_DEVICE_READY);
+		break;
 	}
+
+
 
 	appuser_notify_broker_connected_ok(datosApp);
 
@@ -515,15 +519,18 @@ void process_event_factory(DATOS_APLICACION *datosApp) {
 
 }
 
-void process_event_device_ok(DATOS_APLICACION *datosApp) {
+void process_event_device_ready(DATOS_APLICACION *datosApp) {
 
 	ESP_LOGW(TAG, ""TRAZAR"Procesando evento EVENT_DEVICE_OK", INFOTRAZA);
 
 	if (datosApp->alarmas[ALARM_DEVICE].estado_alarma == ALARM_ON) {
 		send_alarm(datosApp, ALARM_DEVICE, ALARM_OFF, true);
 	}
-	set_status_application(datosApp, EVENT_DEVICE_OK);
-	appuser_notify_device_ok(datosApp);
+	set_status_application(datosApp, EVENT_DEVICE_READY);
+	appuser_notify_device_ready(datosApp);
+	if (using_schedules(datosApp)) {
+		send_event(__func__, EVENT_CHECK_SCHEDULES);
+	}
 
 }
 
@@ -590,10 +597,32 @@ void process_event_error_upgrade(DATOS_APLICACION *datosApp) {
 
 void process_event_error_mqtt(DATOS_APLICACION *datosApp) {
 
+
+	static uint8_t retry = 0;
 	ESP_LOGW(TAG, ""TRAZAR"Procesando evento EVENT_ERROR_MQTT", INFOTRAZA);
+
+	if (get_current_status_application(datosApp) == RECOVERING) {
+		retry ++;
+		ESP_LOGW(TAG,""TRAZAR" Contador de reintentos: %d", INFOTRAZA, retry);
+		if (retry == 10) {
+			esp_restart();
+		}
+
+	} else {
+		retry = 0;
+	}
+
+
+
+	if (get_status_alarm(datosApp, ALARM_MQTT) == ALARM_ON) {
+		ESP_LOGW(TAG, ""TRAZAR" Alarma ya activa, no se hace nada", INFOTRAZA);
+		return;
+	}
+
 
 	send_alarm(datosApp, ALARM_MQTT, ALARM_ON, false);
 	appuser_notify_broker_disconnected(datosApp);
+	set_status_application(datosApp, EVENT_ERROR_MQTT);
 
 }
 
@@ -679,10 +708,21 @@ void process_event_starting(DATOS_APLICACION *datosApp) {
 
 }
 
+void process_event_mqtt_subscribed(DATOS_APLICACION *datosApp) {
+
+	ESP_LOGW(TAG, ""TRAZAR"Procesando evento EVENT_MQTT_SUBSCRIBED", INFOTRAZA);
+
+
+
+
+}
+
+
 
 void receive_event(DATOS_APLICACION *datosApp, EVENT_APP event) {
 
-	ESP_LOGE(TAG, ""TRAZAR"receive_event", INFOTRAZA);
+
+	ESP_LOGE(TAG, ""TRAZAR" recibido evento : %s", INFOTRAZA, event2mnemonic(event.event_app));
 
 	if (event.event_app == EVENT_LOCAL_DEVICE) {
 		received_local_event(datosApp, event.event_device);
@@ -725,8 +765,8 @@ void receive_event(DATOS_APLICACION *datosApp, EVENT_APP event) {
 			process_event_error_mqtt(datosApp);
 
 			break;
-		case EVENT_DEVICE_OK:
-			process_event_device_ok(datosApp);
+		case EVENT_DEVICE_READY:
+			process_event_device_ready(datosApp);
 			break;
 		case EVENT_APP_OK:
 			ESP_LOGE(TAG, ""TRAZAR"RECIBIDO APP OK", INFOTRAZA);
@@ -775,6 +815,7 @@ void receive_event(DATOS_APLICACION *datosApp, EVENT_APP event) {
 			process_event_end_schedule(datosApp);
 			break;
 		case EVENT_NO_ACTIVE_SCHEDULE:
+			ESP_LOGW(TAG, ""TRAZAR" VAMOS A PROCESAR EL EVENT_NO_ACTIVE_SCHEDULE", INFOTRAZA);
 			process_event_no_active_schedule(datosApp);
 			break;
 		case EVENT_FACTORY:
@@ -793,7 +834,7 @@ void receive_event(DATOS_APLICACION *datosApp, EVENT_APP event) {
 		case EVENT_REMOTE_DEVICE_OK:
 			if (get_status_alarm(datosApp, ALARM_REMOTE_DEVICE)) {
 				send_alarm(datosApp, ALARM_REMOTE_DEVICE, ALARM_OFF, true);
-				send_event(__func__,EVENT_DEVICE_OK);
+				send_event(__func__,EVENT_DEVICE_READY);
 			}
 
 			break;
@@ -833,6 +874,9 @@ void receive_event(DATOS_APLICACION *datosApp, EVENT_APP event) {
 			process_event_starting(datosApp);
 			break;
 
+		case EVENT_MQTT_SUBSCRIBED:
+			process_event_mqtt_subscribed(datosApp);
+			break;
 		default:
 			ESP_LOGE(TAG, ""TRAZAR"ERROR EN LA RECEPCION DEL EVENTO", INFOTRAZA);
 			break;
@@ -853,14 +897,15 @@ void event_task(void *arg) {
 	for(;;) {
 		 ESP_LOGI(TAG, ""TRAZAR"ESPERANDO EVENTO...Memoria libre: "CONFIG_UINT32_FORMAT"\n", INFOTRAZA, esp_get_free_heap_size());
 		if (xQueueReceive(event_queue, &event, portMAX_DELAY) == pdTRUE) {
-			//ESP_LOGE(TAG, ""TRAZAR"event_task:Recibido evento app %s, evento device:%s. Estado App: %s", INFOTRAZA,
-				//	event2mnemonic(event.event_app), local_event_2_mnemonic(event.event_device),
-					//		status2mnemonic(datosApp->datosGenerales->estadoApp));
+			ESP_LOGE(TAG, ""TRAZAR"event_task:Recibido evento app %s, evento device:%s. Estado App: %s", INFOTRAZA,
+					event2mnemonic(event.event_app), local_event_2_mnemonic(event.event_device),
+							status2mnemonic(datosApp->datosGenerales->estadoApp));
 			receive_event(datosApp, event);
 
 
 		} else {
 			ESP_LOGE(TAG, ""TRAZAR"NO SE HA PODIDO PROCESAR LA PETICION", INFOTRAZA);
+
 		}
 
 	}
@@ -887,7 +932,10 @@ void send_event(const char *func, EVENT_TYPE event) {
 	event_received.event_device = EVENT_NONE;
 
 	ESP_LOGW(TAG, ""TRAZAR" envio de evento: funcion: %s: evento: %s", INFOTRAZA, func, event2mnemonic(event));
-	xQueueSend(event_queue, &event_received,0);
+	if ( xQueueSend(event_queue, &event_received,( TickType_t ) 100) != pdPASS) {
+		ESP_LOGE(TAG, ""TRAZAR"no se ha podido enviar el evento %s", INFOTRAZA, event2mnemonic(event));
+		esp_restart();
+	}
 
 }
 

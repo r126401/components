@@ -200,6 +200,13 @@ static void on_wifi_disconnect(void *arg, esp_event_base_t event_base,
 
 	//DATOS_APLICACION *datosApp = (DATOS_APLICACION *) event_data;
 
+
+	if (get_current_status_application(&datosApp) == RESTARTING) {
+		return;
+	}
+
+
+
     ESP_LOGW(TAG, ""TRAZAR"Wi-Fi desconectado, se intenta la reconexion...", INFOTRAZA);
     send_event(__func__,EVENT_ERROR_WIFI);
 	esp_wifi_connect();
@@ -412,6 +419,7 @@ esp_err_t init_wifi_device(DATOS_APLICACION *datosApp) {
 void init_ntp_service(DATOS_APLICACION *datosApp) {
 
 
+	ESP_LOGI(TAG, ""TRAZAR" Iniciando servicio ntp...", INFOTRAZA);
 
 	inicializar_parametros_ntp(&datosApp->datosGenerales->clock);
 	send_event(__func__, EVENT_GET_NTP);
