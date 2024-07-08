@@ -309,9 +309,13 @@ void process_event_ntp_ok(DATOS_APLICACION *datosApp) {
 
 	ESP_LOGW(TAG, ""TRAZAR"Procesando evento EVENT_NTP_OK", INFOTRAZA);
 
-	send_alarm(datosApp, ALARM_NTP, ALARM_OFF, true);
-	actualizar_hora(&datosApp->datosGenerales->clock);
-	datosApp->datosGenerales->estadoProgramacion = VALID_PROG;
+	if (get_status_alarm(datosApp, ALARM_NTP) == ALARM_ON) {
+		send_alarm(datosApp, ALARM_NTP, ALARM_OFF, true);
+		actualizar_hora(&datosApp->datosGenerales->clock);
+		datosApp->datosGenerales->estadoProgramacion = VALID_PROG;
+		appuser_notify_sntp_ok(datosApp);
+
+	}
 
 	if (get_current_status_application(datosApp) == STARTING) {
 
@@ -323,32 +327,7 @@ void process_event_ntp_ok(DATOS_APLICACION *datosApp) {
 
 
 	}
-	appuser_notify_sntp_ok(datosApp);
-/*
-	switch(datosApp->datosGenerales->estadoApp) {
 
-	case STARTING:
-		send_alarm(datosApp, ALARM_NTP, ALARM_OFF, true);
-		actualizar_hora(&datosApp->datosGenerales->clock);
-		datosApp->datosGenerales->estadoProgramacion = VALID_PROG;
-		if (using_schedules(datosApp)) {
-			init_schedule_service(datosApp);
-		} else {
-			send_event(__func__, EVENT_START_APP);
-		}
-		break;
-
-	default:
-		send_alarm(datosApp, ALARM_NTP, ALARM_OFF, true);
-		actualizar_hora(&datosApp->datosGenerales->clock);
-		datosApp->datosGenerales->estadoProgramacion = VALID_PROG;
-		change_status_application(datosApp, CHECK_SCHEDULES);
-		break;
-
-
-	}
-	appuser_notify_sntp_ok(datosApp);
-*/
 }
 
 void process_event_error_ntp(DATOS_APLICACION *datosApp) {
@@ -722,7 +701,8 @@ void process_event_mqtt_subscribed(DATOS_APLICACION *datosApp) {
 void receive_event(DATOS_APLICACION *datosApp, EVENT_APP event) {
 
 
-	ESP_LOGE(TAG, ""TRAZAR" recibido evento : %s", INFOTRAZA, event2mnemonic(event.event_app));
+	ESP_LOGI(TAG, ""TRAZAR" task event : EVENTO RECIBIDO:%s, estado de la aplicacion: %s", INFOTRAZA, event2mnemonic(event.event_app),
+			status2mnemonic(get_current_status_application(datosApp)));
 
 	if (event.event_app == EVENT_LOCAL_DEVICE) {
 		received_local_event(datosApp, event.event_device);
@@ -897,9 +877,9 @@ void event_task(void *arg) {
 	for(;;) {
 		 ESP_LOGI(TAG, ""TRAZAR"ESPERANDO EVENTO...Memoria libre: "CONFIG_UINT32_FORMAT"\n", INFOTRAZA, esp_get_free_heap_size());
 		if (xQueueReceive(event_queue, &event, portMAX_DELAY) == pdTRUE) {
-			ESP_LOGE(TAG, ""TRAZAR"event_task:Recibido evento app %s, evento device:%s. Estado App: %s", INFOTRAZA,
-					event2mnemonic(event.event_app), local_event_2_mnemonic(event.event_device),
-							status2mnemonic(datosApp->datosGenerales->estadoApp));
+			//ESP_LOGE(TAG, ""TRAZAR"event_task:Recibido evento app %s, evento device:%s. Estado App: %s", INFOTRAZA,
+					//event2mnemonic(event.event_app), local_event_2_mnemonic(event.event_device),
+							//status2mnemonic(datosApp->datosGenerales->estadoApp));
 			receive_event(datosApp, event);
 
 
@@ -931,7 +911,7 @@ void send_event(const char *func, EVENT_TYPE event) {
 	event_received.event_app = event;
 	event_received.event_device = EVENT_NONE;
 
-	ESP_LOGW(TAG, ""TRAZAR" envio de evento: funcion: %s: evento: %s", INFOTRAZA, func, event2mnemonic(event));
+	//ESP_LOGW(TAG, ""TRAZAR" envio de evento: funcion: %s: evento: %s", INFOTRAZA, func, event2mnemonic(event));
 	if ( xQueueSend(event_queue, &event_received,( TickType_t ) 100) != pdPASS) {
 		ESP_LOGE(TAG, ""TRAZAR"no se ha podido enviar el evento %s", INFOTRAZA, event2mnemonic(event));
 		esp_restart();
@@ -943,7 +923,7 @@ void send_event(const char *func, EVENT_TYPE event) {
 ESTADO_APP get_current_status_application(DATOS_APLICACION *datosApp) {
 
 	if (datosApp != NULL) {
-		ESP_LOGE(TAG, ""TRAZAR" Se devuelve el estado: %s", INFOTRAZA, status2mnemonic(datosApp->datosGenerales->estadoApp));
+		//ESP_LOGI(TAG, ""TRAZAR" Se devuelve el estado: %s", INFOTRAZA, status2mnemonic(datosApp->datosGenerales->estadoApp));
 		return datosApp->datosGenerales->estadoApp;
 	} else {
 		ESP_LOGE(TAG, ""TRAZAR" Se devuelve UNKNOWN_STATUS porque datosApp es nulo", INFOTRAZA);

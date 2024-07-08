@@ -21,7 +21,8 @@ static const char *TAG = "programmer.c";
 static esp_timer_handle_t temporizador_duracion;
 
 #define TEMPORIZADOR_MAXIMO_EN_SEGUNDOS 428
-//#define TEMPORIZADOR_MAXIMO_EN_SEGUNDOS 30
+bool scheduling;
+
 
 
 
@@ -228,42 +229,8 @@ esp_err_t ordenarListaProgramas(TIME_PROGRAM *listaProgramas, int nElementos, st
     return ESP_OK;
 }
 
-int calcularProgramaActivoActual(TIME_PROGRAM *listaProgramas, int nElementos, int actual) {
-    
-    int i;
 
-    
-    for (i=actual; i > -1; i--) {
-        //printf("calcularProgramaActivoActual-->actual: %d\n", i);
-        if ((listaProgramas[i].activo == 0) || (listaProgramas[i].estadoPrograma == INACTIVO)) {
-            visualizartiempo(listaProgramas[i].programacion);
-             actual --;
-           
-        } else {
-            //printf("calcularProgramaActivoActual-->encontrado actual: %d\n", i);
-            return i;
-        }
-    }
-    //printf("calcularProgramaActivoActual--> actual no encontrado. Retornado: %d\n", i);
-    return i;
-    
 
-    
-}
-
-bool esActivoElPrograma(TIME_PROGRAM *listaProgramas, int nElementos, int indice) {
-    
-    if ((listaProgramas->activo == 1) && (listaProgramas->estadoPrograma == ACTIVO)) {
-        //printf("esActivoElPrograma--> activo, idPrograma: %s, indice:%d\n", listaProgramas->idPrograma, indice);
-        
-        return true;
-    } else {
-        //printf("esActivoElPrograma--> inactivo, idPrograma: %s, indice: %d\n", listaProgramas->idPrograma, indice);
-        return false;
-    }
-    
-    
-}
 
 
 
@@ -443,12 +410,6 @@ int localizarProgramaPorId(char *idPrograma, struct TIME_PROGRAM *program, uint8
     
 }
 
-
-void chequear_ejecucion_programa(NTP_CLOCK *clock, TIME_PROGRAM *programs) {
-
-	ESP_LOGI(TAG, ""TRAZAR"Chequeando si cumple algun temporizador", INFOTRAZA);
-
-}
 
 
 
@@ -719,6 +680,8 @@ void temporizacion_intermedia(void *arg) {
 
 void end_schedule(void *arg) {
 
+	scheduling = false;
+	ESP_LOGI(TAG, ""TRAZAR"Scheduling puesto a false", INFOTRAZA);
 	send_event(__func__,EVENT_END_SCHEDULE);
 
 
@@ -733,6 +696,7 @@ esp_err_t logica_temporizacion(DATOS_APLICACION *datosApp) {
 	int duracion;
 	int tiempo_restante;
 	time_t hora;
+
 
 	ESP_LOGW(TAG, ""TRAZAR"ACTIVADA LOGICA DE TEMPORIZACION", INFOTRAZA);
 	indice = datosApp->datosGenerales->nProgramaCandidato;
@@ -759,27 +723,34 @@ esp_err_t logica_temporizacion(DATOS_APLICACION *datosApp) {
 
 	if (duracion > 0) {
 
+		if (scheduling == false) {
+			scheduling = true;
+			if (tiempo_restante > TEMPORIZADOR_MAXIMO_EN_SEGUNDOS ) {
 
 
-		if (tiempo_restante > TEMPORIZADOR_MAXIMO_EN_SEGUNDOS ) {
-			ESP_LOGW(TAG, ""TRAZAR"ACTIVADO TEMPORIZADOR DE TEMPORIZACION INTERMEDIA.  QUEDAN %d repeticiones", INFOTRAZA, tiempo_restante/TEMPORIZADOR_MAXIMO_EN_SEGUNDOS);
-		    ESP_ERROR_CHECK(esp_timer_create(&first_shot_timer_args, &temporizador_duracion));
-		    ESP_ERROR_CHECK(esp_timer_start_once(temporizador_duracion, (TEMPORIZADOR_MAXIMO_EN_SEGUNDOS * 1000000)));
+				ESP_LOGW(TAG, ""TRAZAR"ACTIVADO TEMPORIZADOR DE TEMPORIZACION INTERMEDIA.  QUEDAN %d repeticiones", INFOTRAZA, tiempo_restante/TEMPORIZADOR_MAXIMO_EN_SEGUNDOS);
+			    ESP_ERROR_CHECK(esp_timer_create(&first_shot_timer_args, &temporizador_duracion));
+			    ESP_ERROR_CHECK(esp_timer_start_once(temporizador_duracion, (TEMPORIZADOR_MAXIMO_EN_SEGUNDOS * 1000000)));
 
+			} else {
+			    ESP_ERROR_CHECK(esp_timer_create(&second_shot_timer_args, &temporizador_duracion));
+			    ESP_ERROR_CHECK(esp_timer_start_once(temporizador_duracion, (tiempo_restante * 1000000)));
+			    ESP_LOGI(TAG, ""TRAZAR"ACTIVADO TEMPORIZADOR DE %d SEGUNDOS", INFOTRAZA, tiempo_restante);
+			}
+
+
+			if (tiempo_restante < 0 ) {
+				ESP_LOGW(TAG, ""TRAZAR"LA DURACION YA HA EXCEDIDO DE LA HORA Y NO SE ACTIVA", INFOTRAZA);
+				send_event(__func__,EVENT_END_SCHEDULE);
+				//appuser_end_schedule(datosApp);
+				return PROGRAMACION_DURACION_EXCEDIDA;
+			}
 		} else {
-		    ESP_ERROR_CHECK(esp_timer_create(&second_shot_timer_args, &temporizador_duracion));
-		    ESP_ERROR_CHECK(esp_timer_start_once(temporizador_duracion, (tiempo_restante * 1000000)));
-		    ESP_LOGI(TAG, ""TRAZAR"ACTIVADO TEMPORIZADOR DE %d SEGUNDOS", INFOTRAZA, tiempo_restante);
-		}
-
-
-		if (tiempo_restante < 0 ) {
-			ESP_LOGW(TAG, ""TRAZAR"LA DURACION YA HA EXCEDIDO DE LA HORA Y NO SE ACTIVA", INFOTRAZA);
-			send_event(__func__,EVENT_END_SCHEDULE);
-			//appuser_end_schedule(datosApp);
-			return PROGRAMACION_DURACION_EXCEDIDA;
+			ESP_LOGW(TAG, ""TRAZAR", No se abre otro temporizador porque ya hay uno activo", INFOTRAZA);
 		}
 	}
+
+
 	return ESP_OK;
 }
 
@@ -794,7 +765,7 @@ esp_err_t start_schedule(DATOS_APLICACION *datosApp) {
 	ESP_LOGW(TAG, ""TRAZAR"start_schedule", INFOTRAZA);
 	if (logica_temporizacion(datosApp) == ESP_OK) {
 		ESP_LOGW(TAG, ""TRAZAR"COMIENZA EL PROGRAMA", INFOTRAZA);
-		//send_event(__func__,EVENT_START_SCHEDULE);
+
 	}
 
 

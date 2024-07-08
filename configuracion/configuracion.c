@@ -357,7 +357,7 @@ esp_err_t init_global_parameters(DATOS_APLICACION *datosApp) {
 		}
 
 		if (get_app_status_device(datosApp) == DEVICE_NOT_CONFIGURED) {
-			set_status_application(datosApp, EVENT_FACTORY);
+			send_event(__func__ , EVENT_FACTORY);
 		}
 
 

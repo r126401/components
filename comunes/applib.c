@@ -27,7 +27,7 @@ esp_err_t init_data_app(DATOS_APLICACION *datosApp) {
 	datosApp->datosGenerales = datosGenerales;
 	change_status_application(datosApp, UNKNOWN_STATUS);
 	ESP_LOGI(TAG, ""TRAZAR" Estructura de datos creada", INFOTRAZA);
-
+	create_event_task(datosApp);
 	return ESP_OK;
 }
 
@@ -37,7 +37,7 @@ esp_err_t init_device(DATOS_APLICACION *datosApp) {
 	esp_err_t error;
 
 
-	create_event_task(datosApp);
+
 	send_event(__func__, EVENT_STARTING);
 	error = init_global_parameters(datosApp);
 	if (error == ESP_OK) {
@@ -261,9 +261,7 @@ void change_status_application(DATOS_APLICACION *datosApp, ESTADO_APP new_status
 	char *text;
 	text = calloc(25, sizeof(char));
 	strcpy(text, status2mnemonic(current_status));
-	//ESP_LOGW(TAG, ""TRAZAR"ESTADO ANTERIOR %s", INFOTRAZA, status2mnemonic(datosApp->datosGenerales->estadoApp));
 	datosApp->datosGenerales->estadoApp = new_status;
-	//ESP_LOGW(TAG, ""TRAZAR"ESTADO POSTERIOR %s", INFOTRAZA, status2mnemonic(new_status));
 	ESP_LOGE(TAG, ""TRAZAR" Cambiado estado: %s ------------> %s", INFOTRAZA, text, status2mnemonic(new_status));
 	free(text);
 	appuser_notify_app_status(datosApp, new_status);
@@ -536,7 +534,6 @@ void set_status_application(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 		}
 
 		if ((event == EVENT_DEVICE_READY) || (event == EVENT_WIFI_OK) || (event == EVENT_SMARTCONFIG_END)|| (event == EVENT_MQTT_OK)|| (event == EVENT_ERROR_WIFI)){
-			ESP_LOGW(TAG, ""TRAZAR" cambiando de estado por EVENT_DEVICE_OK", INFOTRAZA);
 			new_status = STARTING;
 			break;
 
@@ -704,6 +701,7 @@ void set_status_application(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 	}
 
 
+	//ESP_LOGW(TAG, ""TRAZAR" Gestion de eventos y estados: %s --- %s ----> %s", INFOTRAZA, event2mnemonic(event), status2mnemonic(get_current_status_application(datosApp)), status2mnemonic(new_status));
 	change_status_application(datosApp, new_status);
 
 

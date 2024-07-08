@@ -159,24 +159,7 @@ void actualizar_hora(NTP_CLOCK *clock) {
 
 }
 
-void acciones_reloj(NTP_CLOCK *clock, TIME_PROGRAM *programs) {
 
-	switch (clock->estado) {
-
-	case SIN_HORA:
-		ESP_LOGW(TAG, ""TRAZAR"Esperando sincronizacion", INFOTRAZA);
-		break;
-	case EN_HORA:
-		chequear_ejecucion_programa(clock, programs);
-
-		break;
-	case ERROR_NTP:
-		break;
-	default:
-		break;
-	}
-
-}
 
 
 
