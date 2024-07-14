@@ -340,27 +340,6 @@ void process_unknown_message(DATOS_APLICACION *datosApp, char *message) {
 	 }
 
 
-/*
-	 root = analizar_comando(datosApp, peticion);
-     if (root != NULL) {
-         // 3.- Una vez ejecutado enviamos la respuesta y liberamos recursos.
-
-    	 //publicar_mensaje_json(datosApp, root, NULL);
-         // obtenemos el json de la respuesta para escribir
-         respuesta = cJSON_Print(root);
-         if (respuesta != NULL) {
-        	 strcpy(cola.topic, datosApp->datosGenerales->parametrosMqtt.publish);
-        	 strcpy(cola.buffer, respuesta);
-             // preparamos los datos para el envio
-              //publicar_mensaje(datosApp, respuesta);
-              xQueueSend(cola_mqtt, &cola,0);
-         }
-     }
-     free(respuesta);
-	 free(peticion);
-	 cJSON_Delete(root);
-	 ESP_LOGE(TAG, ""TRAZAR"Memoria despues: "CONFIG_UINT32_FORMAT"\n", INFOTRAZA, esp_get_free_heap_size());
-	 */
  }
 
 
@@ -1072,8 +1051,7 @@ esp_err_t reinicio_fabrica(DATOS_APLICACION *datosApp) {
 	set_app_status_device(datosApp, DEVICE_NOT_CONFIGURED);
 	salvar_configuracion_general(datosApp);
 	set_status_application(datosApp, EVENT_FACTORY);
-	//change_status_application(datosApp, FACTORY);
-	//nvs_flash_erase();
+
 
 
 	return ESP_OK;
