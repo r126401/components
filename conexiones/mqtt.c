@@ -94,6 +94,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
     ESP_LOGI(TAG, "Event dispatched from event loop base=%s, event_id="CONFIG_UINT32_FORMAT"", base, event_id);
     esp_mqtt_event_handle_t event = event_data;
     esp_mqtt_client_handle_t client = event->client;
+    datosApp = (DATOS_APLICACION *) handler_args;
     //datosApp.handle_mqtt = event;
     int msg_id = 0;
     switch ((esp_mqtt_event_id_t)event_id) {
