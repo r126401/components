@@ -83,7 +83,7 @@ esp_err_t unsubscribe_topic(DATOS_APLICACION *datosApp, int index_topic) {
 
 
 
-
+/*
 #ifndef CONFIG_IDF_TARGET_ESP8266
 
 
@@ -141,13 +141,13 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
         strncpy(topic, event->topic, event->topic_len);
 
         message_application_received(&datosApp, topic);
-/*
+
         if (strcmp(datosApp.datosGenerales->parametrosMqtt.subscribe, topic) == 0) {
         	message_application_received(&datosApp, topic);
         } else {
         	appuser_reding_remote_temperature(&datosApp);
         }
-*/
+
         break;
     case MQTT_EVENT_ERROR:
         ESP_LOGI(TAG, "MQTT_EVENT_ERROR");
@@ -242,7 +242,7 @@ esp_err_t init_device_mqtt(DATOS_APLICACION *datosApp) {
 }
 
 #else
-
+*/
 static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
 {
     esp_mqtt_client_handle_t client = event->client;
@@ -350,7 +350,7 @@ void init_device_mqtt(void *arg) {
 }
 
 
-#endif
+//#endif
 
 
 
