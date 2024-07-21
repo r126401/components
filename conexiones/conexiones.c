@@ -263,7 +263,8 @@ void on_wifi_scan_done(void *arg, esp_event_base_t event_base, int32_t event_id,
 	wifi_ap_record_t ap_info[CONFIG_DEFAULT_SCAN_LIST_SIZE];
 	uint16_t number = CONFIG_DEFAULT_SCAN_LIST_SIZE;
 	uint16_t ap_count = 0;
-	DATOS_APLICACION *datosApp = (DATOS_APLICACION *) datosApp;
+	DATOS_APLICACION *datosApp = NULL;
+	datosApp = (DATOS_APLICACION *) datosApp;
 	memset(ap_info, 0, sizeof(ap_info));
 
 
