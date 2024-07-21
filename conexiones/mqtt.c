@@ -16,7 +16,9 @@
 #include "dialogos_json.h"
 #include "esp_tls.h"
 #include "conexiones_mqtt.h"
+#ifdef CONFIG_IDF_TARGET_ESP8266
 #include "event_groups.h"
+#endif
 #include "applib.h"
 
 
