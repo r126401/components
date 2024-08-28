@@ -93,7 +93,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
     int msg_id = -1;
     esp_mqtt_event_handle_t event = event_data;
     DATOS_APLICACION *datosApp = (DATOS_APLICACION*) event->data;
-    datosApp->handle_mqtt = event;
+    datosApp->handle_mqtt = event->data;
 
 
     switch (event->event_id) {
