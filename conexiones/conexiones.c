@@ -399,7 +399,12 @@ esp_err_t init_wifi_device(DATOS_APLICACION *datosApp) {
 
     	ESP_LOGW(TAG, ""TRAZAR" WIFI NO CONFIGURADA", INFOTRAZA);
     	//send_event(__func__, EVENT_FACTORY);
+#ifdef CONFIG_IDF_TARGET_ESP8266
     	task_smartconfig(datosApp);
+#else
+    	send_event(__func__, EVENT_FACTORY);
+#endif
+
 
     } else {
     	for (i=0;i<32;i++) {
