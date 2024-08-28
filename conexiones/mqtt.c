@@ -92,8 +92,8 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
     //esp_mqtt_client_handle_t client = event_data->client;
     int msg_id = -1;
     esp_mqtt_event_handle_t event = event_data;
-    DATOS_APLICACION *datosApp = (DATOS_APLICACION*) event->data;
-    datosApp->handle_mqtt = event->data;
+    DATOS_APLICACION *datosApp = (DATOS_APLICACION*) event;
+    //datosApp->handle_mqtt = event->data;
 
 
     switch (event->event_id) {
@@ -263,7 +263,7 @@ void init_device_mqtt(void *arg) {
 
    ESP_LOGI(TAG, ""TRAZAR"Nos conectamos al broker %s", INFOTRAZA, mqtt_cfg.broker.address.uri);
     client = esp_mqtt_client_init(&mqtt_cfg);
-    esp_mqtt_client_register_event(client, ESP_EVENT_ANY_ID, mqtt_event_handler, NULL);
+    esp_mqtt_client_register_event(client, ESP_EVENT_ANY_ID, mqtt_event_handler, datosApp);
 
     esp_mqtt_client_start(client);
 
