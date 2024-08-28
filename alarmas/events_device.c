@@ -520,7 +520,8 @@ void process_event_smartconfig_start(DATOS_APLICACION *datosApp) {
 
 	if (get_current_status_application(datosApp) == FACTORY) {
 		ESP_LOGI(TAG, ""TRAZAR"SMARTCONFIG START EN MODO FACTORY", INFOTRAZA);
-		init_wifi_device(datosApp);
+		//init_wifi_device(datosApp);
+		task_smartconfig(datosApp);
 
 	} else {
 		ESP_LOGI(TAG, ""TRAZAR" RECIBIDO EVENTO SMARTCONFIG EN ESTADO %s", INFOTRAZA, status2mnemonic(get_current_status_application(datosApp)));
