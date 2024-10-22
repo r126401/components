@@ -89,11 +89,12 @@ esp_err_t unsubscribe_topic(DATOS_APLICACION *datosApp, int index_topic) {
 
 static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data)
 {
-    //esp_mqtt_client_handle_t client = event_data->client;
     int msg_id = -1;
     esp_mqtt_event_handle_t event = event_data;
+    esp_mqtt_client_handle_t client = event->client;
+ 
     DATOS_APLICACION *datosApp = (DATOS_APLICACION*) handler_args;
-    datosApp->handle_mqtt = event->data;
+    datosApp->handle_mqtt = event;
 
 
     switch (event->event_id) {
@@ -258,6 +259,7 @@ void init_device_mqtt(void *arg) {
     if (get_mqtt_tls(datosApp)) {
 
         mqtt_cfg.broker.verification.certificate = get_certificate(datosApp);
+        
 
     }
 

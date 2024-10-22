@@ -25,6 +25,7 @@ esp_err_t init_data_app(DATOS_APLICACION *datosApp) {
 	DATOS_GENERALES *datosGenerales;
 	datosGenerales = (DATOS_GENERALES*) calloc(1, sizeof(DATOS_GENERALES));
 	datosApp->datosGenerales = datosGenerales;
+	//config_default_services_device(datosApp);
 	change_status_application(datosApp, UNKNOWN_STATUS);
 	ESP_LOGI(TAG, ""TRAZAR" Estructura de datos creada", INFOTRAZA);
 	create_event_task(datosApp);
@@ -35,6 +36,9 @@ esp_err_t init_data_app(DATOS_APLICACION *datosApp) {
 esp_err_t init_device(DATOS_APLICACION *datosApp) {
 
 	esp_err_t error;
+
+
+	
 
 
 
@@ -88,11 +92,8 @@ void config_default_services_device(DATOS_APLICACION *datosApp) {
 
 esp_err_t init_services_device(DATOS_APLICACION *datosApp) {
 
-	//En primer lugar se inicia la conexion wifi
 
-	config_default_services_device(datosApp);
-
-
+	
 	if (!get_app_config_wifi(datosApp)) {
 
 		ESP_LOGW(TAG, ""TRAZAR"init_service_device: No se configura wifi por lo que no se configuran el resto de servicios de red", INFOTRAZA);
@@ -102,26 +103,26 @@ esp_err_t init_services_device(DATOS_APLICACION *datosApp) {
 		init_wifi_device(datosApp);
 		ESP_LOGW(TAG, ""TRAZAR"init_service_device: Wifi configurado y activo", INFOTRAZA);
 
-		//2.- Se inicia la tarea mqtt si estuviera configurado.
-	if (using_mqtt(datosApp)) {
-		init_mqtt_service(datosApp);
-		ESP_LOGW(TAG, ""TRAZAR" init_service_device: servicio mqtt configurado y activo", INFOTRAZA);
-	} else {
-		// Si no estuviera configurado, iniciamos la secuencia de activacion del ntp y la programcion si procede
-		if (using_ntp(datosApp)) {
-			init_ntp_service(datosApp);
-			if (using_schedules(datosApp)) {
-				init_schedule_service(datosApp);
-			}
-			ESP_LOGW(TAG, ""TRAZAR" VAMOS A ENVIAR EL EVENTO EVENT_START_APP", INFOTRAZA);
-			send_event(__func__, EVENT_START_APP);
-		} else {
-			send_event(__func__, EVENT_START_APP);
-		}
-
-
-
-	}
+		//if (get_current_status_application(datosApp) != FACTORY) {
+			
+			//2.- Se inicia la tarea mqtt si estuviera configurado.
+			if (using_mqtt(datosApp)) {
+				init_mqtt_service(datosApp);
+				ESP_LOGW(TAG, ""TRAZAR" init_service_device: servicio mqtt configurado y activo", INFOTRAZA);
+			} else {
+				// Si no estuviera configurado, iniciamos la secuencia de activacion del ntp y la programcion si procede
+				if (using_ntp(datosApp)) {
+				init_ntp_service(datosApp);
+				if (using_schedules(datosApp)) {
+					init_schedule_service(datosApp);
+				}
+				ESP_LOGW(TAG, ""TRAZAR" VAMOS A ENVIAR EL EVENTO EVENT_START_APP", INFOTRAZA);
+				send_event(__func__, EVENT_START_APP);
+				} else {
+					send_event(__func__, EVENT_START_APP);
+					}
+				}
+		//}
 
 
 	return ESP_OK;
@@ -209,6 +210,7 @@ bool using_ntp(DATOS_APLICACION *datosApp) {
 
 bool using_schedules(DATOS_APLICACION *datosApp) {
 
+	ESP_LOGI(TAG, ""TRAZAR" using_schedules vale: %d", INFOTRAZA, datosApp->schedules);
 	return datosApp->schedules;
 }
 
@@ -223,8 +225,9 @@ void set_new_certificate(DATOS_APLICACION *datosApp, char* text, int size) {
 
 char* get_certificate(DATOS_APLICACION *datosApp) {
 
-	static char datos[CONFIG_TAMANO_BUFFER_LECTURA];
+	static char datos[2000];
 	leer_configuracion(datosApp, CONFIG_CLAVE_CERTIFICADO_TLS, datos);
+	ESP_LOGI(TAG, ""TRAZAR" certificado: %s", INFOTRAZA, datos);
 	return datos;
 
 
@@ -364,7 +367,7 @@ void set_status_application(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 			break;
 		}
 
-		if (event == EVENT_NO_ACTIVE_SCHEDULE) {
+		if ((event == EVENT_NO_ACTIVE_SCHEDULE) || (event == EVENT_DEVICE_READY)) {
 			//change_status_application(datosApp, NORMAL_MANUAL);
 			new_status = NORMAL_AUTO;
 			break;
@@ -568,6 +571,11 @@ void set_status_application(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 			break;
 		}
 
+		if (event == EVENT_WIFI_OK) {
+			new_status = STARTING;
+			break;
+		}
+
 
 
 
@@ -619,7 +627,7 @@ void set_status_application(DATOS_APLICACION *datosApp, EVENT_TYPE event) {
 			break;
 		}
 
-		if ((event == EVENT_END_SCHEDULE) || (event == EVENT_DELETE_SCHEDULE) || (event == EVENT_MODIFY_SCHEDULE) || (event == EVENT_INSERT_SCHEDULE)){
+		if ((event == EVENT_END_SCHEDULE) || (event == EVENT_DELETE_SCHEDULE) || (event == EVENT_MODIFY_SCHEDULE) || (event == EVENT_INSERT_SCHEDULE)|| (event == EVENT_DEVICE_READY)){
 			new_status = CHECK_SCHEDULES;
 			break;
 		}

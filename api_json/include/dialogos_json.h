@@ -35,6 +35,10 @@ Proyecto realizado por Emilio Jimenez Prieto
 #define MQTT_CONFIG		"mqttConfig"
 #define TIMING_CONFIG	"timingConfig"
 #define SCHEDULES_CONFIG "schedulesConfig"
+#define USING_MQTT      "usingMqtt"
+#define USING_WIFI      "usingWifi"
+#define USING_NTP       "usingNtp"
+#define USING_SCHEDULES "usingSchedules"
 
 
 #define YEAR        "year"

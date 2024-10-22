@@ -271,7 +271,7 @@ void process_application_message(DATOS_APLICACION *datosApp, char* peticion) {
 	 if (root != NULL) {
 		 free(peticion);
 		 publicar_mensaje_json(datosApp, root, get_app_publish_topic(datosApp, 0) );
-		 cJSON_Delete(root);
+		 //cJSON_Delete(root);
 	 } else {
 		 ESP_LOGE(TAG, ""TRAZAR"process_application_message: Error al procesar la peticion", INFOTRAZA);
 	 }

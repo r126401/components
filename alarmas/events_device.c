@@ -92,7 +92,7 @@ char* event2mnemonic(EVENT_TYPE event) {
 		break;
 
 	case EVENT_CHECK_SCHEDULES:
-		strcpy(mnemonic, "EVENT_CHECK_PROGRAMS");
+		strcpy(mnemonic, "EVENT_CHECK_SCHEDULES");
 		break;
 	case EVENT_INSERT_SCHEDULE:
 		strcpy(mnemonic, "EVENT_INSERT_SCHEDULE");
@@ -500,7 +500,7 @@ void process_event_factory(DATOS_APLICACION *datosApp) {
 
 void process_event_device_ready(DATOS_APLICACION *datosApp) {
 
-	ESP_LOGW(TAG, ""TRAZAR"Procesando evento EVENT_DEVICE_OK", INFOTRAZA);
+	ESP_LOGW(TAG, ""TRAZAR"Procesando evento EVENT_DEVICE_READY", INFOTRAZA);
 
 	if (datosApp->alarmas[ALARM_DEVICE].estado_alarma == ALARM_ON) {
 		send_alarm(datosApp, ALARM_DEVICE, ALARM_OFF, true);
@@ -878,9 +878,9 @@ void event_task(void *arg) {
 	for(;;) {
 		 ESP_LOGI(TAG, ""TRAZAR"ESPERANDO EVENTO...Memoria libre: "CONFIG_UINT32_FORMAT"\n", INFOTRAZA, esp_get_free_heap_size());
 		if (xQueueReceive(event_queue, &event, portMAX_DELAY) == pdTRUE) {
-			//ESP_LOGE(TAG, ""TRAZAR"event_task:Recibido evento app %s, evento device:%s. Estado App: %s", INFOTRAZA,
-					//event2mnemonic(event.event_app), local_event_2_mnemonic(event.event_device),
-							//status2mnemonic(datosApp->datosGenerales->estadoApp));
+			ESP_LOGE(TAG, ""TRAZAR"event_task:Recibido evento app %s, evento device:%s. Estado App: %s", INFOTRAZA,
+					event2mnemonic(event.event_app), local_event_2_mnemonic(event.event_device),
+							status2mnemonic(datosApp->datosGenerales->estadoApp));
 			receive_event(datosApp, event);
 
 
@@ -912,7 +912,7 @@ void send_event(const char *func, EVENT_TYPE event) {
 	event_received.event_app = event;
 	event_received.event_device = EVENT_NONE;
 
-	//ESP_LOGW(TAG, ""TRAZAR" envio de evento: funcion: %s: evento: %s", INFOTRAZA, func, event2mnemonic(event));
+	ESP_LOGW(TAG, ""TRAZAR" envio de evento: funcion: %s: evento: %s", INFOTRAZA, func, event2mnemonic(event));
 	if ( xQueueSend(event_queue, &event_received,( TickType_t ) 100) != pdPASS) {
 		ESP_LOGE(TAG, ""TRAZAR"no se ha podido enviar el evento %s", INFOTRAZA, event2mnemonic(event));
 		esp_restart();

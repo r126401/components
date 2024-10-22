@@ -307,12 +307,16 @@ inline static void inicializar_wifi(DATOS_APLICACION *datosApp) {
 	}
 
     grupo_eventos = xEventGroupCreate();
-    esp_netif_init();
+    ESP_LOGI(TAG, ""TRAZAR" (1)", INFOTRAZA);
+    ESP_ERROR_CHECK(esp_netif_init());
+    ESP_LOGI(TAG, ""TRAZAR" (2)", INFOTRAZA);
     esp_event_loop_create_default();
+    ESP_LOGI(TAG, ""TRAZAR" (3)", INFOTRAZA);
 #if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32S3)
     esp_netif_create_default_wifi_sta ();
 #endif
 
+ESP_LOGI(TAG, ""TRAZAR" (4)", INFOTRAZA);
 
     //ESP_ERROR_CHECK(esp_wifi_set_ps(WIFI_PS_NONE));
 #if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32S3)
@@ -343,9 +347,10 @@ esp_err_t restaurar_wifi_fabrica() {
 
 void tarea_smartconfig(void* parm) {
     EventBits_t uxBits;
-    ESP_ERROR_CHECK(esp_smartconfig_set_type(SC_TYPE_ESPTOUCH));
+
+    esp_smartconfig_set_type(SC_TYPE_ESPTOUCH);
     smartconfig_start_config_t cfg = SMARTCONFIG_START_CONFIG_DEFAULT();
-    ESP_ERROR_CHECK(esp_smartconfig_start(&cfg));
+    esp_smartconfig_start(&cfg);
 
 
     while (1) {

@@ -90,6 +90,10 @@ esp_err_t configuracion_a_json(DATOS_APLICACION *datosApp, cJSON *conf) {
 	cJSON_AddNumberToObject(conf, PROGRAM_STATE, datosApp->datosGenerales->estadoProgramacion);
 	cJSON_AddStringToObject(conf, OTA_SW_VERSION, datosApp->datosGenerales->ota.swVersion->version);
 	cJSON_AddBoolToObject(conf, MQTT_TLS, datosApp->datosGenerales->parametrosMqtt.tls);
+	cJSON_AddBoolToObject(conf, USING_MQTT, datosApp->mqtt);
+	cJSON_AddBoolToObject(conf, USING_WIFI, datosApp->wifi);
+	cJSON_AddBoolToObject(conf, USING_NTP, datosApp->timing);
+	cJSON_AddBoolToObject(conf, USING_SCHEDULES, datosApp->schedules);
     appuser_set_configuration_to_json(datosApp, conf);
 
     	ESP_LOGI(TAG, ""TRAZAR"JSON creado:", INFOTRAZA);
@@ -212,11 +216,12 @@ esp_err_t cargar_configuracion_defecto(DATOS_APLICACION *datosApp) {
 		ESP_LOGE(TAG, ""TRAZAR"ERROR AL SALVAR LA CONFIGURACION", INFOTRAZA);
 		return ERROR_REPORT;
 	}
-
+/*
     if (using_schedules(datosApp)) {
 
     	crear_programas_defecto(datosApp);
     }
+	*/
 	return ESP_OK;
 
 }
@@ -244,6 +249,10 @@ esp_err_t json_a_datos_aplicacion(DATOS_APLICACION *datosApp, char *datos) {
 		extraer_dato_int(nodo, DEVICE, &datosApp->datosGenerales->tipoDispositivo );
 		extraer_dato_uint8(nodo, MQTT_TLS, (uint8_t*) &datosApp->datosGenerales->parametrosMqtt.tls);
 		extraer_dato_uint8(nodo, DEVICE_STATUS, (uint8_t*) &datosApp->datosGenerales->status);
+		extraer_dato_bool(nodo, USING_MQTT, &datosApp->mqtt);
+		extraer_dato_bool(nodo, USING_WIFI, &datosApp->wifi);
+		extraer_dato_bool(nodo, USING_NTP, &datosApp->timing);
+		extraer_dato_bool(nodo, USING_SCHEDULES, &datosApp->schedules);
 
 
 		array_topics = cJSON_GetObjectItem(nodo, MQTT_TOPICS);
@@ -284,7 +293,7 @@ esp_err_t json_a_datos_aplicacion(DATOS_APLICACION *datosApp, char *datos) {
  */
 esp_err_t leer_configuracion(DATOS_APLICACION *datosApp, char* clave, char* valor) {
 
-	size_t longitud = CONFIG_TAMANO_BUFFER_LECTURA;
+	size_t longitud = 2000;
 	esp_err_t error;
 	ESP_LOGI(TAG, ""TRAZAR"Se lee la configuracion con clave %s", INFOTRAZA, clave);
 	if ((error = leer_dato_string_nvs(&datosApp->handle, clave, valor, longitud)) != ESP_OK) {
@@ -309,6 +318,7 @@ esp_err_t init_global_parameters(DATOS_APLICACION *datosApp) {
 
 	esp_err_t error;
 	char *datos;
+
 
 #ifndef CONFIG_IDF_TARGET_ESP8266
     datosApp->datosGenerales->ota.swVersion = esp_app_get_description();
@@ -371,7 +381,7 @@ esp_err_t init_global_parameters(DATOS_APLICACION *datosApp) {
 
 		}
 
-		if (using_schedules(datosApp)) {
+		if (using_schedules(datosApp) == true) {
 			// leemos la configuracion de programas desde nvs
 			if ((error = leer_configuracion(datosApp, CONFIG_CLAVE_PROGRAMACION, datos)) == ESP_OK) {
 				ESP_LOGI(TAG, ""TRAZAR"Programas leidos desde nvs", INFOTRAZA);
@@ -381,6 +391,8 @@ esp_err_t init_global_parameters(DATOS_APLICACION *datosApp) {
 				ESP_LOGW(TAG, ""TRAZAR"No se ha encontrado programacion en el dispositivo", INFOTRAZA);
 				error = ESP_OK;
 			}
+		} else {
+			ESP_LOGW(TAG, ""TRAZAR"No se esta usando la configuracion de schedules", INFOTRAZA);
 		}
 
 
@@ -470,13 +482,7 @@ esp_err_t cargar_programas(DATOS_APLICACION *datosApp, char *programas) {
 			programa_actual.programacion.tm_mon = extraer_dato_tm(dato, 12, 2);
 			programa_actual.programacion.tm_mday = extraer_dato_tm(dato, 14, 2);
 			programa_actual.estadoPrograma = extraer_dato_tm(dato, 16, 1);
-			//programa_actual.accion = extraer_dato_tm(dato, 17, 1);
-
-			break;
-		default:
-			ESP_LOGE(TAG,"Error al capturar el tipo de programa %s", tipo);
-			break;
-
+			//programa_actual.accion = extraer_datosalvar_configuracion_general
 		}
 		appuser_load_schedule_extra_data(datosApp, &programa_actual, nodo);
 
